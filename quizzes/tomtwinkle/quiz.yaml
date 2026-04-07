@@ -1,0 +1,207 @@
+title: "Goクイズ"
+author: tomtwinkle
+
+questions:
+  # Q1: go test キャッシュ
+  - text: |
+      go test は、同じコードに対して2回目を実行すると「(cached)」と表示され一瞬で終わります。
+      このキャッシュを無視して強制的に再テストするフラグはどれ？
+    choices:
+      - "go test -nocache"
+      - "go test -force"
+      - "go test -count=1"
+      - "go test -clear"
+    answer: 2
+    explanation: |
+      キャッシュを無効化する専用のフラグはなく、「このテストを1回実行する」という意味の -count=1 を指定するのが、キャッシュ回避の公式イディオムです。
+      go clean -testcache でキャッシュ全消去も可能です。
+
+      Go Playground (動作確認): https://go.dev/play/p/JcMljv1IrGz
+      公式ドキュメント: https://pkg.go.dev/cmd/go#hdr-Testing_flags
+    answer_code_ref: "code/q1_answer.go"
+
+  # Q2: 型無し定数の精度
+  - text: |
+      変数を使わず、定数で
+        const max = 999999999999999999999
+      のように64ビットの限界を超える巨大な数値を定義するとどうなる？
+    question_code_ref: "code/q2_question.go"
+    choices:
+      - "オーバーフローでコンパイルエラー"
+      - "0 になる"
+      - "負の最大値にラップアラウンドする"
+      - "コンパイルは通る"
+    answer: 3
+    explanation: |
+      Goの「型無し定数」は、コンパイル時には少なくとも256ビットの精度を持ちます。
+      変数に代入する段階になって初めて型の限界値のチェックが行われるため、定数同士の計算中であればオーバーフローしません。
+
+      Go Playground (動作確認): https://go.dev/play/p/-ulgXM1lDV5
+      公式仕様: https://go.dev/ref/spec#Constants
+      Go Blog: https://go.dev/blog/constants
+
+  # Q3: スライスの append と backing array
+  - text: |
+      スライス a := make([]int, 0, 5) に要素を append して b := append(a, 1) を作成し、
+      さらに c := append(a, 2) を作成しました。b の値はどうなる？
+    question_code_ref: "code/q3_question.go"
+    choices:
+      - "[1] のまま"
+      - "[2] になる"
+      - "[1, 2] になる"
+      - "panic が発生する"
+    answer: 1
+    explanation: |
+      a にはまだ容量（cap）に余裕があるため、append しても新しい配列は作られず、裏側の同じ配列が使われます。
+      そのため c への操作によって、b が参照しているメモリ領域も 2 に上書きされてしまいます。
+
+      Go Playground (問題コード): https://go.dev/play/p/g5TLbUBeovJ
+      Go Playground (解説コード): https://go.dev/play/p/Sk6S3nWW0eh
+      Go Blog (スライスの内部構造): https://go.dev/blog/slices-intro
+    answer_code_ref: "code/q3_answer.go"
+
+  # Q4: defer in loop
+  - text: |
+      ループ内で file, err := os.Open(name) を開き、直後に defer file.Close() を書きました。
+      このコードの問題点は？
+    question_code_ref: "code/q4_question.go"
+    choices:
+      - "ループごとにファイルが上書きされる"
+      - "defer は関数の終了時に実行されるため、ファイルディスクリプタが枯渇する"
+      - "os.Open は defer で閉じることができない"
+      - "コンパイルエラーになる"
+    answer: 1
+    explanation: |
+      defer のスコープは「ブロック」ではなく「関数」です。
+      ループの中で defer を大量に呼ぶと、関数が終わるまで一切クローズされず、OSのリソース制限に引っかかってパニックになることがあります。
+      解決策はループ本体を別関数に切り出すことです。
+
+      Go Playground (問題コード): https://go.dev/play/p/vMa3Tu_NwUx
+      Go Playground (正しい実装): https://go.dev/play/p/SFlCpLx8sxr
+      Go Blog (defer の仕様): https://go.dev/blog/defer-panic-and-recover
+      公式仕様: https://go.dev/ref/spec#Defer_statements
+    answer_code_ref: "code/q4_answer.go"
+
+  # Q5: clear() on slice
+  - text: |
+      以下のコードの実行結果は？
+        s := []int{1, 2, 3}
+        clear(s)
+        fmt.Println(len(s))
+    question_code_ref: "code/q5_question.go"
+    choices:
+      - "0"
+      - "3"
+      - "nil"
+      - "コンパイルエラー"
+    answer: 1
+    explanation: |
+      Go 1.21 で追加された組み込み関数 clear()。
+      マップに使うと要素を空（len=0）にしますが、スライスに使うと長さ（len）と容量（cap）はそのままに、全要素を「ゼロ値」に上書きします。
+      要素自体が消えるわけではありません。
+
+      Go Playground (問題コード): https://go.dev/play/p/KISUj_jXFnc
+      Go Playground (解説コード): https://go.dev/play/p/NkAkv-tUNKr
+      公式仕様 (clear): https://go.dev/ref/spec#Clear
+      pkg.go.dev: https://pkg.go.dev/builtin#clear
+    answer_code_ref: "code/q5_answer.go"
+
+  # Q6: named return + defer
+  - text: |
+      戻り値に名前を付けた関数 func f() (n int) の中で defer func() { n++ }() を定義し、
+      関数の最後で return 1 と書きました。呼び出し元が受け取る値は？
+    question_code_ref: "code/q6_question.go"
+    choices:
+      - "0"
+      - "1"
+      - "2"
+      - "コンパイルエラー"
+    answer: 2
+    explanation: |
+      名前付き戻り値の罠です。
+      return 1 が実行されると、まず変数 n に 1 が代入され、その後に defer が実行されて n が 2 になり、それが返されます。
+      実行順序: return 1 → n=1 代入 → defer で n++ → n=2 が返る
+
+      Go Playground (問題コード): https://go.dev/play/p/DsJwhX19XX7
+      Go Playground (解説コード): https://go.dev/play/p/xy0OpQBBbIp
+      Go Blog (defer の仕様): https://go.dev/blog/defer-panic-and-recover
+      公式仕様: https://go.dev/ref/spec#Return_statements
+    answer_code_ref: "code/q6_answer.go"
+
+  # Q7: range over string
+  - text: |
+      for i, v := range "日本語" { fmt.Println(i, v) } と回したとき、出力はどれ？
+    question_code_ref: "code/q7_question.go"
+    choices:
+      - "1 日\n2 本\n3 語"
+      - "0 26085\n3 26412\n6 35486"
+      - "0 230\n1 151\n2 165\n3 230\n4 156\n5 172\n6 232\n7 170\n8 158"
+      - "コンパイルエラー"
+    answer: 1
+    explanation: |
+      Go の string range は UTF-8 デコードを行い、インデックスはバイト位置、値は rune（Unicode コードポイント）です。
+      「日」(U+65E5=26085) は index=0、「本」(U+672C=26412) は index=3、「語」(U+8A9E=35486) は index=6 から始まります。
+      各漢字は UTF-8 で 3 バイトです。
+
+      Go Playground (問題コード): https://go.dev/play/p/tCACPhRae8w
+      Go Playground (解説コード): https://go.dev/play/p/Gyjpj7XArM8
+      Go Blog (文字列と rune): https://go.dev/blog/strings
+      公式仕様 (range): https://go.dev/ref/spec#For_range
+    answer_code_ref: "code/q7_answer.go"
+
+  # Q8: t.Fatal in goroutine
+  - text: |
+      テスト goroutine ではない「別途起動した goroutine」の中で t.Fatal() を呼ぶとどうなる？
+    question_code_ref: "code/q8_question.go"
+    choices:
+      - "テストが正しく終了し、失敗としてマークされる"
+      - "メインテストがタイムアウトするまで止まらなくなる"
+      - "panic になりプロセスがクラッシュする"
+      - "何も起こらずテストは成功扱いになる"
+    answer: 1
+    explanation: |
+      t.Fatal は runtime.Goexit() を呼ぶため、別 goroutine で呼ぶとその goroutine だけが静かに終了し、テスト自体は止まりません。
+      Go 1.24 からは go vet で検出されるようになりました。
+      正しいアプローチ: goroutine 内では t.Error を使い channel で完了を通知するか、errgroup などを活用します。
+
+      pkg.go.dev (testing.T.Fatal): https://pkg.go.dev/testing#T.Fatal
+      Go 1.24 リリースノート: https://go.dev/doc/go1.24
+    answer_code_ref: "code/q8_answer.go"
+
+  # Q9: GOMAXPROCS in containers
+  - text: |
+      Docker や Kubernetes 上で Go アプリを動かす際、CPU のコア数を認識させて GOMAXPROCS を最適化するために、
+      最新の Go バージョンにおいて推奨されるコードはどれ？
+    choices:
+      - 'import _ "go.uber.org/automaxprocs" を入れる'
+      - "環境変数 GOMAXPROCS をシェルで計算して渡す"
+      - "runtime.GOMAXPROCS(runtime.NumCPU()) を呼ぶ"
+      - "何もしなくてよい"
+    answer: 3
+    explanation: |
+      長年 Uber の automaxprocs を入れるのが Kubernetes 時代の定石でしたが、
+      Go 1.25 からランタイムがコンテナの CPU 制限（cgroup CPU quota）を自動検知するようになったため、完全に不要になりました。
+
+      Go Playground (解説コード): https://go.dev/play/p/8DWAH50FnGF
+      Go 1.25 リリースノート: https://go.dev/doc/go1.25
+      pkg.go.dev (runtime.GOMAXPROCS): https://pkg.go.dev/runtime#GOMAXPROCS
+    answer_code_ref: "code/q9_answer.go"
+
+  # Q10: synctest isolation
+  - text: |
+      synctest.Run ブロックの「外側」で起動した goroutine と、「内側」で起動した goroutine 同士が
+      channel で同期通信しようとするとどうなる？
+    question_code_ref: "code/q10_question.go"
+    choices:
+      - "正常に通信できる"
+      - "外側の goroutine が強制終了させられる"
+      - "deadlock を検知して panic する"
+      - "常に非同期通信（buffered channel）に変換される"
+    answer: 2
+    explanation: |
+      synctest は独自の仮想時計とスケジューラ内で隔離されて動くため、リアルタイムで動く通常の goroutine や本物のネットワーク I/O と直接的な同期通信を行おうとすると、テストの決定性が壊れるためエラーとなります。
+
+      Go Playground (問題コード): https://go.dev/play/p/th7XHYIo4Oj
+      pkg.go.dev (testing/synctest): https://pkg.go.dev/testing/synctest
+      Go Blog (synctest): https://go.dev/blog/synctest
+      Go 1.24 リリースノート: https://go.dev/doc/go1.24
