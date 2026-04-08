@@ -14,9 +14,7 @@ func main() {
 
 	fmt.Println("\nrange でのインデックスはバイト位置:")
 	for i, v := range s {
-		fmt.Printf("%d, %d\n", i, v)
+		fmt.Printf("i=%d, v=%v,", i, v)
 	}
-	// 0, 26085
-	// 3, 26412
-	// 6, 35486
+	// i=0, v=26085,i=3, v=26412,i=6, v=35486,
 }
