@@ -1,6 +1,5 @@
 title: "Goクイズ"
 author: tomtwinkle
-
 questions:
   # Q1: go test キャッシュ
   - text: |
@@ -18,7 +17,7 @@ questions:
 
       公式ドキュメント: https://pkg.go.dev/cmd/go#hdr-Testing_flags
     answer_code_ref: "code/q1_answer.go"
-
+    answer_code_play_ref: "https://go.dev/play/p/q3esYHlP6lG"
   # Q2: 型無し定数の精度
   - text: |
       変数を使わず、定数で64ビットの限界を超える巨大な数値を定義するとどうなる？
@@ -36,7 +35,7 @@ questions:
       公式仕様: https://go.dev/ref/spec#Constants
       Go Blog: https://go.dev/blog/constants
     answer_code_ref: "code/q2_answer.go"
-
+    answer_code_play_ref: "https://go.dev/play/p/vb4924cUKsl"
   # Q3: スライスの append と backing array
   - text: |
       以下のコードを実行したとき、b の値はどうなる？
@@ -53,7 +52,7 @@ questions:
 
       Go Blog (スライスの内部構造): https://go.dev/blog/slices-intro
     answer_code_ref: "code/q3_answer.go"
-
+    answer_code_play_ref: "https://go.dev/play/p/Sk6S3nWW0eh"
   # Q4: defer in loop
   - text: |
       以下のコードの問題点は？
@@ -72,7 +71,7 @@ questions:
       Go Blog (defer の仕様): https://go.dev/blog/defer-panic-and-recover
       公式仕様: https://go.dev/ref/spec#Defer_statements
     answer_code_ref: "code/q4_answer.go"
-
+    answer_code_play_ref: "https://go.dev/play/p/hM0PTI0iko7"
   # Q5: clear() on slice
   - text: |
       以下のコードの実行結果は？
@@ -91,7 +90,7 @@ questions:
       公式仕様 (clear): https://go.dev/ref/spec#Clear
       pkg.go.dev: https://pkg.go.dev/builtin#clear
     answer_code_ref: "code/q5_answer.go"
-
+    answer_code_play_ref: "https://go.dev/play/p/NkAkv-tUNKr"
   # Q6: named return + defer
   - text: |
       以下の関数を呼び出したとき、呼び出し元が受け取る値は？
@@ -110,7 +109,7 @@ questions:
       Go Blog (defer の仕様): https://go.dev/blog/defer-panic-and-recover
       公式仕様: https://go.dev/ref/spec#Return_statements
     answer_code_ref: "code/q6_answer.go"
-
+    answer_code_play_ref: "https://go.dev/play/p/973xesVL17U"
   # Q7: range over string
   - text: |
       以下のコードの出力はどれ？
@@ -129,7 +128,7 @@ questions:
       Go Blog (文字列と rune): https://go.dev/blog/strings
       公式仕様 (range): https://go.dev/ref/spec#For_range
     answer_code_ref: "code/q7_answer.go"
-
+    answer_code_play_ref: "https://go.dev/play/p/BVyqOwrA1tg"
   # Q8: t.Fatal in goroutine
   - text: |
       テスト goroutine ではない「別途起動した goroutine」の中で t.Fatal() を呼ぶとどうなる？
@@ -148,7 +147,7 @@ questions:
       pkg.go.dev (testing.T.Fatal): https://pkg.go.dev/testing#T.Fatal
       Go 1.24 リリースノート: https://go.dev/doc/go1.24
     answer_code_ref: "code/q8_answer.go"
-
+    answer_code_play_ref: "https://go.dev/play/p/uP543Km7JNK"
   # Q9: GOMAXPROCS in containers
   - text: |
       Docker や Kubernetes 上で Go アプリを動かす際、CPU のコア数を認識させて GOMAXPROCS を最適化するために、
@@ -166,7 +165,7 @@ questions:
       Go 1.25 リリースノート: https://go.dev/doc/go1.25
       pkg.go.dev (runtime.GOMAXPROCS): https://pkg.go.dev/runtime#GOMAXPROCS
     answer_code_ref: "code/q9_answer.go"
-
+    answer_code_play_ref: "https://go.dev/play/p/3Az4nyarOeI"
   # Q10: synctest isolation
   - text: |
       synctest.Run ブロックの「外側」で起動した goroutine と、「内側」で起動した goroutine 同士が
