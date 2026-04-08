@@ -6,6 +6,6 @@ import "fmt"
 
 func main() {
 	for i, v := range "日本語" {
-		fmt.Println(i, v) // ?
+		fmt.Printf("%d, %d\n", i, v) // ?
 	}
 }

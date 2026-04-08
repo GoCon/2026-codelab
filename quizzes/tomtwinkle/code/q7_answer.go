@@ -14,9 +14,9 @@ func main() {
 
 	fmt.Println("\nrange でのインデックスはバイト位置:")
 	for i, v := range s {
-		fmt.Printf("index=%d rune=%d (%c)\n", i, v, v)
+		fmt.Printf("%d, %d\n", i, v)
 	}
-	// index=0 rune=26085 (日)
-	// index=3 rune=26412 (本)
-	// index=6 rune=35486 (語)
+	// 0, 26085
+	// 3, 26412
+	// 6, 35486
 }

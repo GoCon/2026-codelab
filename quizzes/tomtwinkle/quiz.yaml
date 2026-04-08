@@ -121,12 +121,12 @@ questions:
 
   # Q7: range over string
   - text: |
-      for i, v := range "日本語" { fmt.Println(i, v) } と回したとき、出力はどれ？
+      for i, v := range "日本語" { fmt.Printf("%d, %d\n", i, v) } と回したとき、出力はどれ？
     question_code_ref: "code/q7_question.go"
     choices:
-      - "1 日\n2 本\n3 語"
-      - "0 26085\n3 26412\n6 35486"
-      - "0 230\n1 151\n2 165\n3 230\n4 156\n5 172\n6 232\n7 170\n8 158"
+      - "0, 26085\n1, 26412\n2, 35486"
+      - "0, 26085\n3, 26412\n6, 35486"
+      - "0, 230\n1, 151\n2, 165\n3, 230\n4, 156\n5, 172\n6, 232\n7, 170\n8, 158"
       - "コンパイルエラー"
     answer: 1
     explanation: |
