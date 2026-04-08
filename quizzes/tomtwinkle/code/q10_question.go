@@ -7,18 +7,16 @@ import (
 	"testing/synctest"
 )
 
-// synctest.Run の外側の goroutine と内側の goroutine が
-// channel で同期しようとするとどうなる？ (Go 1.24+)
 func TestSynctestIsolation(t *testing.T) {
 	ch := make(chan int)
 
 	// synctest の外側から channel に送信
 	go func() {
-		ch <- 42 // 外側の goroutine (リアルタイムで動く)
+		ch <- 42
 	}()
 
 	synctest.Run(func() {
-		// 内側で外側の channel を受信しようとすると...
+		// 内側で外側の channel を受信
 		v := <-ch // ?
 		t.Log("received:", v)
 	})

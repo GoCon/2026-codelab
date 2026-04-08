@@ -14,7 +14,7 @@ func badPattern(names []string) error {
 		if err != nil {
 			return err
 		}
-		defer f.Close() // ループが終わっても Close されない!
+		defer f.Close() // ループが終わっても Close されない
 		fmt.Println("opened:", f.Name())
 	}
 	return nil // ← ここで初めて全 defer が実行される

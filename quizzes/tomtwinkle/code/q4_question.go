@@ -13,10 +13,10 @@ func processFiles(names []string) error {
 		if err != nil {
 			return err
 		}
-		defer file.Close() // ← この defer に問題がある？
+		defer file.Close()
 		fmt.Println("opened:", file.Name())
 	}
-	return nil // ← ここに来るまで Close は呼ばれない
+	return nil
 }
 
 func main() {

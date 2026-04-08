@@ -16,7 +16,6 @@ questions:
       キャッシュを無効化する専用のフラグはなく、「このテストを1回実行する」という意味の -count=1 を指定するのが、キャッシュ回避の公式イディオムです。
       go clean -testcache でキャッシュ全消去も可能です。
 
-      Go Playground (動作確認): https://go.dev/play/p/JcMljv1IrGz
       公式ドキュメント: https://pkg.go.dev/cmd/go#hdr-Testing_flags
     answer_code_ref: "code/q1_answer.go"
 
@@ -36,9 +35,9 @@ questions:
       Goの「型無し定数」は、コンパイル時には少なくとも256ビットの精度を持ちます。
       変数に代入する段階になって初めて型の限界値のチェックが行われるため、定数同士の計算中であればオーバーフローしません。
 
-      Go Playground (動作確認): https://go.dev/play/p/-ulgXM1lDV5
       公式仕様: https://go.dev/ref/spec#Constants
       Go Blog: https://go.dev/blog/constants
+    answer_code_ref: "code/q2_answer.go"
 
   # Q3: スライスの append と backing array
   - text: |
@@ -55,8 +54,6 @@ questions:
       a にはまだ容量（cap）に余裕があるため、append しても新しい配列は作られず、裏側の同じ配列が使われます。
       そのため c への操作によって、b が参照しているメモリ領域も 2 に上書きされてしまいます。
 
-      Go Playground (問題コード): https://go.dev/play/p/g5TLbUBeovJ
-      Go Playground (解説コード): https://go.dev/play/p/Sk6S3nWW0eh
       Go Blog (スライスの内部構造): https://go.dev/blog/slices-intro
     answer_code_ref: "code/q3_answer.go"
 
@@ -76,8 +73,6 @@ questions:
       ループの中で defer を大量に呼ぶと、関数が終わるまで一切クローズされず、OSのリソース制限に引っかかってパニックになることがあります。
       解決策はループ本体を別関数に切り出すことです。
 
-      Go Playground (問題コード): https://go.dev/play/p/vMa3Tu_NwUx
-      Go Playground (正しい実装): https://go.dev/play/p/SFlCpLx8sxr
       Go Blog (defer の仕様): https://go.dev/blog/defer-panic-and-recover
       公式仕様: https://go.dev/ref/spec#Defer_statements
     answer_code_ref: "code/q4_answer.go"
@@ -100,8 +95,6 @@ questions:
       マップに使うと要素を空（len=0）にしますが、スライスに使うと長さ（len）と容量（cap）はそのままに、全要素を「ゼロ値」に上書きします。
       要素自体が消えるわけではありません。
 
-      Go Playground (問題コード): https://go.dev/play/p/KISUj_jXFnc
-      Go Playground (解説コード): https://go.dev/play/p/NkAkv-tUNKr
       公式仕様 (clear): https://go.dev/ref/spec#Clear
       pkg.go.dev: https://pkg.go.dev/builtin#clear
     answer_code_ref: "code/q5_answer.go"
@@ -122,8 +115,6 @@ questions:
       return 1 が実行されると、まず変数 n に 1 が代入され、その後に defer が実行されて n が 2 になり、それが返されます。
       実行順序: return 1 → n=1 代入 → defer で n++ → n=2 が返る
 
-      Go Playground (問題コード): https://go.dev/play/p/DsJwhX19XX7
-      Go Playground (解説コード): https://go.dev/play/p/xy0OpQBBbIp
       Go Blog (defer の仕様): https://go.dev/blog/defer-panic-and-recover
       公式仕様: https://go.dev/ref/spec#Return_statements
     answer_code_ref: "code/q6_answer.go"
@@ -143,8 +134,6 @@ questions:
       「日」(U+65E5=26085) は index=0、「本」(U+672C=26412) は index=3、「語」(U+8A9E=35486) は index=6 から始まります。
       各漢字は UTF-8 で 3 バイトです。
 
-      Go Playground (問題コード): https://go.dev/play/p/tCACPhRae8w
-      Go Playground (解説コード): https://go.dev/play/p/Gyjpj7XArM8
       Go Blog (文字列と rune): https://go.dev/blog/strings
       公式仕様 (range): https://go.dev/ref/spec#For_range
     answer_code_ref: "code/q7_answer.go"
@@ -155,7 +144,7 @@ questions:
     question_code_ref: "code/q8_question.go"
     choices:
       - "テストが正しく終了し、失敗としてマークされる"
-      - "メインテストがタイムアウトするまで止まらなくなる"
+      - "テストがタイムアウトするまで止まらなくなる"
       - "panic になりプロセスがクラッシュする"
       - "何も起こらずテストは成功扱いになる"
     answer: 1
@@ -182,7 +171,6 @@ questions:
       長年 Uber の automaxprocs を入れるのが Kubernetes 時代の定石でしたが、
       Go 1.25 からランタイムがコンテナの CPU 制限（cgroup CPU quota）を自動検知するようになったため、完全に不要になりました。
 
-      Go Playground (解説コード): https://go.dev/play/p/8DWAH50FnGF
       Go 1.25 リリースノート: https://go.dev/doc/go1.25
       pkg.go.dev (runtime.GOMAXPROCS): https://pkg.go.dev/runtime#GOMAXPROCS
     answer_code_ref: "code/q9_answer.go"
@@ -201,7 +189,6 @@ questions:
     explanation: |
       synctest は独自の仮想時計とスケジューラ内で隔離されて動くため、リアルタイムで動く通常の goroutine や本物のネットワーク I/O と直接的な同期通信を行おうとすると、テストの決定性が壊れるためエラーとなります。
 
-      Go Playground (問題コード): https://go.dev/play/p/th7XHYIo4Oj
       pkg.go.dev (testing/synctest): https://pkg.go.dev/testing/synctest
       Go Blog (synctest): https://go.dev/blog/synctest
       Go 1.24 リリースノート: https://go.dev/doc/go1.24
