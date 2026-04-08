@@ -21,7 +21,7 @@
     .choices li.disabled { pointer-events: none; }
     .result { margin-top: 1rem; display: none; }
     .result.show { display: block; }
-    .explanation { padding: 1rem; border-radius: 6px; margin-bottom: 1rem; }
+    .explanation { padding: 1rem; border-radius: 6px; margin-bottom: 1rem; white-space: pre-line; }
     .explanation.correct { background: #e8f5e9; }
     .explanation.wrong { background: #ffebee; }
     .question-code { background: #263238; color: #eeffff; padding: 1rem; border-radius: 6px; overflow-x: auto; margin-bottom: 1rem; }
@@ -29,6 +29,9 @@
     .answer-code { background: #263238; color: #eeffff; padding: 1rem; border-radius: 6px; overflow-x: auto; display: none; }
     .answer-code.show { display: block; }
     .answer-code pre { margin: 0; font-family: "SF Mono", "Fira Code", monospace; font-size: 0.9rem; }
+    .playground-link { margin-top: 1rem; word-break: break-all; }
+    .playground-link a { color: #1565c0; text-decoration: none; }
+    .playground-link a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -48,7 +51,10 @@
         {{end}}
       </ul>
       <div class="result">
-        <div class="explanation">{{$q.Explanation}}</div>
+        <div class="explanation">{{$q.ExplanationHTML}}</div>
+        {{if $q.AnswerCodePlayRef}}
+        <p class="playground-link">Go Playground: <a href="{{$q.AnswerCodePlayRef}}" target="_blank" rel="noopener noreferrer">{{$q.AnswerCodePlayRef}}</a></p>
+        {{end}}
         {{if $q.AnswerCode}}
         <div class="answer-code"><pre>{{$q.AnswerCode}}</pre></div>
         {{end}}

@@ -42,6 +42,20 @@ YAML やコードファイルを編集した後、ブラウザをリロードす
 
 クイズが完成したら、自分のユーザーネームのディレクトリのみを含む PR を作成してください。
 
+### Playground URL を埋め込む
+
+answer コードを Go Playground に反映して `answer_code_play_ref` を自動更新したいときは、次を実行してください。
+
+```sh
+go run ./scripts/sync_answer_code_play_refs
+```
+
+特定のクイズだけ更新したい場合は、ディレクトリまたは `quiz.yaml` を引数に渡せます。
+
+```sh
+go run ./scripts/sync_answer_code_play_refs quizzes/<your-username>
+```
+
 ## クイズの書き方
 
 ### ディレクトリ構成
@@ -98,3 +112,4 @@ questions:
 | `answer` | o | 正解の index (0-indexed: 0 が最初の選択肢) |
 | `explanation` | o | 解説 (正解・不正解どちらでも表示されます) |
 | `answer_code_ref` | | 正解時のみ表示するコードファイル (quiz.yaml からの相対パス) |
+| `answer_code_play_ref` | | Go Playground 上の answer コード URL (`go run ./scripts/sync_answer_code_play_refs` で自動更新) |

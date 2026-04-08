@@ -2,7 +2,6 @@
 title: "Quiz Title"
 # 作成者の GitHub ユーザーネーム (setup.sh で自動設定されます)
 author: sivchari
-
 questions:
   # --- パターン 1: テキストのみの問題 ---
   - # 問題文
@@ -19,7 +18,7 @@ questions:
     explanation: "len() は Go の組み込み関数で、スライス、マップ、文字列などの長さを返します。"
     # 正解時に表示するコードファイル (quiz.yaml からの相対パス、省略可)
     answer_code_ref: "code/q1.go"
-
+    answer_code_play_ref: "https://go.dev/play/p/qOpk5q5YP0p"
   # --- パターン 2: コードを読ませる問題 ---
   - # 問題文
     text: "このコードの出力は何？"
@@ -37,3 +36,4 @@ questions:
     explanation: "len() は文字列のバイト数を返します。ASCII 文字のみの場合は文字数と一致します。"
     # 正解時に表示するコードファイル (省略可)
     answer_code_ref: "code/q2_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/Z5ijdRZ1kQ1"
