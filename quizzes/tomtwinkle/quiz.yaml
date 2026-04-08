@@ -21,9 +21,7 @@ questions:
 
   # Q2: 型無し定数の精度
   - text: |
-      変数を使わず、定数で
-        const max = 999999999999999999999
-      のように64ビットの限界を超える巨大な数値を定義するとどうなる？
+      変数を使わず、定数で64ビットの限界を超える巨大な数値を定義するとどうなる？
     question_code_ref: "code/q2_question.go"
     choices:
       - "オーバーフローでコンパイルエラー"
@@ -41,8 +39,7 @@ questions:
 
   # Q3: スライスの append と backing array
   - text: |
-      スライス a := make([]int, 0, 5) に要素を append して b := append(a, 1) を作成し、
-      さらに c := append(a, 2) を作成しました。b の値はどうなる？
+      以下のコードを実行したとき、b の値はどうなる？
     question_code_ref: "code/q3_question.go"
     choices:
       - "[1] のまま"
@@ -59,8 +56,7 @@ questions:
 
   # Q4: defer in loop
   - text: |
-      ループ内で file, err := os.Open(name) を開き、直後に defer file.Close() を書きました。
-      このコードの問題点は？
+      以下のコードの問題点は？
     question_code_ref: "code/q4_question.go"
     choices:
       - "ループごとにファイルが上書きされる"
@@ -80,9 +76,6 @@ questions:
   # Q5: clear() on slice
   - text: |
       以下のコードの実行結果は？
-        s := []int{1, 2, 3}
-        clear(s)
-        fmt.Println(len(s))
     question_code_ref: "code/q5_question.go"
     choices:
       - "0"
@@ -101,8 +94,7 @@ questions:
 
   # Q6: named return + defer
   - text: |
-      戻り値に名前を付けた関数 func f() (n int) の中で defer func() { n++ }() を定義し、
-      関数の最後で return 1 と書きました。呼び出し元が受け取る値は？
+      以下の関数を呼び出したとき、呼び出し元が受け取る値は？
     question_code_ref: "code/q6_question.go"
     choices:
       - "0"
@@ -121,7 +113,7 @@ questions:
 
   # Q7: range over string
   - text: |
-      for i, v := range "日本語" { fmt.Printf("i=%d v=%v,", i, v) } と回したとき、出力はどれ？
+      以下のコードの出力はどれ？
     question_code_ref: "code/q7_question.go"
     choices:
       - "i=0 v=26085,i=1 v=26412,i=2 v=35486,"
