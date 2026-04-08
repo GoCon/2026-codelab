@@ -121,12 +121,12 @@ questions:
 
   # Q7: range over string
   - text: |
-      for i, v := range "日本語" { fmt.Printf("i=%d, v=%v,", i, v) } と回したとき、出力はどれ？
+      for i, v := range "日本語" { fmt.Printf("i=%d v=%v,", i, v) } と回したとき、出力はどれ？
     question_code_ref: "code/q7_question.go"
     choices:
-      - "i=0, v=26085,i=1, v=26412,i=2, v=35486,"
-      - "i=0, v=26085,i=3, v=26412,i=6, v=35486,"
-      - "i=0, v=230,i=1, v=151,i=2, v=165,i=3, v=230,i=4, v=156,i=5, v=172,i=6, v=232,i=7, v=170,i=8, v=158,"
+      - "i=0 v=26085,i=1 v=26412,i=2 v=35486,"
+      - "i=0 v=26085,i=3 v=26412,i=6 v=35486,"
+      - "i=0 v=230,i=1 v=151,i=2 v=165,i=3 v=230,i=4 v=156,i=5 v=172,i=6 v=232,i=7 v=170,i=8 v=158,"
       - "コンパイルエラー"
     answer: 1
     explanation: |
