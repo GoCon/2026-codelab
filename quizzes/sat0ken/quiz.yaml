@@ -42,4 +42,28 @@ questions:
       LEDを光らせるには、ピンを出力モードであるmachine.PinOutputに設定する必要があります。
       公式ドキュメント: https://pkg.go.dev/github.com/tinygo-org/tinygo/src/machine#PinMode
     # 正解時に表示するコードファイル (省略可)
+    # answer_code_ref: "code/q3_question.go"
+
+  # Q3: 画面の色を変える
+  - # 問題文
+    text: |-
+      Gopher Badgeの画面の色を黒から赤に変えてみましょう。
+      color.RGBAでどのように指定すればよいでしょうか？
+
+      https://play.tinygo.org/
+    # 問題文に表示するコードファイル (quiz.yaml からの相対パス、省略可)
+    question_code_ref: "code/q2_code.go"
+    # 選択肢 (4 つ)
+    choices:
+      - "color.RGBA{0, 0, 0, 0}"
+      - "color.RGBA{255, 0, 0, 0}"
+      - "color.RGBA{255, 255, 0, 0}"
+      - "color.RGBA{255, 255, 255, 255}"
+    # 正解の index (0-indexed)
+    answer: 2
+    # 解説
+    explanation: |-
+      TinyGoでもimage/colorパッケージの使い方はGoと同じように、RGBAを指定します。
+      255, 0, 0, 0 を指定することでGopher Badgeの画面の色が黒から赤に変わります。
+    # 正解時に表示するコードファイル (省略可)
     # answer_code_ref: "code/q2_answer.go"
