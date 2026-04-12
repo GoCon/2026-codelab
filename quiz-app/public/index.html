@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoCon 2026 Quiz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/go.min.js"></script>
+  <style>
+    /* ---- Design tokens (GoCon 2026) ---- */
+    :root {
+      --primitive-black:      #333333;
+      --primitive-light-gray: #d5e1e8;
+      --primitive-dark-gray:  #798992;
+      --primitive-yellow:     #f4c928;
+      --primitive-cyan:       #55d3c2;
+      --primitive-blue:       #00c1e5;
+      --primitive-navy:       #103972;
+      --primitive-white:      #ffffff;
+      --primitive-light-blue: #edfcff;
+      --primitive-light-cyan: #eefffd;
+      --primitive-red:        #fd7045;
+
+      --surface-primary:        var(--primitive-white);
+      --surface-secondary:      var(--primitive-light-blue);
+      --surface-disabled:       var(--primitive-light-gray);
+      --surface-primary-dark:   var(--primitive-red);
+      --surface-secondary-dark: var(--primitive-navy);
+
+      --text-primary:   var(--primitive-black);
+      --text-secondary: var(--primitive-dark-gray);
+      --text-on-fill:   var(--primitive-white);
+      --text-accent:    var(--primitive-blue);
+      --text-accent2:   var(--primitive-red);
+
+      --radius-button:  999px;
+      --radius-objects: 16px;
+
+      --space-xxxs: 4px;
+      --space-xxs:  8px;
+      --space-xs:   16px;
+      --space-s:    24px;
+      --space-m:    40px;
+      --space-l:    80px;
+
+      --font-base:   "Noto Sans JP", sans-serif;
+      --font-accent: "Barlow", sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-base);
+      background: var(--surface-secondary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.75;
+    }
+
+    /* ---- Header (matches GoCon 2026 header) ---- */
+    .header {
+      position: fixed;
+      width: 100%;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 40px;
+      height: 81px;
+      background: var(--surface-primary);
+      box-shadow: 0 1px 0 var(--surface-disabled);
+      z-index: 1000;
+    }
+    .header-logo {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-xxs);
+      font-family: var(--font-accent);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primitive-navy);
+      text-decoration: none;
+      letter-spacing: 0.02em;
+    }
+    .header-logo .accent { color: var(--text-accent); }
+    .header-tagline {
+      font-family: var(--font-base);
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: var(--text-secondary);
+    }
+    #progress {
+      font-family: var(--font-accent);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primitive-navy);
+      letter-spacing: 0.04em;
+    }
+
+    /* ---- Main ---- */
+    .main-content { padding-top: 81px; }
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: var(--space-m) var(--space-xs);
+    }
+
+    /* ---- Card ---- */
+    .card {
+      background: var(--surface-primary);
+      border-radius: var(--radius-objects);
+      padding: var(--space-s);
+      box-shadow: 0 2px 12px rgba(16, 57, 114, 0.06);
+      margin-bottom: var(--space-xs);
+    }
+
+    /* ---- Chip (matches GoCon 2026 .chip) ---- */
+    .chip {
+      display: inline-block;
+      background: var(--surface-secondary-dark);
+      color: var(--text-on-fill);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: var(--space-xxxs) var(--space-xs);
+      border-radius: var(--radius-objects);
+      margin-bottom: var(--space-xxs);
+      letter-spacing: 0.05em;
+    }
+
+    #question-text {
+      font-size: 1rem;
+      line-height: 1.75;
+      white-space: pre-wrap;
+      color: var(--text-primary);
+      margin-top: var(--space-xxs);
+    }
+
+    /* ---- Code block ---- */
+    pre {
+      background: var(--surface-secondary);
+      border: 1px solid var(--surface-disabled);
+      border-left: 4px solid var(--text-accent);
+      border-radius: 8px;
+      padding: var(--space-xs);
+      overflow-x: auto;
+      margin-top: var(--space-xs);
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: var(--text-primary);
+    }
+    pre code.hljs {
+      background: transparent;
+      padding: 0;
+      font-size: inherit;
+      line-height: inherit;
+    }
+
+    /* ---- Choices ---- */
+    #choices {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xxs);
+      margin-top: var(--space-s);
+    }
+    .choice-btn {
+      appearance: none;
+      background: var(--surface-primary);
+      border: 2px solid var(--surface-disabled);
+      border-radius: var(--radius-objects);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-family: var(--font-base);
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 14px var(--space-xs);
+      text-align: left;
+      transition: border-color 160ms ease, background 160ms ease;
+      width: 100%;
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      height: auto;
+    }
+    .choice-btn:hover:not(:disabled) {
+      border-color: var(--text-accent);
+      background: var(--surface-secondary);
+    }
+    .choice-btn.correct {
+      border-color: var(--primitive-cyan);
+      background: var(--primitive-light-cyan);
+      color: #1a7a6e;
+    }
+    .choice-btn.incorrect {
+      border-color: var(--surface-primary-dark);
+      background: #fff4f1;
+      color: var(--surface-primary-dark);
+    }
+    .choice-btn:disabled { cursor: default; }
+
+    /* ---- Result ---- */
+    #result { display: none; }
+    #result-badge {
+      font-family: var(--font-accent);
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: var(--space-xxs);
+    }
+    #result-badge.correct { color: var(--primitive-cyan); }
+    #result-badge.incorrect { color: var(--surface-primary-dark); }
+    #explanation {
+      color: var(--text-secondary);
+      line-height: 1.75;
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+    }
+    #explanation a {
+      color: var(--text-accent);
+      text-decoration: none;
+      word-break: break-all;
+    }
+    #explanation a:hover { text-decoration: underline; }
+    #answer-code-section { display: none; margin-top: var(--space-xs); }
+    #answer-code-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    #play-link {
+      display: inline-block;
+      margin-top: var(--space-xxs);
+      font-size: 0.85rem;
+      color: var(--text-accent);
+      text-decoration: none;
+    }
+    #play-link:hover { text-decoration: underline; }
+
+    /* ---- Buttons (matches GoCon 2026 .c-button) ---- */
+    .c-button {
+      appearance: none;
+      width: 100%;
+      border: 2px solid transparent;
+      border-radius: var(--radius-button);
+      padding: var(--space-xs) 0;
+      background: var(--surface-primary-dark);
+      color: var(--text-on-fill);
+      font-family: var(--font-base);
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.75;
+      cursor: pointer;
+      display: block;
+      text-align: center;
+      transition: background-color 160ms ease, color 160ms ease,
+                  border-color 160ms ease, opacity 160ms ease;
+    }
+    .c-button:not(:disabled):hover { opacity: 0.88; }
+    .c-button[data-variant="secondary"] {
+      background: var(--surface-secondary-dark);
+    }
+    .c-button[data-variant="tertiary"] {
+      background: var(--surface-primary);
+      color: var(--text-primary);
+      border-color: var(--primitive-navy);
+    }
+    .c-button[data-variant="tertiary"]:hover {
+      background: var(--surface-secondary);
+      opacity: 1;
+    }
+    .c-button:disabled {
+      background: var(--surface-disabled);
+      color: var(--text-on-fill);
+      cursor: not-allowed;
+    }
+
+    #next-btn  { display: none; margin-top: var(--space-xs); }
+    #score-card { display: none; text-align: center; }
+    #score-label { color: var(--text-secondary); margin-bottom: var(--space-xxs); }
+    #score-value {
+      font-family: var(--font-accent);
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: var(--primitive-navy);
+      line-height: 1;
+      margin-bottom: var(--space-s);
+    }
+    #special-link-section {
+      display: none;
+      margin-bottom: var(--space-s);
+    }
+    #special-link-section p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-xxs);
+    }
+    #challenge-complete-section {
+      display: none;
+      margin-bottom: var(--space-s);
+      padding: var(--space-s);
+      background: linear-gradient(135deg, var(--primitive-navy), #1a5fa8);
+      border-radius: var(--radius-objects);
+      color: var(--text-on-fill);
+    }
+    #challenge-complete-section p {
+      font-size: 1rem;
+      margin-bottom: var(--space-xs);
+      line-height: 1.6;
+    }
+    .special-link {
+      display: inline-block;
+      background: var(--primitive-yellow);
+      color: var(--primitive-navy);
+      font-family: var(--font-accent);
+      font-size: 1rem;
+      font-weight: 700;
+      padding: var(--space-xs) var(--space-s);
+      border-radius: var(--radius-button);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      transition: opacity 160ms ease;
+      width: 100%;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    .special-link:hover { opacity: 0.88; }
+    #score-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xxs);
+      margin-top: var(--space-xs);
+    }
+
+    /* ---- Loading / Error ---- */
+    #loading {
+      text-align: center;
+      padding: var(--space-l);
+      color: var(--text-secondary);
+    }
+    .spinner {
+      display: inline-block;
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--surface-disabled);
+      border-top-color: var(--text-accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: var(--space-xs);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #error-msg {
+      display: none;
+      background: #fff4f1;
+      border: 1px solid var(--surface-primary-dark);
+      border-radius: var(--radius-objects);
+      color: var(--surface-primary-dark);
+      padding: var(--space-xs) var(--space-s);
+      margin-bottom: var(--space-xs);
+    }
+
+    /* ---- Footer (matches GoCon 2026 footer) ---- */
+    .footer-gradient {
+      width: 100%;
+      height: 8px;
+      background: linear-gradient(90deg, var(--primitive-blue), var(--primitive-cyan));
+    }
+    footer {
+      background: var(--surface-secondary);
+      padding: var(--space-s) var(--space-m);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid var(--surface-disabled);
+    }
+    .footer-copyright {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    @media (max-width: 768px) {
+      .header { padding: 4px var(--space-s); height: 56px; }
+      .header-tagline { display: none; }
+      .main-content { padding-top: 56px; }
+      main { padding: var(--space-s) var(--space-xs); }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-logo">
+      <span class="accent">Go</span>Con 2026 Quiz
+      <span class="header-tagline">Go の知識を試してみよう！</span>
+    </div>
+    <span id="progress"></span>
+  </header>
+
+  <div class="main-content">
+    <main>
+      <div id="loading">
+        <div class="spinner"></div>
+        <p>問題を読み込み中...</p>
+      </div>
+      <div id="error-msg"></div>
+
+      <div class="card" id="question-card" style="display:none">
+        <div class="chip" id="question-title"></div>
+        <div id="question-text"></div>
+        <pre id="code-block" style="display:none"><code class="language-go"></code></pre>
+        <div id="choices"></div>
+      </div>
+
+      <div class="card" id="result">
+        <div id="result-badge"></div>
+        <div id="explanation"></div>
+        <div id="answer-code-section">
+          <div id="answer-code-label">Answer</div>
+          <pre id="answer-code-block"><code class="language-go"></code></pre>
+          <a id="play-link" href="#" target="_blank" rel="noopener">▶ Go Playground で確認する</a>
+        </div>
+      </div>
+
+      <button class="c-button" id="next-btn">次の問題へ</button>
+
+      <div class="card" id="score-card">
+        <div id="score-label">クイズ終了！ あなたのスコア</div>
+        <div id="score-value"></div>
+        <div id="challenge-complete-section">
+          <p>チャレンジモード全問正解！<br>スペシャルページへの扉が開かれました</p>
+          <a class="special-link" href="https://example.com" target="_blank" rel="noopener noreferrer">
+            スペシャルページへ進む
+          </a>
+        </div>
+        <div id="special-link-section">
+          <p>全問正解！ スペシャルページへどうぞ</p>
+          <a class="special-link" href="https://example.com" target="_blank" rel="noopener noreferrer">
+            スペシャルページへ
+          </a>
+        </div>
+        <div id="score-actions">
+          <button class="c-button" id="restart-btn">もう一度チャレンジ</button>
+          <button class="c-button" data-variant="tertiary" id="challenge-btn">全問異なる問題に挑戦</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="footer-gradient"></div>
+  <footer>
+    <p class="footer-copyright">© 2026 Go Conference Organizing Team</p>
+  </footer>
+
+  <script>
+    const loading            = document.getElementById('loading');
+    const errorMsg           = document.getElementById('error-msg');
+    const questionCard       = document.getElementById('question-card');
+    const questionTitle      = document.getElementById('question-title');
+    const questionText       = document.getElementById('question-text');
+    const codeBlock          = document.getElementById('code-block');
+    const choicesEl          = document.getElementById('choices');
+    const resultEl           = document.getElementById('result');
+    const resultBadge        = document.getElementById('result-badge');
+    const explanation        = document.getElementById('explanation');
+    const answerCodeSection  = document.getElementById('answer-code-section');
+    const answerCodeBlock    = document.getElementById('answer-code-block');
+    const playLink           = document.getElementById('play-link');
+    const nextBtn            = document.getElementById('next-btn');
+    const scoreCard          = document.getElementById('score-card');
+    const scoreValue         = document.getElementById('score-value');
+    const specialLinkSection     = document.getElementById('special-link-section');
+    const challengeCompleteSection = document.getElementById('challenge-complete-section');
+    const restartBtn         = document.getElementById('restart-btn');
+    const challengeBtn       = document.getElementById('challenge-btn');
+    const progressEl         = document.getElementById('progress');
+
+    const TOTAL = 5;
+
+    let session      = [];
+    let currentIndex = 0;
+    let correctCount = 0;
+    let pastCorrect  = 0;          // チャレンジで過去セッションの正解数累計
+    let seenIds      = new Set();  // セッションをまたいで既出問題を追跡
+    let isChallenge  = false;      // チャレンジモード中か
+
+    function escapeHTML(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function linkify(text) {
+      return escapeHTML(text).replace(
+        /(https?:\/\/[^\s]+)/g,
+        '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+      );
+    }
+
+    function updateProgress() {
+      if (session.length === 0) { progressEl.textContent = ''; return; }
+      if (isChallenge) {
+        const base = seenIds.size;
+        progressEl.textContent = `${base + currentIndex + 1} / ${base + session.length}`;
+      } else {
+        progressEl.textContent = `${currentIndex + 1} / ${session.length}`;
+      }
+    }
+
+    async function startSession(excludeIds = []) {
+      isChallenge = excludeIds.length > 0;
+      if (!isChallenge) pastCorrect = 0;
+      loading.style.display      = 'block';
+      errorMsg.style.display     = 'none';
+      questionCard.style.display = 'none';
+      resultEl.style.display     = 'none';
+      scoreCard.style.display    = 'none';
+      nextBtn.style.display      = 'none';
+      progressEl.textContent     = '';
+
+      try {
+        const url = excludeIds.length > 0
+          ? `/api/quiz/session?exclude=${excludeIds.join(',')}`
+          : '/api/quiz/session';
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('問題の取得に失敗しました');
+        const data = await res.json();
+        session      = data.quizzes;
+        currentIndex = 0;
+        correctCount = 0;
+        showQuestion();
+      } catch (e) {
+        loading.style.display  = 'none';
+        errorMsg.textContent   = e.message;
+        errorMsg.style.display = 'block';
+      }
+    }
+
+    function showQuestion() {
+      const q = session[currentIndex];
+      choicesEl.innerHTML = '';
+      resultEl.style.display          = 'none';
+      answerCodeSection.style.display = 'none';
+      nextBtn.style.display           = 'none';
+
+      questionTitle.textContent = q.title;
+      questionText.textContent  = q.text;
+
+      if (q.code) {
+        const codeEl = codeBlock.querySelector('code');
+        codeEl.textContent = q.code;
+        hljs.highlightElement(codeEl);
+        codeBlock.style.display = 'block';
+      } else {
+        codeBlock.style.display = 'none';
+      }
+
+      q.choices.forEach((choice, idx) => {
+        const btn = document.createElement('button');
+        btn.className   = 'choice-btn';
+        btn.textContent = choice;
+        btn.addEventListener('click', () => submitAnswer(q.id, idx, btn));
+        choicesEl.appendChild(btn);
+      });
+
+      updateProgress();
+      loading.style.display      = 'none';
+      questionCard.style.display = 'block';
+    }
+
+    async function submitAnswer(questionId, answerIdx, clickedBtn) {
+      document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+
+      try {
+        const res = await fetch('/api/quiz/answer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question_id: questionId, answer: answerIdx }),
+        });
+        if (!res.ok) throw new Error('回答の送信に失敗しました');
+        const data = await res.json();
+
+        if (data.correct) correctCount++;
+
+        clickedBtn.classList.add(data.correct ? 'correct' : 'incorrect');
+        resultBadge.textContent = data.correct ? '正解！' : '不正解...';
+        resultBadge.className   = data.correct ? 'correct' : 'incorrect';
+        explanation.innerHTML   = linkify(data.explanation);
+
+        if (data.correct && data.answer_code) {
+          const answerCodeEl = answerCodeBlock.querySelector('code');
+          answerCodeEl.textContent = data.answer_code;
+          hljs.highlightElement(answerCodeEl);
+          playLink.style.display = data.answer_code_play_ref ? 'inline-block' : 'none';
+          if (data.answer_code_play_ref) playLink.href = data.answer_code_play_ref;
+          answerCodeSection.style.display = 'block';
+        } else {
+          answerCodeSection.style.display = 'none';
+        }
+
+        resultEl.style.display = 'block';
+
+        const isLast = currentIndex === session.length - 1;
+        nextBtn.textContent   = isLast ? '結果を見る' : '次の問題へ';
+        nextBtn.style.display = 'block';
+      } catch (e) {
+        errorMsg.textContent   = e.message;
+        errorMsg.style.display = 'block';
+      }
+    }
+
+    nextBtn.addEventListener('click', () => {
+      const isLast = currentIndex === session.length - 1;
+      if (isLast) {
+        showScore();
+      } else {
+        currentIndex++;
+        showQuestion();
+      }
+    });
+
+    function showScore() {
+      session.forEach(q => seenIds.add(q.id));
+
+      questionCard.style.display = 'none';
+      resultEl.style.display     = 'none';
+      nextBtn.style.display      = 'none';
+      progressEl.textContent     = '';
+
+      const totalAnswered = isChallenge ? seenIds.size : session.length;
+      const totalCorrect  = isChallenge ? pastCorrect + correctCount : correctCount;
+      scoreValue.textContent = `${totalCorrect} / ${totalAnswered}`;
+
+      const allCorrect = correctCount === session.length;
+      challengeCompleteSection.style.display = (isChallenge && allCorrect) ? 'block' : 'none';
+      specialLinkSection.style.display       = (!isChallenge && allCorrect) ? 'block' : 'none';
+      challengeBtn.style.display             = (!isChallenge && allCorrect) || (isChallenge && !allCorrect) ? '' : 'none';
+
+      scoreCard.style.display = 'block';
+    }
+
+    restartBtn.addEventListener('click', () => {
+      seenIds.clear();
+      pastCorrect = 0;
+      startSession();
+    });
+
+    challengeBtn.addEventListener('click', () => {
+      pastCorrect += correctCount;
+      startSession([...seenIds]);
+    });
+
+    startSession();
+
+  </script>
+</body>
+</html>

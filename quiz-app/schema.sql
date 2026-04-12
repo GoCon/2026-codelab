@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS logs (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    question_id TEXT      NOT NULL,
+    is_correct  BOOLEAN   NOT NULL,
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
