@@ -1,0 +1,19 @@
+name = "quiz-app"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "quiz-db"
+database_id = "YOUR_D1_DATABASE_ID"  # terraform apply 後に設定
+
+[build]
+command = "make build"
+
+[env.staging]
+name = "quiz-app-staging"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "quiz-db"
+database_id = "YOUR_D1_DATABASE_ID"

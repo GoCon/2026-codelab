@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoCon 2026 Quiz - 管理画面</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/go.min.js"></script>
+  <style>
+    /* ---- Design tokens (GoCon 2026) ---- */
+    :root {
+      --primitive-black:      #333333;
+      --primitive-light-gray: #d5e1e8;
+      --primitive-dark-gray:  #798992;
+      --primitive-yellow:     #f4c928;
+      --primitive-cyan:       #55d3c2;
+      --primitive-blue:       #00c1e5;
+      --primitive-navy:       #103972;
+      --primitive-white:      #ffffff;
+      --primitive-light-blue: #edfcff;
+      --primitive-light-cyan: #eefffd;
+      --primitive-red:        #fd7045;
+
+      --surface-primary:        var(--primitive-white);
+      --surface-secondary:      var(--primitive-light-blue);
+      --surface-disabled:       var(--primitive-light-gray);
+      --surface-primary-dark:   var(--primitive-red);
+      --surface-secondary-dark: var(--primitive-navy);
+
+      --text-primary:   var(--primitive-black);
+      --text-secondary: var(--primitive-dark-gray);
+      --text-on-fill:   var(--primitive-white);
+      --text-accent:    var(--primitive-blue);
+      --text-accent2:   var(--primitive-red);
+
+      --radius-button:  999px;
+      --radius-objects: 16px;
+
+      --space-xxs: 8px;
+      --space-xs:  16px;
+      --space-s:   24px;
+      --space-m:   40px;
+      --space-l:   80px;
+
+      --font-base:   "Noto Sans JP", sans-serif;
+      --font-accent: "Barlow", sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-base);
+      background: var(--surface-secondary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.75;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      position: fixed;
+      width: 100%;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 40px;
+      height: 81px;
+      background: var(--surface-primary);
+      box-shadow: 0 1px 0 var(--surface-disabled);
+      z-index: 1000;
+    }
+    .header-logo {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-xxs);
+      font-family: var(--font-accent);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primitive-navy);
+      text-decoration: none;
+      letter-spacing: 0.02em;
+    }
+    .header-logo .accent { color: var(--text-accent); }
+    .header-tagline {
+      font-family: var(--font-base);
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: var(--text-secondary);
+    }
+    .header-badge {
+      font-family: var(--font-base);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-on-fill);
+      background: var(--surface-secondary-dark);
+      border-radius: var(--radius-objects);
+      padding: 2px 10px;
+      letter-spacing: 0.04em;
+    }
+
+    /* ---- Main ---- */
+    .main-content { padding-top: 81px; }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: var(--space-m) var(--space-xs);
+    }
+    .page-title {
+      font-family: var(--font-accent);
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--primitive-navy);
+      margin-bottom: var(--space-xs);
+      line-height: 1.5;
+    }
+
+    /* ---- Card ---- */
+    .card {
+      background: var(--surface-primary);
+      border-radius: var(--radius-objects);
+      box-shadow: 0 2px 12px rgba(16, 57, 114, 0.06);
+      overflow: hidden;
+      margin-bottom: var(--space-xs);
+    }
+
+    /* ---- Table ---- */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+    thead {
+      background: var(--surface-secondary);
+      border-bottom: 2px solid var(--surface-disabled);
+    }
+    th {
+      padding: var(--space-xs) var(--space-s);
+      text-align: left;
+      color: var(--primitive-navy);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    td {
+      padding: var(--space-xs) var(--space-s);
+      border-bottom: 1px solid var(--surface-secondary);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #f7fdff; }
+
+    /* ---- Progress bar ---- */
+    .bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xxs);
+    }
+    .bar-track {
+      background: var(--surface-disabled);
+      border-radius: 999px;
+      height: 8px;
+      width: 140px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--primitive-blue);
+      transition: width 0.4s ease;
+    }
+    .rate-text {
+      min-width: 52px;
+      text-align: right;
+      font-weight: 700;
+      color: var(--primitive-navy);
+      font-size: 0.9rem;
+    }
+
+    /* ---- Button ---- */
+    .c-button {
+      appearance: none;
+      border: 2px solid transparent;
+      border-radius: var(--radius-button);
+      padding: var(--space-xs) var(--space-s);
+      background: var(--surface-secondary-dark);
+      color: var(--text-on-fill);
+      font-family: var(--font-base);
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.75;
+      cursor: pointer;
+      display: inline-block;
+      text-align: center;
+      transition: opacity 160ms ease;
+    }
+    .c-button:not(:disabled):hover { opacity: 0.88; }
+
+    #refresh-btn {
+      display: none;
+    }
+
+    /* ---- Loading / Error ---- */
+    #loading {
+      text-align: center;
+      padding: var(--space-l);
+      color: var(--text-secondary);
+    }
+    .spinner {
+      display: inline-block;
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--surface-disabled);
+      border-top-color: var(--text-accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: var(--space-xs);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #error-msg {
+      display: none;
+      background: #fff4f1;
+      border: 1px solid var(--surface-primary-dark);
+      border-radius: var(--radius-objects);
+      color: var(--surface-primary-dark);
+      padding: var(--space-xs) var(--space-s);
+      margin-bottom: var(--space-xs);
+    }
+
+    .empty-msg {
+      text-align: center;
+      padding: var(--space-m);
+      color: var(--text-secondary);
+    }
+
+    /* ---- Clickable row ---- */
+    tbody tr { cursor: pointer; }
+
+    /* ---- Modal ---- */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(16, 57, 114, 0.45);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-xs);
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface-primary);
+      border-radius: var(--radius-objects);
+      box-shadow: 0 8px 40px rgba(16, 57, 114, 0.18);
+      max-width: 760px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: var(--space-s);
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: var(--space-xs);
+      right: var(--space-xs);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      line-height: 1;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .modal-close:hover { background: var(--surface-secondary); }
+    .modal-title {
+      font-family: var(--font-accent);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primitive-navy);
+      margin-bottom: var(--space-xs);
+    }
+    .modal-section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-top: var(--space-s);
+      margin-bottom: var(--space-xxs);
+    }
+    .modal-text {
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+      line-height: 1.75;
+    }
+    .modal-choices {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xxs);
+      margin-top: var(--space-xxs);
+    }
+    .modal-choice {
+      padding: 10px var(--space-xs);
+      border-radius: 8px;
+      border: 2px solid var(--surface-disabled);
+      font-size: 0.95rem;
+    }
+    .modal-choice.correct {
+      border-color: var(--primitive-cyan);
+      background: var(--primitive-light-cyan);
+      color: #1a7a6e;
+      font-weight: 700;
+    }
+    pre {
+      background: var(--surface-secondary);
+      border: 1px solid var(--surface-disabled);
+      border-left: 4px solid var(--text-accent);
+      border-radius: 8px;
+      padding: var(--space-xs);
+      overflow-x: auto;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      margin-top: var(--space-xxs);
+    }
+    pre code.hljs {
+      background: transparent;
+      padding: 0;
+      font-size: inherit;
+    }
+
+    /* ---- Footer ---- */
+    .footer-gradient {
+      width: 100%;
+      height: 8px;
+      background: linear-gradient(90deg, var(--primitive-blue), var(--primitive-cyan));
+    }
+    footer {
+      background: var(--surface-secondary);
+      padding: var(--space-s) var(--space-m);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid var(--surface-disabled);
+    }
+    .footer-copyright {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    @media (max-width: 768px) {
+      .header { padding: 4px var(--space-s); height: 56px; }
+      .header-tagline { display: none; }
+      .main-content { padding-top: 56px; }
+      main { padding: var(--space-s) var(--space-xs); }
+      th, td { padding: var(--space-xxs) var(--space-xs); }
+      .bar-track { width: 80px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-logo">
+      <span class="accent">Go</span>Con 2026 Quiz
+      <span class="header-tagline">Go の知識を試してみよう！</span>
+    </div>
+    <span class="header-badge">管理画面</span>
+  </header>
+
+  <div class="main-content">
+    <main>
+      <h1 class="page-title">正答率集計</h1>
+
+      <div id="loading">
+        <div class="spinner"></div>
+        <p>データを読み込み中...</p>
+      </div>
+      <div id="error-msg"></div>
+
+      <div class="card" id="table-wrapper" style="display:none">
+        <table>
+          <thead>
+            <tr>
+              <th>問題ID</th>
+              <th>回答数</th>
+              <th>正解数</th>
+              <th colspan="2">正答率</th>
+            </tr>
+          </thead>
+          <tbody id="stats-body"></tbody>
+        </table>
+      </div>
+
+      <button class="c-button" id="refresh-btn">更新</button>
+    </main>
+  </div>
+
+  <div class="footer-gradient"></div>
+  <footer>
+    <p class="footer-copyright">© 2026 Go Conference Organizing Team</p>
+  </footer>
+
+  <!-- Question preview modal -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" id="modal">
+      <button class="modal-close" id="modal-close" aria-label="閉じる">✕</button>
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-section-label">問題文</div>
+      <div class="modal-text" id="modal-text"></div>
+      <div id="modal-question-code-wrap" style="display:none">
+        <div class="modal-section-label">問題コード</div>
+        <pre><code class="language-go" id="modal-question-code"></code></pre>
+      </div>
+      <div class="modal-section-label" style="margin-top:var(--space-s)">選択肢</div>
+      <ul class="modal-choices" id="modal-choices"></ul>
+      <div class="modal-section-label">解説</div>
+      <div class="modal-text" id="modal-explanation"></div>
+      <div id="modal-answer-code-wrap" style="display:none">
+        <div class="modal-section-label">解答コード</div>
+        <pre><code class="language-go" id="modal-answer-code"></code></pre>
+        <a id="modal-play-link" href="#" target="_blank" rel="noopener"
+           style="display:inline-block;margin-top:var(--space-xxs);font-size:0.85rem;color:var(--text-accent);text-decoration:none">
+          Go Playground で確認する
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const loading      = document.getElementById('loading');
+    const errorMsg     = document.getElementById('error-msg');
+    const tableWrapper = document.getElementById('table-wrapper');
+    const statsBody    = document.getElementById('stats-body');
+    const refreshBtn   = document.getElementById('refresh-btn');
+
+    const modalOverlay        = document.getElementById('modal-overlay');
+    const modalClose          = document.getElementById('modal-close');
+    const modalTitle          = document.getElementById('modal-title');
+    const modalText           = document.getElementById('modal-text');
+    const modalChoices        = document.getElementById('modal-choices');
+    const modalExplanation    = document.getElementById('modal-explanation');
+    const modalQCodeWrap      = document.getElementById('modal-question-code-wrap');
+    const modalQCode          = document.getElementById('modal-question-code');
+    const modalACodeWrap      = document.getElementById('modal-answer-code-wrap');
+    const modalACode          = document.getElementById('modal-answer-code');
+    const modalPlayLink       = document.getElementById('modal-play-link');
+
+    let allQuizzes = {};  // id → AdminQuizDetail
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function openModal(quiz) {
+      modalTitle.textContent = quiz.title;
+      modalText.textContent  = quiz.text;
+
+      if (quiz.question_code) {
+        modalQCode.textContent = quiz.question_code;
+        hljs.highlightElement(modalQCode);
+        modalQCodeWrap.style.display = 'block';
+      } else {
+        modalQCodeWrap.style.display = 'none';
+      }
+
+      modalChoices.innerHTML = '';
+      quiz.choices.forEach((c, i) => {
+        const li = document.createElement('li');
+        li.className = 'modal-choice' + (i === quiz.answer ? ' correct' : '');
+        li.textContent = c;
+        modalChoices.appendChild(li);
+      });
+
+      modalExplanation.textContent = quiz.explanation;
+
+      if (quiz.answer_code) {
+        modalACode.textContent = quiz.answer_code;
+        hljs.highlightElement(modalACode);
+        modalACodeWrap.style.display = 'block';
+        if (quiz.answer_code_play_ref) {
+          modalPlayLink.href = quiz.answer_code_play_ref;
+          modalPlayLink.style.display = 'inline-block';
+        } else {
+          modalPlayLink.style.display = 'none';
+        }
+      } else {
+        modalACodeWrap.style.display = 'none';
+      }
+
+      modalOverlay.classList.add('open');
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove('open');
+    }
+
+    modalClose.addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    async function loadQuizzes() {
+      try {
+        const res = await fetch('/admin/api/quizzes');
+        if (!res.ok) return;
+        const list = await res.json();
+        list.forEach(q => { allQuizzes[q.id] = q; });
+      } catch (_) {}
+    }
+
+    async function loadStats() {
+      loading.style.display      = 'block';
+      errorMsg.style.display     = 'none';
+      tableWrapper.style.display = 'none';
+      statsBody.innerHTML        = '';
+
+      try {
+        const res = await fetch('/admin/api/stats');
+        if (!res.ok) throw new Error('データの取得に失敗しました');
+        const stats = await res.json();
+
+        if (!stats || stats.length === 0) {
+          statsBody.innerHTML = '<tr><td colspan="5" class="empty-msg">まだ回答データがありません</td></tr>';
+        } else {
+          stats.forEach(s => {
+            const rate = s.correct_rate.toFixed(1);
+            const tr   = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${escapeHtml(s.question_id)}</td>
+              <td>${s.total}</td>
+              <td>${s.correct}</td>
+              <td><span class="rate-text">${rate}%</span></td>
+              <td>
+                <div class="bar-wrap">
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width:${Math.min(rate, 100)}%"></div>
+                  </div>
+                </div>
+              </td>
+            `;
+            tr.addEventListener('click', () => {
+              const quiz = allQuizzes[s.question_id];
+              if (quiz) openModal(quiz);
+            });
+            statsBody.appendChild(tr);
+          });
+        }
+
+        loading.style.display      = 'none';
+        tableWrapper.style.display = 'block';
+        refreshBtn.style.display   = 'inline-block';
+      } catch (e) {
+        loading.style.display  = 'none';
+        errorMsg.textContent   = e.message;
+        errorMsg.style.display = 'block';
+        refreshBtn.style.display = 'inline-block';
+      }
+    }
+
+    refreshBtn.addEventListener('click', loadStats);
+    loadQuizzes().then(() => loadStats());
+  </script>
+</body>
+</html>

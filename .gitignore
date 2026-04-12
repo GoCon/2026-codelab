@@ -30,6 +30,10 @@ go.work.sum
 # Build binary
 /preview
 
+# Terraform
+quiz-app/terraform/.terraform/
+quiz-app/terraform/terraform.tfstate.backup
+
 # Editor/IDE
 # .idea/
 # .vscode/
