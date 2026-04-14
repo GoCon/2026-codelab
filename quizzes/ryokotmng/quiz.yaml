@@ -1,0 +1,39 @@
+# クイズのタイトル
+title: "Quiz Title"
+# 作成者の GitHub ユーザーネーム (setup.sh で自動設定されます)
+author: ryokotmng
+
+questions:
+  # --- パターン 1: テキストのみの問題 ---
+  # - # 問題文
+  #   text: "Go でスライスの長さを取得する組み込み関数は？"
+  #   # 選択肢 (4 つ)
+  #   choices:
+  #     - "size()"
+  #     - "count()"
+  #     - "len()"
+  #     - "length()"
+  #   # 正解の index (0-indexed: 0 が最初の選択肢)
+  #   answer: 2
+  #   # 解説 (正解・不正解どちらでも表示されます)
+  #   explanation: "len() は Go の組み込み関数で、スライス、マップ、文字列などの長さを返します。"
+  #   # 正解時に表示するコードファイル (quiz.yaml からの相対パス、省略可)
+  #   answer_code_ref: "code/q1.go"
+
+  # --- パターン 2: コードを読ませる問題 ---
+  - # 問題文
+    text: "このコードの出力は何？"
+    # 問題文に表示するコードファイル (quiz.yaml からの相対パス、省略可)
+    question_code_ref: "code/q1.go"
+    # 選択肢 (4 つ)
+    choices:
+      - "[1 2 3]"
+      - "[1 2 99]"
+      - "[99 2 3]"
+      - "[1 2 3 99]"
+    # 正解の index (0-indexed)
+    answer: 1
+    # 解説
+    explanation: "b := a[:2] はコピーではなく同じ配列を参照するスライス。append がキャパシティ内（cap=3）なので新しい配列を確保せず、a[2] を 99 で上書きしてしまう。"
+    # 正解時に表示するコードファイル (省略可)
+    # answer_code_ref: "code/q2_answer.go"
