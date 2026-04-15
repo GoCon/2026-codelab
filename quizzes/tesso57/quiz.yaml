@@ -1,0 +1,98 @@
+# クイズのタイトル
+title: "Goクイズ"
+# 作成者の GitHub ユーザーネーム (setup.sh で自動設定されます)
+author: tesso57
+questions:
+  # Q1: Stringer の無限再帰
+  - text: "このコードの挙動はどれ？"
+    question_code_ref: "code/q1_question.go"
+    choices:
+      - "Name: Go"
+      - "Name: Name: Go"
+      - "スタックオーバーフローで runtime error"
+      - "コンパイルエラー"
+    answer: 2
+    explanation: |
+      %v は Stringer interface を実装している型に対して String() を呼びます。
+      String() の中で fmt.Sprintf("%v", n) を使うと、再び String() が呼ばれて無限再帰になります。
+      回避策は string(n) にキャストすることです。
+    answer_code_ref: "code/q1_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/jmW7kd-T0UB"
+  # Q2: fmt verb 逆引き
+  - text: |
+      fmt.Printf("????", u) の出力が main.User{Name:"Gopher", Age:10} になるとき、
+      ???? に入るのはどれ？
+    question_code_ref: "code/q2_question.go"
+    choices:
+      - "%v"
+      - "%+v"
+      - "%#v"
+      - "%s"
+    answer: 2
+    explanation: |
+      %v は {Gopher 10}、%+v はフィールド名付きの {Name:Gopher Age:10}、
+      %#v は Go の構文そのままの main.User{Name:"Gopher", Age:10} を出力します。
+      %#v はパッケージ名・型名・フィールド名・値の引用符まで含むので、デバッグ時に型情報まで確認したいときに便利です。
+    answer_code_ref: "code/q2_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/8nztK-oSFWT"
+  # Q3: nil map の読み書き非対称
+  - text: "このコードの挙動はどれ？"
+    question_code_ref: "code/q3_question.go"
+    choices:
+      - "0 を出力した後、正常終了"
+      - "0 を出力した後、panic"
+      - "1行目の fmt.Println の時点で panic"
+      - "コンパイルエラー"
+    answer: 1
+    explanation: |
+      nil map は読み取り時にゼロ値を返しますが、書き込み時には panic します。
+      var m map[string]int は nil で初期化され、m["hello"] の読み取りは int のゼロ値 0 を返します。
+      しかし m["hello"] = 1 の書き込みで panic: assignment to entry in nil map が発生します。
+      make(map[string]int) で初期化することで回避できます。
+    answer_code_ref: "code/q3_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/xL4MGI0wqHP"
+  # Q4: map のキーにできる型
+  - text: "Go の map のキーとして使えない型はどれ？"
+    choices:
+      - "string"
+      - "int"
+      - "[2]int"
+      - "[]int"
+    answer: 3
+    explanation: |
+      map のキーには == と != で比較できる comparable な型だけが使えます。
+      string、int、配列は比較可能ですが、slice は比較できないため map のキーにできません。
+      同じ理由で map や関数もキーにできません。
+    answer_code_ref: "code/q4_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/s0DAFLy5Ebh"
+  # Q5: %w は fmt.Errorf だけ
+  - text: |
+      errors.Is(err, io.EOF) が true になる err の作り方はどれ？
+    choices:
+      - 'err := fmt.Sprintf("wrap: %w", io.EOF)'
+      - 'err := fmt.Printf("wrap: %w", io.EOF)'
+      - 'err := fmt.Errorf("wrap: %w", io.EOF)'
+      - 'err := errors.New("wrap: io.EOF")'
+    answer: 2
+    explanation: |
+      %w が「元の error を wrap する」という特別な意味を持つのは fmt.Errorf だけです。
+      fmt.Sprintf や fmt.Printf で %w を使っても error wrapping にはなりません。
+      そのため errors.Is で元のエラーをたどれるのは fmt.Errorf("...%w...", err) の形だけです。
+    answer_code_ref: "code/q5_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/jeMAOIiETRh"
+  # Q6: map 要素は直接更新できない
+  - text: "このコードの挙動はどれ？"
+    question_code_ref: "code/q6_question.go"
+    choices:
+      - "11 に更新される"
+      - "新しい要素が追加される"
+      - "panic が発生する"
+      - "コンパイルエラー"
+    answer: 3
+    explanation: |
+      map の要素はアドレス可能ではないため、m["gopher"].Age = 11 のように構造体フィールドを直接更新できません。
+      map の再配置で要素のアドレスが変わりうるためです。
+      一度ローカル変数に取り出して更新し、m["gopher"] = u のように代入し直す必要があります。
+      あるいは map[string]*User のようにポインタを持たせる設計にする方法もあります。
+    answer_code_ref: "code/q6_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/ESlQsu20rXB"
