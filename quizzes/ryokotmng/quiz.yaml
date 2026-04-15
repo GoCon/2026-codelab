@@ -24,7 +24,7 @@ questions:
   - # 問題文
     text: "このコードの出力は何？"
     # 問題文に表示するコードファイル (quiz.yaml からの相対パス、省略可)
-    question_code_ref: "code/q1.go"
+    question_code_ref: "code/q1_slice.go"
     # 選択肢 (4 つ)
     choices:
       - "[1 2 3]"
@@ -35,5 +35,22 @@ questions:
     answer: 1
     # 解説
     explanation: "b := a[:2] はコピーではなく同じ配列を参照するスライス。append がキャパシティ内（cap=3）なので新しい配列を確保せず、a[2] を 99 で上書きしてしまう。"
+    # 正解時に表示するコードファイル (省略可)
+    # answer_code_ref: "code/q2_answer.go"
+
+  - # 問題文
+    text: "このコードの出力は何？"
+    # 問題文に表示するコードファイル (quiz.yaml からの相対パス、省略可)
+    question_code_ref: "code/q2_defer.go"
+    # 選択肢 (4 つ)
+    choices:
+      - "return: 42, defer: 42"
+      - "defer: 0, return: 42"
+      - "return: 42, defer: 0"
+      - "defer: 42, return: 42"
+    # 正解の index (0-indexed)
+    answer: 2
+    # 解説
+    explanation: "defer の引数は登録時点で評価される。defer fmt.Println(\"defer:\", x) が登録された時点で x=0 がコピーされる。defer の実行は return の後なので出力順は return: 42 → defer: 0。"
     # 正解時に表示するコードファイル (省略可)
     # answer_code_ref: "code/q2_answer.go"
