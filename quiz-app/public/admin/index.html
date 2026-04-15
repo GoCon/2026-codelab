@@ -134,6 +134,13 @@
       border-collapse: collapse;
       font-size: 0.95rem;
     }
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .stats-table { min-width: 560px; }
+    .quiz-list-table { min-width: 360px; }
     thead {
       background: var(--surface-secondary);
       border-bottom: 2px solid var(--surface-disabled);
@@ -199,8 +206,37 @@
     }
     .c-button:not(:disabled):hover { opacity: 0.88; }
 
+    .action-bar {
+      display: none;
+      gap: var(--space-xs);
+      flex-wrap: wrap;
+    }
     #refresh-btn {
       display: none;
+    }
+    .page-tabs {
+      display: flex;
+      gap: var(--space-xxs);
+      margin-bottom: var(--space-xs);
+      flex-wrap: wrap;
+    }
+    .page-tab {
+      appearance: none;
+      border: 2px solid var(--surface-disabled);
+      border-radius: 999px;
+      background: var(--surface-primary);
+      color: var(--primitive-navy);
+      cursor: pointer;
+      font-family: var(--font-base);
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 10px 18px;
+      transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+    }
+    .page-tab.active {
+      background: var(--surface-secondary-dark);
+      border-color: var(--surface-secondary-dark);
+      color: var(--text-on-fill);
     }
 
     /* ---- Loading / Error ---- */
@@ -240,33 +276,32 @@
     /* ---- Clickable row ---- */
     tbody tr { cursor: pointer; }
 
-    /* ---- Modal ---- */
+    /* ---- Side panel ---- */
     .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
       background: rgba(16, 57, 114, 0.45);
       z-index: 2000;
-      align-items: center;
-      justify-content: center;
-      padding: var(--space-xs);
+      align-items: flex-start;
+      justify-content: flex-start;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
     .modal-overlay.open { display: flex; }
     .modal {
       background: var(--surface-primary);
-      border-radius: var(--radius-objects);
       box-shadow: 0 8px 40px rgba(16, 57, 114, 0.18);
-      max-width: 760px;
-      width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
-      padding: var(--space-s);
+      width: min(760px, 100%);
+      min-height: 100dvh;
       position: relative;
+      overflow: visible;
     }
     .modal-close {
       position: absolute;
-      top: var(--space-xs);
-      right: var(--space-xs);
+      top: var(--space-s);
+      right: var(--space-s);
       background: none;
       border: none;
       cursor: pointer;
@@ -277,11 +312,22 @@
       border-radius: 8px;
     }
     .modal-close:hover { background: var(--surface-secondary); }
+    .panel-content {
+      min-height: 100dvh;
+      padding: var(--space-s);
+      padding-right: calc(var(--space-s) + 56px);
+    }
     .modal-title {
       font-family: var(--font-accent);
-      font-size: 1.1rem;
+      font-size: 1.35rem;
       font-weight: 700;
       color: var(--primitive-navy);
+      line-height: 1.4;
+      margin-bottom: var(--space-xxs);
+    }
+    .panel-selected-meta {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
       margin-bottom: var(--space-xs);
     }
     .modal-section-label {
@@ -298,24 +344,85 @@
       font-size: 0.95rem;
       line-height: 1.75;
     }
-    .modal-choices {
-      list-style: none;
+    .choice-list {
       display: flex;
       flex-direction: column;
       gap: var(--space-xxs);
       margin-top: var(--space-xxs);
     }
-    .modal-choice {
-      padding: 10px var(--space-xs);
-      border-radius: 8px;
+    .choice-btn {
+      appearance: none;
+      background: var(--surface-primary);
       border: 2px solid var(--surface-disabled);
+      border-radius: 12px;
+      color: var(--text-primary);
+      cursor: pointer;
+      font-family: var(--font-base);
       font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.6;
+      padding: 12px var(--space-xs);
+      text-align: left;
+      transition: border-color 160ms ease, background 160ms ease;
+      width: 100%;
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
-    .modal-choice.correct {
+    .choice-btn:hover:not(:disabled) {
+      border-color: var(--text-accent);
+      background: var(--surface-secondary);
+    }
+    .choice-btn.correct {
       border-color: var(--primitive-cyan);
       background: var(--primitive-light-cyan);
       color: #1a7a6e;
       font-weight: 700;
+    }
+    .choice-btn.incorrect {
+      border-color: var(--surface-primary-dark);
+      background: #fff4f1;
+      color: var(--surface-primary-dark);
+    }
+    .choice-btn:disabled {
+      cursor: default;
+    }
+    .result-card {
+      display: none;
+      margin-top: var(--space-s);
+      padding: var(--space-s);
+      background: var(--surface-secondary);
+      border: 1px solid var(--surface-disabled);
+      border-radius: 12px;
+    }
+    #modal-result-badge {
+      font-family: var(--font-accent);
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: var(--space-xxs);
+    }
+    #modal-result-badge.correct { color: var(--primitive-cyan); }
+    #modal-result-badge.incorrect { color: var(--surface-primary-dark); }
+    .answer-summary {
+      color: var(--primitive-navy);
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: var(--space-xs);
+    }
+    .modal-placeholder {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.75;
+    }
+    #modal-explanation a,
+    #modal-play-link {
+      color: var(--text-accent);
+      text-decoration: none;
+      word-break: break-all;
+    }
+    #modal-explanation a:hover,
+    #modal-play-link:hover {
+      text-decoration: underline;
     }
     pre {
       background: var(--surface-secondary);
@@ -360,6 +467,36 @@
       main { padding: var(--space-s) var(--space-xs); }
       th, td { padding: var(--space-xxs) var(--space-xs); }
       .bar-track { width: 80px; }
+      .action-bar { flex-direction: column; }
+      .page-tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+      .page-tab {
+        width: 100%;
+        padding: 12px 10px;
+        font-size: 0.9rem;
+      }
+      .modal { width: 100%; }
+      .panel-content {
+        min-height: 100dvh;
+        padding: var(--space-s) var(--space-xs);
+      }
+      .modal-title {
+        padding-right: 40px;
+        font-size: 1.15rem;
+      }
+      .panel-selected-meta,
+      .modal-text,
+      .choice-btn,
+      .answer-summary {
+        font-size: 0.9rem;
+      }
+      .quiz-list-table { min-width: 280px; }
+      .modal-close {
+        top: var(--space-xs);
+        right: var(--space-xs);
+      }
     }
   </style>
 </head>
@@ -375,7 +512,12 @@
 
   <div class="main-content">
     <main>
-      <h1 class="page-title">正答率集計</h1>
+      <h1 class="page-title">管理画面</h1>
+
+      <div class="page-tabs" role="tablist" aria-label="管理画面の表示切り替え">
+        <button class="page-tab active" id="stats-tab-btn" type="button" role="tab" aria-selected="true">正答率集計</button>
+        <button class="page-tab" id="quiz-list-tab-btn" type="button" role="tab" aria-selected="false">クイズ出題一覧</button>
+      </div>
 
       <div id="loading">
         <div class="spinner"></div>
@@ -384,20 +526,38 @@
       <div id="error-msg"></div>
 
       <div class="card" id="table-wrapper" style="display:none">
-        <table>
-          <thead>
-            <tr>
-              <th>問題ID</th>
-              <th>回答数</th>
-              <th>正解数</th>
-              <th colspan="2">正答率</th>
-            </tr>
-          </thead>
-          <tbody id="stats-body"></tbody>
-        </table>
+        <div class="table-scroll">
+          <table class="stats-table">
+            <thead>
+              <tr>
+                <th>問題ID</th>
+                <th>回答数</th>
+                <th>正解数</th>
+                <th colspan="2">正答率</th>
+              </tr>
+            </thead>
+            <tbody id="stats-body"></tbody>
+          </table>
+        </div>
       </div>
 
-      <button class="c-button" id="refresh-btn">更新</button>
+      <div class="card" id="quiz-list-wrapper" style="display:none">
+        <div class="table-scroll">
+          <table class="quiz-list-table">
+            <thead>
+              <tr>
+                <th>問題ID</th>
+                <th>タイトル</th>
+              </tr>
+            </thead>
+            <tbody id="quiz-list-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="action-bar" id="action-bar">
+        <button class="c-button" id="refresh-btn">更新</button>
+      </div>
     </main>
   </div>
 
@@ -406,52 +566,75 @@
     <p class="footer-copyright">© 2026 Go Conference Organizing Team</p>
   </footer>
 
-  <!-- Question preview modal -->
+  <!-- Question preview side panel -->
   <div class="modal-overlay" id="modal-overlay">
-    <div class="modal" id="modal">
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <button class="modal-close" id="modal-close" aria-label="閉じる">✕</button>
-      <div class="modal-title" id="modal-title"></div>
-      <div class="modal-section-label">問題文</div>
-      <div class="modal-text" id="modal-text"></div>
-      <div id="modal-question-code-wrap" style="display:none">
-        <div class="modal-section-label">問題コード</div>
-        <pre><code class="language-go" id="modal-question-code"></code></pre>
-      </div>
-      <div class="modal-section-label" style="margin-top:var(--space-s)">選択肢</div>
-      <ul class="modal-choices" id="modal-choices"></ul>
-      <div class="modal-section-label">解説</div>
-      <div class="modal-text" id="modal-explanation"></div>
-      <div id="modal-answer-code-wrap" style="display:none">
-        <div class="modal-section-label">解答コード</div>
-        <pre><code class="language-go" id="modal-answer-code"></code></pre>
-        <a id="modal-play-link" href="#" target="_blank" rel="noopener"
-           style="display:inline-block;margin-top:var(--space-xxs);font-size:0.85rem;color:var(--text-accent);text-decoration:none">
-          Go Playground で確認する
-        </a>
+      <div class="panel-content">
+        <div class="modal-title" id="modal-title">問題を選択してください</div>
+        <div class="panel-selected-meta" id="panel-selected-meta">一覧から問題を選ぶと詳細を表示します。</div>
+        <div class="modal-section-label">問題文</div>
+        <div class="modal-text modal-placeholder" id="modal-text">左の一覧から問題を選択してください。</div>
+        <div id="modal-question-code-wrap" style="display:none">
+          <div class="modal-section-label">問題コード</div>
+          <pre><code class="language-go" id="modal-question-code"></code></pre>
+        </div>
+        <div class="modal-section-label" style="margin-top:var(--space-s)">選択肢</div>
+        <div class="choice-list" id="modal-choices"></div>
+        <div class="result-card" id="modal-result">
+          <div id="modal-result-badge"></div>
+          <div class="answer-summary" id="modal-answer-summary"></div>
+          <div class="modal-section-label" style="margin-top:0">解説</div>
+          <div class="modal-text" id="modal-explanation"></div>
+          <div id="modal-answer-code-wrap" style="display:none">
+            <div class="modal-section-label">解答コード</div>
+            <pre id="modal-answer-code-block"><code class="language-go" id="modal-answer-code"></code></pre>
+            <a id="modal-play-link" href="#" target="_blank" rel="noopener"
+               style="display:none;margin-top:var(--space-xxs);font-size:0.85rem">
+              ▶ Go Playground で確認する
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    const loading      = document.getElementById('loading');
-    const errorMsg     = document.getElementById('error-msg');
-    const tableWrapper = document.getElementById('table-wrapper');
-    const statsBody    = document.getElementById('stats-body');
-    const refreshBtn   = document.getElementById('refresh-btn');
+    const loading           = document.getElementById('loading');
+    const errorMsg          = document.getElementById('error-msg');
+    const tableWrapper      = document.getElementById('table-wrapper');
+    const quizListWrapper   = document.getElementById('quiz-list-wrapper');
+    const statsBody         = document.getElementById('stats-body');
+    const quizListBody      = document.getElementById('quiz-list-body');
+    const actionBar         = document.getElementById('action-bar');
+    const refreshBtn        = document.getElementById('refresh-btn');
+    const statsTabBtn       = document.getElementById('stats-tab-btn');
+    const quizListTabBtn    = document.getElementById('quiz-list-tab-btn');
 
-    const modalOverlay        = document.getElementById('modal-overlay');
-    const modalClose          = document.getElementById('modal-close');
-    const modalTitle          = document.getElementById('modal-title');
-    const modalText           = document.getElementById('modal-text');
-    const modalChoices        = document.getElementById('modal-choices');
-    const modalExplanation    = document.getElementById('modal-explanation');
-    const modalQCodeWrap      = document.getElementById('modal-question-code-wrap');
-    const modalQCode          = document.getElementById('modal-question-code');
-    const modalACodeWrap      = document.getElementById('modal-answer-code-wrap');
-    const modalACode          = document.getElementById('modal-answer-code');
-    const modalPlayLink       = document.getElementById('modal-play-link');
+    const modalOverlay      = document.getElementById('modal-overlay');
+    const modalClose        = document.getElementById('modal-close');
+    const modalTitle        = document.getElementById('modal-title');
+    const panelSelectedMeta = document.getElementById('panel-selected-meta');
+    const modalText         = document.getElementById('modal-text');
+    const modalChoices      = document.getElementById('modal-choices');
+    const modalResult       = document.getElementById('modal-result');
+    const modalResultBadge  = document.getElementById('modal-result-badge');
+    const modalAnswerSummary = document.getElementById('modal-answer-summary');
+    const modalExplanation  = document.getElementById('modal-explanation');
+    const modalQCodeWrap    = document.getElementById('modal-question-code-wrap');
+    const modalQCode        = document.getElementById('modal-question-code');
+    const modalACodeWrap    = document.getElementById('modal-answer-code-wrap');
+    const modalACodeBlock   = document.getElementById('modal-answer-code-block');
+    const modalACode        = document.getElementById('modal-answer-code');
+    const modalPlayLink     = document.getElementById('modal-play-link');
 
-    let allQuizzes = {};  // id → AdminQuizDetail
+    let allQuizzes = {};     // id -> AdminQuizDetail
+    let quizOrder  = [];     // 表示順を保持
+    let statsList  = [];
+    let activeTab  = 'stats';
+    let selectedQuizId = '';
+    let selectedAnswerIndex = null;
+    let isLoading = false;
 
     function escapeHtml(str) {
       return str
@@ -460,113 +643,321 @@
         .replace(/>/g, '&gt;');
     }
 
-    function openModal(quiz) {
+    function linkify(text) {
+      return escapeHtml(text).replace(
+        /(https?:\/\/[^\s]+)/g,
+        '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+      );
+    }
+
+    function setHighlightedCode(el, code) {
+      el.textContent = code;
+      el.removeAttribute('data-highlighted');
+      el.classList.remove('hljs');
+      hljs.highlightElement(el);
+    }
+
+    function syncPageTabs() {
+      const isStatsTab = activeTab === 'stats';
+      statsTabBtn.classList.toggle('active', isStatsTab);
+      quizListTabBtn.classList.toggle('active', !isStatsTab);
+      statsTabBtn.setAttribute('aria-selected', String(isStatsTab));
+      quizListTabBtn.setAttribute('aria-selected', String(!isStatsTab));
+
+      if (isLoading) {
+        tableWrapper.style.display = 'none';
+        quizListWrapper.style.display = 'none';
+        return;
+      }
+
+      tableWrapper.style.display = isStatsTab ? 'block' : 'none';
+      quizListWrapper.style.display = isStatsTab ? 'none' : 'block';
+    }
+
+    function renderQuizList() {
+      quizListBody.innerHTML = '';
+      if (quizOrder.length === 0) {
+        quizListBody.innerHTML = '<tr><td colspan="2" class="empty-msg">表示できるクイズがありません</td></tr>';
+        return;
+      }
+
+      quizOrder.forEach(id => {
+        const quiz = allQuizzes[id];
+        if (!quiz) return;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(quiz.id)}</td>
+          <td>${escapeHtml(quiz.title)}</td>
+        `;
+        tr.addEventListener('click', () => openPanel(quiz.id));
+        quizListBody.appendChild(tr);
+      });
+    }
+
+    function renderStatsList() {
+      statsBody.innerHTML = '';
+
+      const statsByID = new Map(statsList.map(stat => [stat.question_id, stat]));
+      const renderedIDs = new Set();
+
+      if (quizOrder.length === 0) {
+        if (statsList.length === 0) {
+          statsBody.innerHTML = '<tr><td colspan="5" class="empty-msg">表示できるクイズがありません</td></tr>';
+          return;
+        }
+
+        statsList.forEach(stat => {
+          const tr = document.createElement('tr');
+          const rate = stat.correct_rate.toFixed(1);
+          tr.innerHTML = `
+            <td>${escapeHtml(stat.question_id)}</td>
+            <td>${stat.total}</td>
+            <td>${stat.correct}</td>
+            <td><span class="rate-text">${rate}%</span></td>
+            <td>
+              <div class="bar-wrap">
+                <div class="bar-track">
+                  <div class="bar-fill" style="width:${Math.min(rate, 100)}%"></div>
+                </div>
+              </div>
+            </td>
+          `;
+          if (allQuizzes[stat.question_id]) {
+            tr.addEventListener('click', () => openPanel(stat.question_id));
+          }
+          statsBody.appendChild(tr);
+        });
+        return;
+      }
+
+      quizOrder.forEach(id => {
+        const stat = statsByID.get(id) || { question_id: id, total: 0, correct: 0, correct_rate: 0 };
+        renderedIDs.add(id);
+
+        const rate = Number(stat.correct_rate).toFixed(1);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(id)}</td>
+          <td>${stat.total}</td>
+          <td>${stat.correct}</td>
+          <td><span class="rate-text">${rate}%</span></td>
+          <td>
+            <div class="bar-wrap">
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${Math.min(rate, 100)}%"></div>
+              </div>
+            </div>
+          </td>
+        `;
+        if (allQuizzes[id]) {
+          tr.addEventListener('click', () => openPanel(id));
+        }
+        statsBody.appendChild(tr);
+      });
+
+      statsList.forEach(stat => {
+        if (renderedIDs.has(stat.question_id)) return;
+
+        const rate = stat.correct_rate.toFixed(1);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(stat.question_id)}</td>
+          <td>${stat.total}</td>
+          <td>${stat.correct}</td>
+          <td><span class="rate-text">${rate}%</span></td>
+          <td>
+            <div class="bar-wrap">
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${Math.min(rate, 100)}%"></div>
+              </div>
+            </div>
+          </td>
+        `;
+        if (allQuizzes[stat.question_id]) {
+          tr.addEventListener('click', () => openPanel(stat.question_id));
+        }
+        statsBody.appendChild(tr);
+      });
+    }
+
+    function renderSelectedQuiz() {
+      const quiz = allQuizzes[selectedQuizId];
+      if (!quiz) {
+        modalTitle.textContent = '問題を選択してください';
+        panelSelectedMeta.textContent = '一覧から問題を選ぶと詳細を表示します。';
+        modalText.textContent = '左の一覧から問題を選択してください。';
+        modalText.classList.add('modal-placeholder');
+        modalChoices.innerHTML = '';
+        modalResult.style.display = 'none';
+        modalResultBadge.textContent = '';
+        modalResultBadge.className = '';
+        modalAnswerSummary.textContent = '';
+        modalExplanation.innerHTML = '';
+        modalQCodeWrap.style.display = 'none';
+        modalACodeWrap.style.display = 'none';
+        return;
+      }
+
+      const hasAnswered = Number.isInteger(selectedAnswerIndex);
+
       modalTitle.textContent = quiz.title;
-      modalText.textContent  = quiz.text;
+      panelSelectedMeta.textContent = hasAnswered
+        ? `${quiz.id} • ${selectedAnswerIndex === quiz.answer ? '正解' : '不正解'}`
+        : `${quiz.id} • 選択肢を選ぶと解答と解説を表示します`;
+      modalText.textContent = quiz.text;
+      modalText.classList.remove('modal-placeholder');
 
       if (quiz.question_code) {
-        modalQCode.textContent = quiz.question_code;
-        hljs.highlightElement(modalQCode);
+        setHighlightedCode(modalQCode, quiz.question_code);
         modalQCodeWrap.style.display = 'block';
       } else {
         modalQCodeWrap.style.display = 'none';
       }
 
       modalChoices.innerHTML = '';
-      quiz.choices.forEach((c, i) => {
-        const li = document.createElement('li');
-        li.className = 'modal-choice' + (i === quiz.answer ? ' correct' : '');
-        li.textContent = c;
-        modalChoices.appendChild(li);
+      quiz.choices.forEach((choice, i) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'choice-btn';
+        button.textContent = choice;
+
+        if (hasAnswered) {
+          button.disabled = true;
+          if (i === quiz.answer) {
+            button.classList.add('correct');
+          } else if (i === selectedAnswerIndex) {
+            button.classList.add('incorrect');
+          }
+        } else {
+          button.addEventListener('click', () => {
+            selectedAnswerIndex = i;
+            renderSelectedQuiz();
+          });
+        }
+
+        modalChoices.appendChild(button);
       });
 
-      modalExplanation.textContent = quiz.explanation;
+      if (!hasAnswered) {
+        modalResult.style.display = 'none';
+        modalResultBadge.textContent = '';
+        modalResultBadge.className = '';
+        modalAnswerSummary.textContent = '';
+        modalExplanation.innerHTML = '';
+        modalACodeWrap.style.display = 'none';
+        modalPlayLink.style.display = 'none';
+      } else {
+        modalResult.style.display = 'block';
+        modalResultBadge.textContent = selectedAnswerIndex === quiz.answer ? '正解！' : '不正解...';
+        modalResultBadge.className = selectedAnswerIndex === quiz.answer ? 'correct' : 'incorrect';
+        modalAnswerSummary.textContent = `正解: ${quiz.choices[quiz.answer]}`;
+        modalExplanation.innerHTML = linkify(quiz.explanation);
 
-      if (quiz.answer_code) {
-        modalACode.textContent = quiz.answer_code;
-        hljs.highlightElement(modalACode);
-        modalACodeWrap.style.display = 'block';
-        if (quiz.answer_code_play_ref) {
-          modalPlayLink.href = quiz.answer_code_play_ref;
-          modalPlayLink.style.display = 'inline-block';
+        if (quiz.answer_code || quiz.answer_code_play_ref) {
+          modalACodeWrap.style.display = 'block';
+          if (quiz.answer_code) {
+            setHighlightedCode(modalACode, quiz.answer_code);
+            modalACodeBlock.style.display = 'block';
+          } else {
+            modalACodeBlock.style.display = 'none';
+          }
+          if (quiz.answer_code_play_ref) {
+            modalPlayLink.href = quiz.answer_code_play_ref;
+            modalPlayLink.style.display = 'inline-block';
+          } else {
+            modalPlayLink.style.display = 'none';
+          }
         } else {
+          modalACodeWrap.style.display = 'none';
           modalPlayLink.style.display = 'none';
         }
-      } else {
-        modalACodeWrap.style.display = 'none';
       }
+    }
 
+    function openPanel(quizId) {
+      selectedQuizId = quizId;
+      selectedAnswerIndex = null;
+      renderSelectedQuiz();
       modalOverlay.classList.add('open');
     }
 
     function closeModal() {
+      selectedAnswerIndex = null;
       modalOverlay.classList.remove('open');
     }
 
     modalClose.addEventListener('click', closeModal);
     modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    statsTabBtn.addEventListener('click', () => {
+      activeTab = 'stats';
+      syncPageTabs();
+    });
+    quizListTabBtn.addEventListener('click', () => {
+      activeTab = 'quiz-list';
+      syncPageTabs();
+    });
 
     async function loadQuizzes() {
       try {
         const res = await fetch('/admin/api/quizzes');
         if (!res.ok) return;
         const list = await res.json();
-        list.forEach(q => { allQuizzes[q.id] = q; });
+        allQuizzes = {};
+        quizOrder = [];
+        list.forEach(q => {
+          allQuizzes[q.id] = q;
+          quizOrder.push(q.id);
+        });
+        renderQuizList();
+        renderStatsList();
+        actionBar.style.display = 'flex';
+        if (modalOverlay.classList.contains('open') && selectedQuizId) {
+          renderSelectedQuiz();
+        }
       } catch (_) {}
     }
 
     async function loadStats() {
+      isLoading = true;
       loading.style.display      = 'block';
       errorMsg.style.display     = 'none';
-      tableWrapper.style.display = 'none';
       statsBody.innerHTML        = '';
+      syncPageTabs();
 
       try {
         const res = await fetch('/admin/api/stats');
         if (!res.ok) throw new Error('データの取得に失敗しました');
         const stats = await res.json();
+        statsList = stats || [];
+        renderStatsList();
 
-        if (!stats || stats.length === 0) {
-          statsBody.innerHTML = '<tr><td colspan="5" class="empty-msg">まだ回答データがありません</td></tr>';
-        } else {
-          stats.forEach(s => {
-            const rate = s.correct_rate.toFixed(1);
-            const tr   = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${escapeHtml(s.question_id)}</td>
-              <td>${s.total}</td>
-              <td>${s.correct}</td>
-              <td><span class="rate-text">${rate}%</span></td>
-              <td>
-                <div class="bar-wrap">
-                  <div class="bar-track">
-                    <div class="bar-fill" style="width:${Math.min(rate, 100)}%"></div>
-                  </div>
-                </div>
-              </td>
-            `;
-            tr.addEventListener('click', () => {
-              const quiz = allQuizzes[s.question_id];
-              if (quiz) openModal(quiz);
-            });
-            statsBody.appendChild(tr);
-          });
-        }
-
+        isLoading = false;
         loading.style.display      = 'none';
-        tableWrapper.style.display = 'block';
+        actionBar.style.display    = 'flex';
         refreshBtn.style.display   = 'inline-block';
+        syncPageTabs();
       } catch (e) {
+        statsList = [];
+        renderStatsList();
+        isLoading = false;
         loading.style.display  = 'none';
         errorMsg.textContent   = e.message;
         errorMsg.style.display = 'block';
+        actionBar.style.display = 'flex';
         refreshBtn.style.display = 'inline-block';
+        syncPageTabs();
       }
     }
 
-    refreshBtn.addEventListener('click', loadStats);
-    loadQuizzes().then(() => loadStats());
+    async function refreshData() {
+      await loadQuizzes();
+      await loadStats();
+    }
+
+    refreshBtn.addEventListener('click', refreshData);
+    refreshData();
   </script>
 </body>
 </html>
