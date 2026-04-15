@@ -449,3 +449,96 @@
     - "[0 0 0 0 0 0 0 0 0 0 0 1 2 3 4 5 6 7 8 9]"
   answer: 3
   explanation: "make([]int, 10) は長さ10のスライスを作るため、ゼロ値で埋められた要素が10個入った状態になります。そこに append すると末尾に追加されるため、計20要素になります。空のスライスに append したい場合は make([]int, 0, 10) のように長さ0・容量10で初期化しましょう。"
+
+# tesso57 Q1
+- id: "tesso57_q1"
+  title: "Stringer の無限再帰"
+  text: "このコードの挙動はどれ？"
+  question_code_ref: "code/tesso57_q1_question.go"
+  choices:
+    - "Name: Go"
+    - "Name: Name: Go"
+    - "スタックオーバーフローで runtime error"
+    - "コンパイルエラー"
+  answer: 2
+  explanation: |
+    %v は Stringer interface を実装している型に対して String() を呼びます。
+    String() の中で fmt.Sprintf("%v", n) を使うと、再び String() が呼ばれて無限再帰になります。
+    回避策は string(n) にキャストすることです。
+  answer_code_ref: "code/tesso57_q1_answer.go"
+  answer_code_play_ref: "https://go.dev/play/p/jmW7kd-T0UB"
+
+# tesso57 Q2
+- id: "tesso57_q2"
+  title: "fmt verb 逆引き"
+  text: |
+    fmt.Printf("????", u) の出力が main.User{Name:"Gopher", Age:10} になるとき、
+    ???? に入るのはどれ？
+  question_code_ref: "code/tesso57_q2_question.go"
+  choices:
+    - "%v"
+    - "%+v"
+    - "%#v"
+    - "%s"
+  answer: 2
+  explanation: |
+    %v は {Gopher 10}、%+v はフィールド名付きの {Name:Gopher Age:10}、
+    %#v は Go の構文そのままの main.User{Name:"Gopher", Age:10} を出力します。
+    %#v はパッケージ名・型名・フィールド名・値の引用符まで含むので、デバッグ時に型情報まで確認したいときに便利です。
+  answer_code_ref: "code/tesso57_q2_answer.go"
+  answer_code_play_ref: "https://go.dev/play/p/8nztK-oSFWT"
+
+# tesso57 Q3
+- id: "tesso57_q3"
+  title: "nil map の読み書き非対称"
+  text: "このコードの挙動はどれ？"
+  question_code_ref: "code/tesso57_q3_question.go"
+  choices:
+    - "0 を出力した後、正常終了"
+    - "0 を出力した後、panic"
+    - "1行目の fmt.Println の時点で panic"
+    - "コンパイルエラー"
+  answer: 1
+  explanation: |
+    nil map は読み取り時にゼロ値を返しますが、書き込み時には panic します。
+    var m map[string]int は nil で初期化され、m["hello"] の読み取りは int のゼロ値 0 を返します。
+    しかし m["hello"] = 1 の書き込みで panic: assignment to entry in nil map が発生します。
+    make(map[string]int) で初期化することで回避できます。
+  answer_code_ref: "code/tesso57_q3_answer.go"
+  answer_code_play_ref: "https://go.dev/play/p/xL4MGI0wqHP"
+
+# tesso57 Q4
+- id: "tesso57_q4"
+  title: "map のキーにできる型"
+  text: "Go の map のキーとして使えない型はどれ？"
+  choices:
+    - "string"
+    - "int"
+    - "[2]int"
+    - "[]int"
+  answer: 3
+  explanation: |
+    map のキーには == と != で比較できる comparable な型だけが使えます。
+    string、int、配列は比較可能ですが、slice は比較できないため map のキーにできません。
+    同じ理由で map や関数もキーにできません。
+  answer_code_ref: "code/tesso57_q4_answer.go"
+  answer_code_play_ref: "https://go.dev/play/p/s0DAFLy5Ebh"
+
+# tesso57 Q5
+- id: "tesso57_q5"
+  title: "map 要素は直接更新できない"
+  text: "このコードの挙動はどれ？"
+  question_code_ref: "code/tesso57_q5_question.go"
+  choices:
+    - "11 に更新される"
+    - "新しい要素が追加される"
+    - "panic が発生する"
+    - "コンパイルエラー"
+  answer: 3
+  explanation: |
+    map の要素はアドレス可能ではないため、m["gopher"].Age = 11 のように構造体フィールドを直接更新できません。
+    map の再配置で要素のアドレスが変わりうるためです。
+    一度ローカル変数に取り出して更新し、m["gopher"] = u のように代入し直す必要があります。
+    あるいは map[string]*User のようにポインタを持たせる設計にする方法もあります。
+  answer_code_ref: "code/tesso57_q5_answer.go"
+  answer_code_play_ref: "https://go.dev/play/p/ESlQsu20rXB"
