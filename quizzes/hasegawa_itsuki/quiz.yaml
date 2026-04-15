@@ -1,0 +1,39 @@
+# クイズのタイトル
+title: "Quiz Title"
+# 作成者の GitHub ユーザーネーム (setup.sh で自動設定されます)
+author: hasegawa_itsuki
+
+questions:
+  # --- クイズ 1: Goのループ構文 ---
+  - # 問題文
+    text: "Goにおいて、繰り返し処理を実現するために用意されているものは次のうちどれですか？"
+    choices:
+      - "foreach と for"
+      - "for のみ"
+      - "for と while"
+      - "for, while, do-while"
+    answer: 1
+    explanation: "for のみです。while や do-while, foreach に相当する構文も for を使って表現します。ループ構文を for に一本化することで、誰が書いても同じようなコードになり、可読性・一貫性が高まります。"
+
+  # --- クイズ 2: GoマスコットGopherくんについて ---
+  - # 問題文
+    text: "Goのマスコットキャラクター「Gopher」は何の生き物をモチーフにしている？"
+    choices:
+      - "ビーバー"
+      - "プレーリードッグ"
+      - "ウォンバット"
+      - "ホリネズミ"
+    answer: 3
+    explanation: "Gopherは英語でホリネズミ（pocket gopher）を指します。Go のマスコットキャラクターはRenee French がデザインしたホリネズミがモチーフです。"
+
+  # --- クイズ 3: ポインタ渡しで値が変わるのはどれ？ ---
+  - # 問題文
+    text: "以下の A〜D のうち、関数を呼んだ後に msg の値が \"Original\" から\"Changed\" に変わるのはどれ？"
+    question_code_ref: "code/q3_question.go"
+    choices:
+      - "A. updateA(msg)"
+      - "B. updateB(&msg)"
+      - "C. updateC(&msg)"
+      - "D. updateD(&ptr)"
+    answer: 2
+    explanation: "A は値渡しなので msg は変わりません。B は *string のコピーを差し替えるだけで msg に影響しません。C は *s = \"Changed\" でポインタの指す先を直接書き換えるため msg が Changed になります。D は ptr の向き先を変えるだけで msg は不変です。"
