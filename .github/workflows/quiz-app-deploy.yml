@@ -12,8 +12,28 @@ permissions:
   contents: read
 
 jobs:
+  check-secrets:
+    name: Check required secrets
+    runs-on: ubuntu-latest
+    outputs:
+      available: ${{ steps.check.outputs.available }}
+    steps:
+      - name: Check Cloudflare secrets
+        id: check
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -n "$TOKEN" ]; then
+            echo "available=true" >> $GITHUB_OUTPUT
+          else
+            echo "available=false" >> $GITHUB_OUTPUT
+            echo "::notice::CLOUDFLARE_API_TOKEN が未設定のため Build & Deploy to Cloudflare Pages をスキップします"
+          fi
+
   deploy:
     name: Build & Deploy to Cloudflare Pages
+    needs: check-secrets
+    if: needs.check-secrets.outputs.available == 'true'
     runs-on: ubuntu-latest
 
     steps:
