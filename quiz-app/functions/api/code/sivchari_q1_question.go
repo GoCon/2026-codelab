@@ -5,6 +5,6 @@ package main
 import "fmt"
 
 func main() {
-	s := []int{1, 2, 3}
-	fmt.Println(len(s)) // 3
+	a := [...]int{0, 3: 3, 4, 1: 1}
+	fmt.Println(len(a), a)
 }
