@@ -4,7 +4,13 @@ package main
 
 import "fmt"
 
+const (
+	a = iota * 2
+	b
+	c = iota
+	d
+)
+
 func main() {
-	s := "hello"
-	fmt.Println(len(s))
+	fmt.Println(a, b, c, d)
 }

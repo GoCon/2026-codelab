@@ -3,37 +3,50 @@ title: "Quiz Title"
 # 作成者の GitHub ユーザーネーム (setup.sh で自動設定されます)
 author: sivchari
 questions:
-  # --- パターン 1: テキストのみの問題 ---
-  - # 問題文
-    text: "Go でスライスの長さを取得する組み込み関数は？"
-    # 選択肢 (4 つ)
+  # Q1: 配列リテラルのインデックス指定と [...]
+  - text: "このコードの出力は何？"
+    question_code_ref: "code/q1_question.go"
     choices:
-      - "size()"
-      - "count()"
-      - "len()"
-      - "length()"
-    # 正解の index (0-indexed: 0 が最初の選択肢)
-    answer: 2
-    # 解説 (正解・不正解どちらでも表示されます)
-    explanation: "len() は Go の組み込み関数で、スライス、マップ、文字列などの長さを返します。"
-    # 正解時に表示するコードファイル (quiz.yaml からの相対パス、省略可)
-    answer_code_ref: "code/q1.go"
-    answer_code_play_ref: "https://go.dev/play/p/qOpk5q5YP0p"
-  # --- パターン 2: コードを読ませる問題 ---
-  - # 問題文
-    text: "このコードの出力は何？"
-    # 問題文に表示するコードファイル (quiz.yaml からの相対パス、省略可)
-    question_code_ref: "code/q2_question.go"
-    # 選択肢 (4 つ)
-    choices:
-      - "5"
-      - "hello"
+      - "5 [0 1 0 3 4]"
+      - "4 [0 3 4 1]"
+      - "6 [0 1 0 3 4 0]"
       - "コンパイルエラー"
-      - "0"
-    # 正解の index (0-indexed)
     answer: 0
-    # 解説
-    explanation: "len() は文字列のバイト数を返します。ASCII 文字のみの場合は文字数と一致します。"
-    # 正解時に表示するコードファイル (省略可)
-    answer_code_ref: "code/q2_answer.go"
-    answer_code_play_ref: "https://go.dev/play/p/Z5ijdRZ1kQ1"
+    explanation: |
+      Go の配列リテラルでは、要素にインデックスを指定して初期化できます。
+      インデックス指定がない要素は、直前のインデックス + 1 の位置に配置されます。
+
+      この問題では:
+      - 0 → index 0
+      - 3:3 → index 3
+      - 4 → index 4 (直前の index 3 + 1)
+      - 1:1 → index 1
+
+      [...]T{} の長さは仕様で "The notation ... specifies an array length equal to the maximum element index plus one." と定められているため、max index 4 + 1 = 5 になります。
+      明示的に指定されなかった index 2 にはゼロ値が入ります。
+
+      公式仕様 (Array types): https://go.dev/ref/spec#Array_types
+      公式仕様 (Composite literals): https://go.dev/ref/spec#Composite_literals
+    answer_code_ref: "code/q1_answer.go"
+  # Q2: iota の継続と式の引き継ぎ
+  - text: "このコードの出力は何？"
+    question_code_ref: "code/q2_question.go"
+    choices:
+      - "0 2 0 1"
+      - "0 2 2 3"
+      - "0 2 0 3"
+      - "コンパイルエラー"
+    answer: 1
+    explanation: |
+      iota は const ブロック内で 0 から始まり、各行ごとに 1 ずつ増加します。
+      途中で `c = iota` と書き直しても iota はリセットされず、その行の位置 (2) がそのまま値になります。
+
+      - a = iota * 2: iota=0 → 0
+      - b: 式 iota*2 を引き継ぐ → iota=1 → 2
+      - c = iota: 新しい式。iota=2 → 2
+      - d: 式 iota を引き継ぐ → iota=3 → 3
+
+      b と c が同じ値 2 になるのがポイントです。
+      iota がリセットされるのは新しい const ブロックが始まったときだけです。
+
+      公式仕様 (Iota): https://go.dev/ref/spec#Iota
