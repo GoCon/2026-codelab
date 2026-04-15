@@ -102,39 +102,38 @@ func main() {
 	}
 
 	store := &inMemoryStore{}
+	newQuizHandler := func() *quizhandler.QuizHandler {
+		return &quizhandler.QuizHandler{
+			Quizzes:   quizzes,
+			CodeFiles: codeFiles,
+			DB:        store,
+		}
+	}
 
 	mux := http.NewServeMux()
+	mux.HandleFunc("OPTIONS /api/quiz/session", func(w http.ResponseWriter, r *http.Request) {
+		quizhandler.HandlePublicAPIPreflight(w, r)
+	})
 	mux.HandleFunc("GET /api/quiz/session", func(w http.ResponseWriter, r *http.Request) {
-		h := &quizhandler.QuizHandler{
-			Quizzes:   quizzes,
-			CodeFiles: codeFiles,
-			DB:        store,
-		}
-		h.GetSession(w, r)
+		quizhandler.SetPublicAPIHeaders(w)
+		newQuizHandler().GetSession(w, r)
+	})
+	mux.HandleFunc("OPTIONS /api/quiz", func(w http.ResponseWriter, r *http.Request) {
+		quizhandler.HandlePublicAPIPreflight(w, r)
 	})
 	mux.HandleFunc("GET /api/quiz", func(w http.ResponseWriter, r *http.Request) {
-		h := &quizhandler.QuizHandler{
-			Quizzes:   quizzes,
-			CodeFiles: codeFiles,
-			DB:        store,
-		}
-		h.GetQuiz(w, r)
+		quizhandler.SetPublicAPIHeaders(w)
+		newQuizHandler().GetQuiz(w, r)
+	})
+	mux.HandleFunc("OPTIONS /api/quiz/answer", func(w http.ResponseWriter, r *http.Request) {
+		quizhandler.HandlePublicAPIPreflight(w, r)
 	})
 	mux.HandleFunc("POST /api/quiz/answer", func(w http.ResponseWriter, r *http.Request) {
-		h := &quizhandler.QuizHandler{
-			Quizzes:   quizzes,
-			CodeFiles: codeFiles,
-			DB:        store,
-		}
-		h.PostAnswer(w, r)
+		quizhandler.SetPublicAPIHeaders(w)
+		newQuizHandler().PostAnswer(w, r)
 	})
 	mux.HandleFunc("GET /admin/api/quizzes", func(w http.ResponseWriter, r *http.Request) {
-		h := &quizhandler.QuizHandler{
-			Quizzes:   quizzes,
-			CodeFiles: codeFiles,
-			DB:        store,
-		}
-		h.GetAdminQuizzes(w, r)
+		newQuizHandler().GetAdminQuizzes(w, r)
 	})
 	mux.HandleFunc("GET /admin/api/stats", func(w http.ResponseWriter, r *http.Request) {
 		h := &quizhandler.StatsHandler{DB: store}

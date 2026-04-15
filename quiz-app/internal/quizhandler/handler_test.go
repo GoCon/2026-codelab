@@ -167,6 +167,39 @@ func decodeJSON[T any](t *testing.T, w *httptest.ResponseRecorder) T {
 	return v
 }
 
+func TestSetPublicAPIHeaders(t *testing.T) {
+	w := httptest.NewRecorder()
+
+	quizhandler.SetPublicAPIHeaders(w)
+
+	if got := w.Header().Get("Access-Control-Allow-Origin"); got != "*" {
+		t.Fatalf("Access-Control-Allow-Origin: got %q, want *", got)
+	}
+	if got := w.Header().Get("Access-Control-Allow-Methods"); got != "GET, POST, OPTIONS" {
+		t.Fatalf("Access-Control-Allow-Methods: got %q", got)
+	}
+	if got := w.Header().Get("Access-Control-Allow-Headers"); got != "Content-Type" {
+		t.Fatalf("Access-Control-Allow-Headers: got %q", got)
+	}
+}
+
+func TestHandlePublicAPIPreflight_OPTIONSReturns204(t *testing.T) {
+	req := httptest.NewRequest(http.MethodOptions, "/api/quiz/answer", nil)
+	w := httptest.NewRecorder()
+
+	handled := quizhandler.HandlePublicAPIPreflight(w, req)
+
+	if !handled {
+		t.Fatal("expected preflight request to be handled")
+	}
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("got %d, want %d", w.Code, http.StatusNoContent)
+	}
+	if got := w.Header().Get("Access-Control-Allow-Origin"); got != "*" {
+		t.Fatalf("Access-Control-Allow-Origin: got %q, want *", got)
+	}
+}
+
 // =========================================================================
 // GetQuiz
 // =========================================================================

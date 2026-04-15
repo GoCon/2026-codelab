@@ -600,6 +600,17 @@
   </div>
 
   <script>
+    function buildAdminAPIURL(path) {
+      let basePath = window.location.pathname;
+      if (basePath.endsWith('/index.html')) {
+        basePath = basePath.slice(0, -'/index.html'.length);
+      }
+      if (basePath.endsWith('/')) {
+        basePath = basePath.slice(0, -1);
+      }
+      return `${basePath}/api/${path}`;
+    }
+
     const loading           = document.getElementById('loading');
     const errorMsg          = document.getElementById('error-msg');
     const tableWrapper      = document.getElementById('table-wrapper');
@@ -901,7 +912,7 @@
 
     async function loadQuizzes() {
       try {
-        const res = await fetch('/admin/api/quizzes');
+        const res = await fetch(buildAdminAPIURL('quizzes'));
         if (!res.ok) return;
         const list = await res.json();
         allQuizzes = {};
@@ -927,7 +938,7 @@
       syncPageTabs();
 
       try {
-        const res = await fetch('/admin/api/stats');
+        const res = await fetch(buildAdminAPIURL('stats'));
         if (!res.ok) throw new Error('データの取得に失敗しました');
         const stats = await res.json();
         statsList = stats || [];

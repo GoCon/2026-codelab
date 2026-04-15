@@ -1,7 +1,7 @@
 # quiz-app
 
 Go Conference 2026 のコードラボ向け Go クイズアプリです。  
-Cloudflare Pages + D1 + TinyGo (WebAssembly) で動作します。
+公開クイズ UI は GitHub Pages でも配信でき、API・admin は Cloudflare Pages + D1 + TinyGo (WebAssembly) で動作します。
 
 ## 機能
 
@@ -20,7 +20,7 @@ Cloudflare Pages + D1 + TinyGo (WebAssembly) で動作します。
 | API (WebAssembly) | Go 1.25 + [TinyGo 0.40.1](https://tinygo.org/) |
 | Workers ランタイム | [syumai/workers](https://github.com/syumai/workers) |
 | データベース | Cloudflare D1 (SQLite 互換) |
-| ホスティング | Cloudflare Pages |
+| ホスティング | GitHub Pages (公開 UI) / Cloudflare Pages (API・admin) |
 | インフラ管理 | Terraform (Cloudflare Provider) |
 | ローカル開発 | 標準 Go HTTP サーバー (インメモリ DB) |
 
@@ -42,6 +42,7 @@ quiz-app/
 │       └── handler_test.go
 ├── public/
 │   ├── index.html          # クイズ画面
+│   ├── quiz-config.js      # 公開 UI の API 接続先設定
 │   └── admin/index.html    # 管理画面
 ├── terraform/              # Cloudflare インフラ定義
 ├── schema.sql              # D1 テーブル定義
@@ -67,6 +68,37 @@ PORT=3000 make local
 ```
 
 `make local` はインメモリの回答ログストアを使用するため、D1 は不要です。
+
+## GitHub Pages で公開 UI を配信する
+
+公開クイズ画面だけを GitHub Pages に置き、API と admin は Cloudflare Pages 側に残す split 構成をサポートしています。
+
+### 1. 公開 UI をビルド
+
+```bash
+cd quiz-app
+make build-pages
+```
+
+成果物は `gh-pages-dist/` に出力されます。
+
+### 2. 公開 UI の API 接続先を設定
+
+`public/quiz-config.js` はデフォルトで same-origin を使います。GitHub Pages デプロイ時は、workflow が `gh-pages-dist/quiz-config.js` を上書きし、公開 UI から参照する API 配信元を設定します。
+
+リポジトリの **Settings > Secrets and variables > Actions > Variables** に、以下の variable を追加してください。
+
+| Variable 名 | 説明 | 例 |
+|---|---|---|
+| `QUIZ_API_BASE_URL` | 公開 UI から呼び出す API 配信元 | `https://quiz.gocon.jp` |
+
+### 3. GitHub Pages workflow
+
+- workflow: `.github/workflows/quiz-app-github-pages.yml`
+- 役割: `quiz-app/public/index.html` を GitHub Pages に配信
+- 前提: `QUIZ_API_BASE_URL` が設定されていること
+
+公開クイズ UI から API を cross-origin で呼べるように、public quiz API は CORS を有効化しています。
 
 ## ビルド (Cloudflare Pages 用 WASM)
 
@@ -191,7 +223,7 @@ GET /api/quiz/session?exclude=sivchari_q1,tomtwinkle_q3
 | GET | `/admin/api/stats` | 問題ごとの正答率一覧 |
 | GET | `/admin/api/quizzes` | 全問題の完全データ (答え・解説含む) |
 
-管理 API は Cloudflare Access によって保護されています。
+管理 API は Cloudflare Access によって保護されています。GitHub Pages に出すのは公開クイズ UI のみで、admin 画面は引き続き Cloudflare 側で配信する想定です。
 
 ## GitHub Secrets の設定
 

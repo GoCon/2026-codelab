@@ -10,9 +10,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/GoCon/2026-codelab/quiz-app/internal/quizhandler"
 	"github.com/syumai/workers"
 	_ "github.com/syumai/workers/cloudflare/d1"
-	"github.com/GoCon/2026-codelab/quiz-app/internal/quizhandler"
 )
 
 //go:embed quizes.yaml
@@ -63,39 +63,38 @@ func main() {
 		panic("failed to parse quizes.yaml: " + err.Error())
 	}
 	codeFiles := buildCodeFiles()
+	newQuizHandler := func() *quizhandler.QuizHandler {
+		return &quizhandler.QuizHandler{
+			Quizzes:   quizzes,
+			CodeFiles: codeFiles,
+			DB:        &d1LogStore{},
+		}
+	}
 
 	mux := http.NewServeMux()
+	mux.HandleFunc("OPTIONS /api/quiz/session", func(w http.ResponseWriter, r *http.Request) {
+		quizhandler.HandlePublicAPIPreflight(w, r)
+	})
 	mux.HandleFunc("GET /api/quiz/session", func(w http.ResponseWriter, r *http.Request) {
-		h := &quizhandler.QuizHandler{
-			Quizzes:   quizzes,
-			CodeFiles: codeFiles,
-			DB:        &d1LogStore{},
-		}
-		h.GetSession(w, r)
+		quizhandler.SetPublicAPIHeaders(w)
+		newQuizHandler().GetSession(w, r)
+	})
+	mux.HandleFunc("OPTIONS /api/quiz", func(w http.ResponseWriter, r *http.Request) {
+		quizhandler.HandlePublicAPIPreflight(w, r)
 	})
 	mux.HandleFunc("GET /api/quiz", func(w http.ResponseWriter, r *http.Request) {
-		h := &quizhandler.QuizHandler{
-			Quizzes:   quizzes,
-			CodeFiles: codeFiles,
-			DB:        &d1LogStore{},
-		}
-		h.GetQuiz(w, r)
+		quizhandler.SetPublicAPIHeaders(w)
+		newQuizHandler().GetQuiz(w, r)
+	})
+	mux.HandleFunc("OPTIONS /api/quiz/answer", func(w http.ResponseWriter, r *http.Request) {
+		quizhandler.HandlePublicAPIPreflight(w, r)
 	})
 	mux.HandleFunc("POST /api/quiz/answer", func(w http.ResponseWriter, r *http.Request) {
-		h := &quizhandler.QuizHandler{
-			Quizzes:   quizzes,
-			CodeFiles: codeFiles,
-			DB:        &d1LogStore{},
-		}
-		h.PostAnswer(w, r)
+		quizhandler.SetPublicAPIHeaders(w)
+		newQuizHandler().PostAnswer(w, r)
 	})
 	mux.HandleFunc("GET /admin/api/quizzes", func(w http.ResponseWriter, r *http.Request) {
-		h := &quizhandler.QuizHandler{
-			Quizzes:   quizzes,
-			CodeFiles: codeFiles,
-			DB:        &d1LogStore{},
-		}
-		h.GetAdminQuizzes(w, r)
+		newQuizHandler().GetAdminQuizzes(w, r)
 	})
 	workers.Serve(mux)
 }

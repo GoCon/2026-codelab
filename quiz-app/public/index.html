@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/go.min.js"></script>
+  <script src="./quiz-config.js"></script>
   <style>
     /* ---- Design tokens (GoCon 2026) ---- */
     :root {
@@ -457,6 +458,15 @@
   </footer>
 
   <script>
+    const appConfig = window.__QUIZ_APP_CONFIG__ || {};
+    const apiBaseUrl = typeof appConfig.apiBaseUrl === 'string'
+      ? appConfig.apiBaseUrl.replace(/\/+$/, '')
+      : '';
+
+    function buildAPIURL(path) {
+      return apiBaseUrl ? `${apiBaseUrl}${path}` : path;
+    }
+
     const loading            = document.getElementById('loading');
     const errorMsg           = document.getElementById('error-msg');
     const questionCard       = document.getElementById('question-card');
@@ -522,8 +532,8 @@
 
       try {
         const url = excludeIds.length > 0
-          ? `/api/quiz/session?exclude=${excludeIds.join(',')}`
-          : '/api/quiz/session';
+          ? buildAPIURL(`/api/quiz/session?exclude=${encodeURIComponent(excludeIds.join(','))}`)
+          : buildAPIURL('/api/quiz/session');
         const res = await fetch(url);
         if (!res.ok) throw new Error('問題の取得に失敗しました');
         const data = await res.json();
@@ -574,7 +584,7 @@
       document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
 
       try {
-        const res = await fetch('/api/quiz/answer', {
+        const res = await fetch(buildAPIURL('/api/quiz/answer'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question_id: questionId, answer: answerIdx }),
