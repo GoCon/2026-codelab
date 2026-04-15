@@ -65,24 +65,9 @@ questions:
       同じ理由で map や関数もキーにできません。
     answer_code_ref: "code/q4_answer.go"
     answer_code_play_ref: "https://go.dev/play/p/s0DAFLy5Ebh"
-  # Q5: %w は fmt.Errorf だけ
-  - text: |
-      errors.Is(err, io.EOF) が true になる err の作り方はどれ？
-    choices:
-      - 'err := fmt.Sprintf("wrap: %w", io.EOF)'
-      - 'err := fmt.Printf("wrap: %w", io.EOF)'
-      - 'err := fmt.Errorf("wrap: %w", io.EOF)'
-      - 'err := errors.New("wrap: io.EOF")'
-    answer: 2
-    explanation: |
-      %w が「元の error を wrap する」という特別な意味を持つのは fmt.Errorf だけです。
-      fmt.Sprintf や fmt.Printf で %w を使っても error wrapping にはなりません。
-      そのため errors.Is で元のエラーをたどれるのは fmt.Errorf("...%w...", err) の形だけです。
-    answer_code_ref: "code/q5_answer.go"
-    answer_code_play_ref: "https://go.dev/play/p/jeMAOIiETRh"
-  # Q6: map 要素は直接更新できない
+  # Q5: map 要素は直接更新できない
   - text: "このコードの挙動はどれ？"
-    question_code_ref: "code/q6_question.go"
+    question_code_ref: "code/q5_question.go"
     choices:
       - "11 に更新される"
       - "新しい要素が追加される"
@@ -94,5 +79,5 @@ questions:
       map の再配置で要素のアドレスが変わりうるためです。
       一度ローカル変数に取り出して更新し、m["gopher"] = u のように代入し直す必要があります。
       あるいは map[string]*User のようにポインタを持たせる設計にする方法もあります。
-    answer_code_ref: "code/q6_answer.go"
+    answer_code_ref: "code/q5_answer.go"
     answer_code_play_ref: "https://go.dev/play/p/ESlQsu20rXB"

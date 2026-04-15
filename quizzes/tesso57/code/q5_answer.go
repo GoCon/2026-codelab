@@ -2,16 +2,20 @@
 
 package main
 
-import (
-	"errors"
-	"fmt"
-	"io"
-)
+import "fmt"
+
+type User struct {
+	Age int
+}
 
 func main() {
-	err := fmt.Errorf("wrap: %w", io.EOF)
-	fmt.Println(errors.Is(err, io.EOF)) // true
+	m := map[string]User{
+		"gopher": {Age: 10},
+	}
 
-	msg := fmt.Sprintf("wrap: %w", io.EOF)
-	fmt.Println(msg) // wrapping にはならない
+	u := m["gopher"]
+	u.Age = 11
+	m["gopher"] = u
+
+	fmt.Println(m["gopher"].Age) // 11
 }
