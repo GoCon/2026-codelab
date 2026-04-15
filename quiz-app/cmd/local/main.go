@@ -6,7 +6,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"sync"
@@ -55,17 +55,23 @@ func (s *inMemoryStore) QueryStats(_ context.Context) ([]quizhandler.QuestionSta
 	return stats, nil
 }
 
+func fail(logger *slog.Logger, msg string, err error) {
+	logger.Error(msg, "error", err)
+	os.Exit(1)
+}
+
 func main() {
 	const apiBase = "functions/api"
+	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
 
 	quizzes, codeFiles, err := quizdata.LoadFromBase(apiBase)
 	if err != nil {
-		log.Fatal(err)
+		fail(logger, "failed to load quiz data", err)
 	}
 	staticQuizzes := quizdata.BuildStaticQuizzes(quizzes, codeFiles)
 	quizDataJS, err := quizdata.MarshalJavaScript(staticQuizzes)
 	if err != nil {
-		log.Fatal(err)
+		fail(logger, "failed to marshal quiz data", err)
 	}
 
 	store := &inMemoryStore{}
@@ -116,6 +122,8 @@ func main() {
 	if p := os.Getenv("PORT"); p != "" {
 		addr = ":" + p
 	}
-	log.Printf("ローカルサーバーを起動しています: http://localhost%s", addr)
-	log.Fatal(http.ListenAndServe(addr, mux))
+	logger.Info("starting local server", "url", "http://localhost"+addr)
+	if err := http.ListenAndServe(addr, mux); err != nil {
+		fail(logger, "local server exited with error", err)
+	}
 }
