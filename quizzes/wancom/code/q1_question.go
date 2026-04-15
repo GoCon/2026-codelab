@@ -1,0 +1,23 @@
+package main
+
+import "fmt"
+
+func main() {
+	chA := make(chan string, 4)
+	chB := make(chan string, 4)
+	chC := make(chan string, 4)
+
+	chB <- "msgB-1"
+	chA <- "msgA"
+	chB <- "msgB-2"
+	chC <- "msgC"
+
+	select {
+	case msg := <-chA:
+		fmt.Printf("Message from chA: %s\n", msg)
+	case msg := <-chB:
+		fmt.Printf("Message from chB: %s\n", msg)
+	case msg := <-chC:
+		fmt.Printf("Message from chC: %s\n", msg)
+	}
+}
