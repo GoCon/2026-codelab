@@ -11,8 +11,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/go.min.js"></script>
   <script src="./quiz-config.js"></script>
+  <script src="./quiz-data.js"></script>
   <style>
-    /* ---- Design tokens (GoCon 2026) ---- */
     :root {
       --primitive-black:      #333333;
       --primitive-light-gray: #d5e1e8;
@@ -36,7 +36,6 @@
       --text-secondary: var(--primitive-dark-gray);
       --text-on-fill:   var(--primitive-white);
       --text-accent:    var(--primitive-blue);
-      --text-accent2:   var(--primitive-red);
 
       --radius-button:  999px;
       --radius-objects: 16px;
@@ -62,7 +61,6 @@
       line-height: 1.75;
     }
 
-    /* ---- Header (matches GoCon 2026 header) ---- */
     .header {
       position: fixed;
       width: 100%;
@@ -102,7 +100,6 @@
       letter-spacing: 0.04em;
     }
 
-    /* ---- Main ---- */
     .main-content { padding-top: 81px; }
     main {
       max-width: 760px;
@@ -110,7 +107,6 @@
       padding: var(--space-m) var(--space-xs);
     }
 
-    /* ---- Card ---- */
     .card {
       background: var(--surface-primary);
       border-radius: var(--radius-objects);
@@ -119,7 +115,6 @@
       margin-bottom: var(--space-xs);
     }
 
-    /* ---- Chip (matches GoCon 2026 .chip) ---- */
     .chip {
       display: inline-block;
       background: var(--surface-secondary-dark);
@@ -132,6 +127,77 @@
       letter-spacing: 0.05em;
     }
 
+    .home-title {
+      font-family: var(--font-accent);
+      font-size: 2rem;
+      line-height: 1.2;
+      color: var(--primitive-navy);
+      margin-bottom: var(--space-xs);
+    }
+    .home-lead {
+      color: var(--text-secondary);
+      margin-bottom: var(--space-s);
+    }
+    .home-actions,
+    #score-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xxs);
+      margin-top: var(--space-s);
+    }
+    .secret-block {
+      margin-top: var(--space-s);
+      padding-top: var(--space-s);
+      border-top: 1px solid var(--surface-disabled);
+    }
+    .secret-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--primitive-navy);
+      margin-bottom: var(--space-xxs);
+    }
+    .secret-note {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: var(--space-xs);
+    }
+    .secret-row {
+      display: flex;
+      gap: var(--space-xxs);
+      align-items: stretch;
+    }
+    .secret-input {
+      flex: 1;
+      min-width: 0;
+      border: 2px solid var(--surface-disabled);
+      border-radius: 12px;
+      padding: 14px var(--space-xs);
+      font: inherit;
+      color: var(--text-primary);
+      background: var(--surface-primary);
+    }
+    .secret-input:focus {
+      outline: none;
+      border-color: var(--text-accent);
+    }
+    .helper-message {
+      display: none;
+      margin-top: var(--space-xxs);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+    .helper-message.error { color: var(--surface-primary-dark); }
+    .helper-message.success { color: #1a7a6e; }
+    #preview-entry {
+      display: none;
+      margin-top: var(--space-s);
+    }
+    .unlock-note {
+      margin-top: var(--space-xxs);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
     #question-text {
       font-size: 1rem;
       line-height: 1.75;
@@ -139,8 +205,6 @@
       color: var(--text-primary);
       margin-top: var(--space-xxs);
     }
-
-    /* ---- Code block ---- */
     pre {
       background: var(--surface-secondary);
       border: 1px solid var(--surface-disabled);
@@ -160,7 +224,6 @@
       line-height: inherit;
     }
 
-    /* ---- Choices ---- */
     #choices {
       display: flex;
       flex-direction: column;
@@ -184,7 +247,6 @@
       white-space: normal;
       word-break: break-word;
       overflow-wrap: break-word;
-      height: auto;
     }
     .choice-btn:hover:not(:disabled) {
       border-color: var(--text-accent);
@@ -202,8 +264,6 @@
     }
     .choice-btn:disabled { cursor: default; }
 
-    /* ---- Result ---- */
-    #result { display: none; }
     #result-badge {
       font-family: var(--font-accent);
       font-size: 1.4rem;
@@ -223,8 +283,10 @@
       text-decoration: none;
       word-break: break-all;
     }
-    #explanation a:hover { text-decoration: underline; }
-    #answer-code-section { display: none; margin-top: var(--space-xs); }
+    #answer-code-section {
+      display: none;
+      margin-top: var(--space-xs);
+    }
     #answer-code-label {
       font-size: 0.8rem;
       font-weight: 700;
@@ -234,7 +296,7 @@
       text-transform: uppercase;
     }
     #play-link {
-      display: inline-block;
+      display: none;
       margin-top: var(--space-xxs);
       font-size: 0.85rem;
       color: var(--text-accent);
@@ -242,7 +304,6 @@
     }
     #play-link:hover { text-decoration: underline; }
 
-    /* ---- Buttons (matches GoCon 2026 .c-button) ---- */
     .c-button {
       appearance: none;
       width: 100%;
@@ -258,102 +319,57 @@
       cursor: pointer;
       display: block;
       text-align: center;
-      transition: background-color 160ms ease, color 160ms ease,
-                  border-color 160ms ease, opacity 160ms ease;
-    }
-    .c-button:not(:disabled):hover { opacity: 0.88; }
-    .c-button[data-variant="secondary"] {
-      background: var(--surface-secondary-dark);
+      transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
     }
     .c-button[data-variant="tertiary"] {
       background: var(--surface-primary);
-      color: var(--text-primary);
+      color: var(--primitive-navy);
       border-color: var(--primitive-navy);
     }
-    .c-button[data-variant="tertiary"]:hover {
-      background: var(--surface-secondary);
-      opacity: 1;
+    .c-button[data-compact="true"] {
+      width: auto;
+      min-width: 120px;
+      padding: 12px var(--space-s);
     }
-    .c-button:disabled {
-      background: var(--surface-disabled);
-      color: var(--text-on-fill);
-      cursor: not-allowed;
-    }
+    .c-button:hover { opacity: 0.88; }
 
-    #next-btn  { display: none; margin-top: var(--space-xs); }
-    #score-card { display: none; text-align: center; }
-    #score-label { color: var(--text-secondary); margin-bottom: var(--space-xxs); }
-    #score-value {
-      font-family: var(--font-accent);
-      font-size: 3.5rem;
-      font-weight: 700;
-      color: var(--primitive-navy);
-      line-height: 1;
-      margin-bottom: var(--space-s);
-    }
-    #special-link-section {
+    #score-card {
       display: none;
-      margin-bottom: var(--space-s);
+      text-align: center;
     }
-    #special-link-section p {
-      font-size: 0.9rem;
+    #score-label {
+      font-size: 0.95rem;
       color: var(--text-secondary);
       margin-bottom: var(--space-xxs);
     }
+    #score-value {
+      font-family: var(--font-accent);
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--primitive-navy);
+      margin-bottom: var(--space-xs);
+    }
+    #special-link-section,
     #challenge-complete-section {
       display: none;
-      margin-bottom: var(--space-s);
-      padding: var(--space-s);
-      background: linear-gradient(135deg, var(--primitive-navy), #1a5fa8);
-      border-radius: var(--radius-objects);
-      color: var(--text-on-fill);
+      margin-top: var(--space-s);
+      padding-top: var(--space-s);
+      border-top: 1px solid var(--surface-disabled);
     }
+    #special-link-section p,
     #challenge-complete-section p {
-      font-size: 1rem;
+      color: var(--text-secondary);
       margin-bottom: var(--space-xs);
-      line-height: 1.6;
     }
     .special-link {
       display: inline-block;
-      background: var(--primitive-yellow);
-      color: var(--primitive-navy);
-      font-family: var(--font-accent);
-      font-size: 1rem;
-      font-weight: 700;
-      padding: var(--space-xs) var(--space-s);
-      border-radius: var(--radius-button);
+      background: linear-gradient(90deg, var(--primitive-blue), var(--primitive-cyan));
+      color: var(--text-on-fill);
       text-decoration: none;
-      letter-spacing: 0.04em;
-      transition: opacity 160ms ease;
-      width: 100%;
-      text-align: center;
-      box-sizing: border-box;
+      padding: 14px 28px;
+      border-radius: 999px;
+      font-weight: 700;
     }
-    .special-link:hover { opacity: 0.88; }
-    #score-actions {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-xxs);
-      margin-top: var(--space-xs);
-    }
-
-    /* ---- Loading / Error ---- */
-    #loading {
-      text-align: center;
-      padding: var(--space-l);
-      color: var(--text-secondary);
-    }
-    .spinner {
-      display: inline-block;
-      width: 36px;
-      height: 36px;
-      border: 3px solid var(--surface-disabled);
-      border-top-color: var(--text-accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-bottom: var(--space-xs);
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
 
     #error-msg {
       display: none;
@@ -365,7 +381,6 @@
       margin-bottom: var(--space-xs);
     }
 
-    /* ---- Footer (matches GoCon 2026 footer) ---- */
     .footer-gradient {
       width: 100%;
       height: 8px;
@@ -389,11 +404,17 @@
       .header-tagline { display: none; }
       .main-content { padding-top: 56px; }
       main { padding: var(--space-s) var(--space-xs); }
+      .home-title { font-size: 1.6rem; }
+      .secret-row {
+        flex-direction: column;
+      }
+      .c-button[data-compact="true"] {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
-
   <header class="header">
     <div class="header-logo">
       <span class="accent">Go</span>Con 2026 Quiz
@@ -404,11 +425,42 @@
 
   <div class="main-content">
     <main>
-      <div id="loading">
-        <div class="spinner"></div>
-        <p>問題を読み込み中...</p>
-      </div>
       <div id="error-msg"></div>
+
+      <div class="card" id="home-card">
+        <div class="chip">WELCOME</div>
+        <h1 class="home-title">GoCon 2026 Quiz</h1>
+        <p class="home-lead">
+          ランダムに選ばれた 5 問に答える Go クイズです。<br>
+          全問正解でスペシャルページ、エクストラモード全問正解で問題一覧モードへの扉が開きます。
+        </p>
+
+        <div class="home-actions">
+          <button class="c-button" id="start-btn" type="button">クイズを始める</button>
+        </div>
+
+        <div class="secret-block" id="secret-block">
+          <div class="secret-title">秘密のコードで問題一覧を開く</div>
+          <p class="secret-note">コードが分かる場合は、ここから問題一覧モードに進めます。</p>
+          <div class="secret-row">
+            <input
+              class="secret-input"
+              id="secret-code-input"
+              type="password"
+              autocomplete="off"
+              inputmode="text"
+              placeholder="秘密のコードを入力"
+            >
+            <button class="c-button" data-compact="true" id="unlock-btn" type="button">開く</button>
+          </div>
+          <p class="helper-message" id="secret-message"></p>
+        </div>
+
+        <div id="preview-entry">
+          <button class="c-button" data-variant="tertiary" id="preview-btn" type="button">問題一覧を見る</button>
+          <p class="unlock-note">このブラウザでは問題一覧モードが解放されています。</p>
+        </div>
+      </div>
 
       <div class="card" id="question-card" style="display:none">
         <div class="chip" id="question-title"></div>
@@ -417,7 +469,7 @@
         <div id="choices"></div>
       </div>
 
-      <div class="card" id="result">
+      <div class="card" id="result" style="display:none">
         <div id="result-badge"></div>
         <div id="explanation"></div>
         <div id="answer-code-section">
@@ -427,13 +479,13 @@
         </div>
       </div>
 
-      <button class="c-button" id="next-btn">次の問題へ</button>
+      <button class="c-button" id="next-btn" type="button" style="display:none">次の問題へ</button>
 
       <div class="card" id="score-card">
         <div id="score-label">クイズ終了！ あなたのスコア</div>
         <div id="score-value"></div>
         <div id="challenge-complete-section">
-          <p>チャレンジモード全問正解！<br>スペシャルページへの扉が開かれました</p>
+          <p>エクストラモード全問正解！ スペシャルページと問題一覧モードが解放されました。</p>
           <a class="special-link" href="https://example.com" target="_blank" rel="noopener noreferrer">
             スペシャルページへ進む
           </a>
@@ -445,8 +497,9 @@
           </a>
         </div>
         <div id="score-actions">
-          <button class="c-button" id="restart-btn">もう一度チャレンジ</button>
-          <button class="c-button" data-variant="tertiary" id="challenge-btn">全問異なる問題に挑戦</button>
+          <button class="c-button" id="restart-btn" type="button">もう一度チャレンジ</button>
+          <button class="c-button" data-variant="tertiary" id="challenge-btn" type="button">全問異なる問題に挑戦</button>
+          <button class="c-button" data-variant="tertiary" id="score-preview-btn" type="button" style="display:none">問題一覧を見る</button>
         </div>
       </div>
     </main>
@@ -459,44 +512,107 @@
 
   <script>
     const appConfig = window.__QUIZ_APP_CONFIG__ || {};
-    const apiBaseUrl = typeof appConfig.apiBaseUrl === 'string'
-      ? appConfig.apiBaseUrl.replace(/\/+$/, '')
-      : '';
+    const allQuizzes = Array.isArray(window.__QUIZ_DATA__) ? window.__QUIZ_DATA__ : [];
+    const telemetryEndpoint = typeof appConfig.telemetryEndpoint === 'string' ? appConfig.telemetryEndpoint.trim() : '';
+    const previewUnlockCode = typeof appConfig.previewUnlockCode === 'string' ? appConfig.previewUnlockCode : '';
+    const previewStorageKey = 'quiz-preview-unlocked';
 
-    function buildAPIURL(path) {
-      return apiBaseUrl ? `${apiBaseUrl}${path}` : path;
-    }
-
-    const loading            = document.getElementById('loading');
-    const errorMsg           = document.getElementById('error-msg');
-    const questionCard       = document.getElementById('question-card');
-    const questionTitle      = document.getElementById('question-title');
-    const questionText       = document.getElementById('question-text');
-    const codeBlock          = document.getElementById('code-block');
-    const choicesEl          = document.getElementById('choices');
-    const resultEl           = document.getElementById('result');
-    const resultBadge        = document.getElementById('result-badge');
-    const explanation        = document.getElementById('explanation');
-    const answerCodeSection  = document.getElementById('answer-code-section');
-    const answerCodeBlock    = document.getElementById('answer-code-block');
-    const playLink           = document.getElementById('play-link');
-    const nextBtn            = document.getElementById('next-btn');
-    const scoreCard          = document.getElementById('score-card');
-    const scoreValue         = document.getElementById('score-value');
-    const specialLinkSection     = document.getElementById('special-link-section');
+    const progressEl = document.getElementById('progress');
+    const errorMsg = document.getElementById('error-msg');
+    const homeCard = document.getElementById('home-card');
+    const questionCard = document.getElementById('question-card');
+    const resultEl = document.getElementById('result');
+    const scoreCard = document.getElementById('score-card');
+    const questionTitle = document.getElementById('question-title');
+    const questionText = document.getElementById('question-text');
+    const codeBlock = document.getElementById('code-block');
+    const choicesEl = document.getElementById('choices');
+    const resultBadge = document.getElementById('result-badge');
+    const explanation = document.getElementById('explanation');
+    const answerCodeSection = document.getElementById('answer-code-section');
+    const answerCodeBlock = document.getElementById('answer-code-block');
+    const playLink = document.getElementById('play-link');
+    const nextBtn = document.getElementById('next-btn');
+    const scoreValue = document.getElementById('score-value');
+    const specialLinkSection = document.getElementById('special-link-section');
     const challengeCompleteSection = document.getElementById('challenge-complete-section');
-    const restartBtn         = document.getElementById('restart-btn');
-    const challengeBtn       = document.getElementById('challenge-btn');
-    const progressEl         = document.getElementById('progress');
+    const challengeBtn = document.getElementById('challenge-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const scorePreviewBtn = document.getElementById('score-preview-btn');
+    const startBtn = document.getElementById('start-btn');
+    const previewBtn = document.getElementById('preview-btn');
+    const previewEntry = document.getElementById('preview-entry');
+    const secretBlock = document.getElementById('secret-block');
+    const secretCodeInput = document.getElementById('secret-code-input');
+    const secretMessage = document.getElementById('secret-message');
+    const unlockBtn = document.getElementById('unlock-btn');
 
-    const TOTAL = 5;
+    const totalPerSession = 5;
+    const previewURL = './preview/';
 
-    let session      = [];
+    let session = [];
     let currentIndex = 0;
     let correctCount = 0;
-    let pastCorrect  = 0;          // チャレンジで過去セッションの正解数累計
-    let seenIds      = new Set();  // セッションをまたいで既出問題を追跡
-    let isChallenge  = false;      // チャレンジモード中か
+    let pastCorrect = 0;
+    let seenIds = new Set();
+    let isChallenge = false;
+    let previewUnlocked = loadPreviewUnlocked();
+    let sessionID = createSessionID();
+
+    function createSessionID() {
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID();
+      }
+      return `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function loadPreviewUnlocked() {
+      try {
+        return window.sessionStorage.getItem(previewStorageKey) === '1';
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function setPreviewUnlocked(value) {
+      previewUnlocked = value;
+      try {
+        if (value) {
+          window.sessionStorage.setItem(previewStorageKey, '1');
+        } else {
+          window.sessionStorage.removeItem(previewStorageKey);
+        }
+      } catch (_) {}
+      updatePreviewButtons();
+    }
+
+    function updatePreviewButtons() {
+      previewEntry.style.display = previewUnlocked ? 'block' : 'none';
+      scorePreviewBtn.style.display = previewUnlocked ? '' : 'none';
+      secretBlock.style.display = previewUnlockCode ? 'block' : 'none';
+    }
+
+    function showError(message) {
+      errorMsg.textContent = message;
+      errorMsg.style.display = 'block';
+    }
+
+    function hideError() {
+      errorMsg.style.display = 'none';
+      errorMsg.textContent = '';
+    }
+
+    function setSecretMessage(message, type) {
+      if (!message) {
+        secretMessage.style.display = 'none';
+        secretMessage.textContent = '';
+        secretMessage.className = 'helper-message';
+        return;
+      }
+      secretMessage.textContent = message;
+      secretMessage.className = `helper-message ${type}`;
+      secretMessage.style.display = 'block';
+    }
 
     function escapeHTML(str) {
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -510,7 +626,10 @@
     }
 
     function updateProgress() {
-      if (session.length === 0) { progressEl.textContent = ''; return; }
+      if (session.length === 0 || scoreCard.style.display === 'block' || homeCard.style.display === 'block') {
+        progressEl.textContent = '';
+        return;
+      }
       if (isChallenge) {
         const base = seenIds.size;
         progressEl.textContent = `${base + currentIndex + 1} / ${base + session.length}`;
@@ -519,151 +638,252 @@
       }
     }
 
-    async function startSession(excludeIds = []) {
-      isChallenge = excludeIds.length > 0;
-      if (!isChallenge) pastCorrect = 0;
-      loading.style.display      = 'block';
-      errorMsg.style.display     = 'none';
-      questionCard.style.display = 'none';
-      resultEl.style.display     = 'none';
-      scoreCard.style.display    = 'none';
-      nextBtn.style.display      = 'none';
-      progressEl.textContent     = '';
-
-      try {
-        const url = excludeIds.length > 0
-          ? buildAPIURL(`/api/quiz/session?exclude=${encodeURIComponent(excludeIds.join(','))}`)
-          : buildAPIURL('/api/quiz/session');
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('問題の取得に失敗しました');
-        const data = await res.json();
-        session      = data.quizzes;
-        currentIndex = 0;
-        correctCount = 0;
-        showQuestion();
-      } catch (e) {
-        loading.style.display  = 'none';
-        errorMsg.textContent   = e.message;
-        errorMsg.style.display = 'block';
+    function shuffle(items) {
+      const copy = items.slice();
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
       }
+      return copy;
+    }
+
+    function pickSession(excludeIds) {
+      const excludeSet = new Set(excludeIds);
+      let candidates = allQuizzes.filter(quiz => !excludeSet.has(quiz.id));
+      if (candidates.length === 0) {
+        candidates = allQuizzes.slice();
+      }
+      return shuffle(candidates).slice(0, Math.min(totalPerSession, candidates.length));
+    }
+
+    function highlightCodeBlock(codeElement, codeText) {
+      codeElement.textContent = codeText;
+      codeElement.removeAttribute('data-highlighted');
+      codeElement.classList.remove('hljs');
+      hljs.highlightElement(codeElement);
+    }
+
+    function renderHome() {
+      hideError();
+      homeCard.style.display = 'block';
+      questionCard.style.display = 'none';
+      resultEl.style.display = 'none';
+      nextBtn.style.display = 'none';
+      scoreCard.style.display = 'none';
+      progressEl.textContent = '';
+      setSecretMessage('', '');
+      updatePreviewButtons();
+    }
+
+    function startSession(excludeIds = []) {
+      if (allQuizzes.length === 0) {
+        showError('クイズデータの読み込みに失敗しました');
+        return;
+      }
+
+      hideError();
+      isChallenge = excludeIds.length > 0;
+      if (!isChallenge) {
+        pastCorrect = 0;
+        seenIds.clear();
+      }
+
+      sessionID = createSessionID();
+      session = pickSession(excludeIds);
+      currentIndex = 0;
+      correctCount = 0;
+
+      homeCard.style.display = 'none';
+      scoreCard.style.display = 'none';
+      resultEl.style.display = 'none';
+      nextBtn.style.display = 'none';
+
+      showQuestion();
     }
 
     function showQuestion() {
-      const q = session[currentIndex];
+      const quiz = session[currentIndex];
+      if (!quiz) {
+        showError('表示できる問題がありません');
+        renderHome();
+        return;
+      }
+
+      questionCard.style.display = 'block';
       choicesEl.innerHTML = '';
-      resultEl.style.display          = 'none';
+      resultEl.style.display = 'none';
       answerCodeSection.style.display = 'none';
-      nextBtn.style.display           = 'none';
+      nextBtn.style.display = 'none';
 
-      questionTitle.textContent = q.title;
-      questionText.textContent  = q.text;
+      questionTitle.textContent = quiz.title;
+      questionText.textContent = quiz.text;
 
-      if (q.code) {
-        const codeEl = codeBlock.querySelector('code');
-        codeEl.textContent = q.code;
-        hljs.highlightElement(codeEl);
+      if (quiz.question_code) {
+        highlightCodeBlock(codeBlock.querySelector('code'), quiz.question_code);
         codeBlock.style.display = 'block';
       } else {
         codeBlock.style.display = 'none';
       }
 
-      q.choices.forEach((choice, idx) => {
-        const btn = document.createElement('button');
-        btn.className   = 'choice-btn';
-        btn.textContent = choice;
-        btn.addEventListener('click', () => submitAnswer(q.id, idx, btn));
-        choicesEl.appendChild(btn);
+      quiz.choices.forEach((choice, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'choice-btn';
+        button.textContent = choice;
+        button.addEventListener('click', () => submitAnswer(quiz, index, button));
+        choicesEl.appendChild(button);
       });
 
       updateProgress();
-      loading.style.display      = 'none';
-      questionCard.style.display = 'block';
     }
 
-    async function submitAnswer(questionId, answerIdx, clickedBtn) {
-      document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+    function sendTelemetry(quiz, selectedAnswer, isCorrect) {
+      if (!telemetryEndpoint) {
+        return;
+      }
 
-      try {
-        const res = await fetch(buildAPIURL('/api/quiz/answer'), {
+      const payload = JSON.stringify({
+        question_id: quiz.id,
+        question_title: quiz.title,
+        selected_answer: selectedAnswer,
+        correct_answer: quiz.answer,
+        is_correct: isCorrect,
+        mode: isChallenge ? 'challenge' : 'normal',
+        answered_at: new Date().toISOString(),
+        session_id: sessionID,
+        question_index: currentIndex + 1,
+      });
+
+      let sent = false;
+      if (navigator.sendBeacon) {
+        try {
+          sent = navigator.sendBeacon(
+            telemetryEndpoint,
+            new Blob([payload], { type: 'text/plain;charset=UTF-8' })
+          );
+        } catch (_) {}
+      }
+
+      if (!sent) {
+        fetch(telemetryEndpoint, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question_id: questionId, answer: answerIdx }),
-        });
-        if (!res.ok) throw new Error('回答の送信に失敗しました');
-        const data = await res.json();
-
-        if (data.correct) correctCount++;
-
-        clickedBtn.classList.add(data.correct ? 'correct' : 'incorrect');
-        resultBadge.textContent = data.correct ? '正解！' : '不正解...';
-        resultBadge.className   = data.correct ? 'correct' : 'incorrect';
-        explanation.innerHTML   = linkify(data.explanation);
-
-        if (data.correct && data.answer_code) {
-          const answerCodeEl = answerCodeBlock.querySelector('code');
-          answerCodeEl.textContent = data.answer_code;
-          hljs.highlightElement(answerCodeEl);
-          playLink.style.display = data.answer_code_play_ref ? 'inline-block' : 'none';
-          if (data.answer_code_play_ref) playLink.href = data.answer_code_play_ref;
-          answerCodeSection.style.display = 'block';
-        } else {
-          answerCodeSection.style.display = 'none';
-        }
-
-        resultEl.style.display = 'block';
-
-        const isLast = currentIndex === session.length - 1;
-        nextBtn.textContent   = isLast ? '結果を見る' : '次の問題へ';
-        nextBtn.style.display = 'block';
-      } catch (e) {
-        errorMsg.textContent   = e.message;
-        errorMsg.style.display = 'block';
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+          body: payload,
+        }).catch(() => {});
       }
     }
 
-    nextBtn.addEventListener('click', () => {
-      const isLast = currentIndex === session.length - 1;
-      if (isLast) {
-        showScore();
-      } else {
-        currentIndex++;
-        showQuestion();
+    function submitAnswer(quiz, answerIndex, clickedButton) {
+      const buttons = document.querySelectorAll('.choice-btn');
+      buttons.forEach(button => { button.disabled = true; });
+
+      const isCorrect = answerIndex === quiz.answer;
+      if (isCorrect) {
+        correctCount++;
       }
-    });
+      sendTelemetry(quiz, answerIndex, isCorrect);
+
+      clickedButton.classList.add(isCorrect ? 'correct' : 'incorrect');
+      resultBadge.textContent = isCorrect ? '正解！' : '不正解...';
+      resultBadge.className = isCorrect ? 'correct' : 'incorrect';
+      explanation.innerHTML = linkify(quiz.explanation);
+
+      if (isCorrect && (quiz.answer_code || quiz.answer_code_play_ref)) {
+        if (quiz.answer_code) {
+          highlightCodeBlock(answerCodeBlock.querySelector('code'), quiz.answer_code);
+          answerCodeBlock.style.display = 'block';
+        } else {
+          answerCodeBlock.style.display = 'none';
+        }
+        if (quiz.answer_code_play_ref) {
+          playLink.href = quiz.answer_code_play_ref;
+          playLink.style.display = 'inline-block';
+        } else {
+          playLink.style.display = 'none';
+        }
+        answerCodeSection.style.display = 'block';
+      } else {
+        playLink.style.display = 'none';
+        answerCodeSection.style.display = 'none';
+      }
+
+      resultEl.style.display = 'block';
+      nextBtn.textContent = currentIndex === session.length - 1 ? '結果を見る' : '次の問題へ';
+      nextBtn.style.display = 'block';
+    }
 
     function showScore() {
-      session.forEach(q => seenIds.add(q.id));
+      session.forEach(quiz => seenIds.add(quiz.id));
 
       questionCard.style.display = 'none';
-      resultEl.style.display     = 'none';
-      nextBtn.style.display      = 'none';
-      progressEl.textContent     = '';
+      resultEl.style.display = 'none';
+      nextBtn.style.display = 'none';
+      progressEl.textContent = '';
 
       const totalAnswered = isChallenge ? seenIds.size : session.length;
-      const totalCorrect  = isChallenge ? pastCorrect + correctCount : correctCount;
-      scoreValue.textContent = `${totalCorrect} / ${totalAnswered}`;
-
+      const totalCorrect = isChallenge ? pastCorrect + correctCount : correctCount;
       const allCorrect = correctCount === session.length;
-      challengeCompleteSection.style.display = (isChallenge && allCorrect) ? 'block' : 'none';
-      specialLinkSection.style.display       = (!isChallenge && allCorrect) ? 'block' : 'none';
-      challengeBtn.style.display             = (!isChallenge && allCorrect) || (isChallenge && !allCorrect) ? '' : 'none';
+      const challengePerfect = isChallenge && allCorrect;
+      const canChallengeMore = seenIds.size < allQuizzes.length;
 
+      if (challengePerfect) {
+        setPreviewUnlocked(true);
+      }
+
+      scoreValue.textContent = `${totalCorrect} / ${totalAnswered}`;
+      challengeCompleteSection.style.display = challengePerfect ? 'block' : 'none';
+      specialLinkSection.style.display = (!isChallenge && allCorrect) ? 'block' : 'none';
+      challengeBtn.style.display = canChallengeMore && ((!isChallenge && allCorrect) || (isChallenge && !allCorrect)) ? '' : 'none';
       scoreCard.style.display = 'block';
+      updatePreviewButtons();
     }
 
-    restartBtn.addEventListener('click', () => {
-      seenIds.clear();
-      pastCorrect = 0;
-      startSession();
-    });
+    function openPreviewPage() {
+      window.location.href = previewURL;
+    }
 
+    startBtn.addEventListener('click', () => startSession());
+    nextBtn.addEventListener('click', () => {
+      if (currentIndex === session.length - 1) {
+        showScore();
+        return;
+      }
+      currentIndex++;
+      showQuestion();
+    });
+    restartBtn.addEventListener('click', () => startSession());
     challengeBtn.addEventListener('click', () => {
       pastCorrect += correctCount;
       startSession([...seenIds]);
     });
+    previewBtn.addEventListener('click', openPreviewPage);
+    scorePreviewBtn.addEventListener('click', openPreviewPage);
+    unlockBtn.addEventListener('click', () => {
+      const enteredCode = secretCodeInput.value.trim();
+      if (!previewUnlockCode) {
+        setSecretMessage('秘密のコードは設定されていません。', 'error');
+        return;
+      }
+      if (enteredCode !== previewUnlockCode) {
+        setSecretMessage('秘密のコードが違います。', 'error');
+        return;
+      }
+      setPreviewUnlocked(true);
+      setSecretMessage('問題一覧モードを開きます。', 'success');
+      openPreviewPage();
+    });
+    secretCodeInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        unlockBtn.click();
+      }
+    });
 
-    startSession();
-
+    if (allQuizzes.length === 0) {
+      showError('クイズデータの読み込みに失敗しました');
+    }
+    renderHome();
   </script>
 </body>
 </html>

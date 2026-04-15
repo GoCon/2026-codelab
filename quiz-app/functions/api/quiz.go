@@ -8,8 +8,8 @@ import (
 	"embed"
 	"net/http"
 	"os"
-	"strings"
 
+	"github.com/GoCon/2026-codelab/quiz-app/internal/quizdata"
 	"github.com/GoCon/2026-codelab/quiz-app/internal/quizhandler"
 	"github.com/syumai/workers"
 	_ "github.com/syumai/workers/cloudflare/d1"
@@ -29,18 +29,9 @@ func buildCodeFiles() map[string]string {
 			continue
 		}
 		data, _ := codeFS.ReadFile("code/" + e.Name())
-		files["code/"+e.Name()] = stripBuildIgnore(string(data))
+		files["code/"+e.Name()] = quizdata.StripBuildIgnore(string(data))
 	}
 	return files
-}
-
-// stripBuildIgnore は先頭の //go:build ignore ディレクティブと直後の改行を除去する。
-func stripBuildIgnore(s string) string {
-	const directive = "//go:build ignore"
-	if !strings.HasPrefix(s, directive) {
-		return s
-	}
-	return strings.TrimLeft(strings.TrimPrefix(s, directive), "\r\n")
 }
 
 // d1LogStore は Cloudflare D1 を使った LogStore 実装。

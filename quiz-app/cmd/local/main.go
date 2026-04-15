@@ -6,14 +6,12 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
-	"strings"
 	"sync"
 
+	"github.com/GoCon/2026-codelab/quiz-app/internal/quizdata"
 	"github.com/GoCon/2026-codelab/quiz-app/internal/quizhandler"
 )
 
@@ -57,48 +55,17 @@ func (s *inMemoryStore) QueryStats(_ context.Context) ([]quizhandler.QuestionSta
 	return stats, nil
 }
 
-// loadCodeFiles は quizzes に含まれるすべてのコード参照ファイルを basePath から読み込む。
-func loadCodeFiles(quizzes []quizhandler.Quiz, basePath string) (map[string]string, error) {
-	files := make(map[string]string)
-	for _, q := range quizzes {
-		for _, ref := range []string{q.QuestionCodeRef, q.AnswerCodeRef} {
-			if ref == "" || files[ref] != "" {
-				continue
-			}
-			data, err := os.ReadFile(filepath.Join(basePath, ref))
-			if err != nil {
-				return nil, fmt.Errorf("コードファイルの読み込みに失敗しました %s: %w", ref, err)
-			}
-			files[ref] = stripBuildIgnore(string(data))
-		}
-	}
-	return files, nil
-}
-
-// stripBuildIgnore は先頭の //go:build ignore ディレクティブと直後の改行を除去する。
-func stripBuildIgnore(s string) string {
-	const directive = "//go:build ignore"
-	if !strings.HasPrefix(s, directive) {
-		return s
-	}
-	return strings.TrimLeft(strings.TrimPrefix(s, directive), "\r\n")
-}
-
 func main() {
 	const apiBase = "functions/api"
 
-	quizesYAML, err := os.ReadFile(filepath.Join(apiBase, "quizes.yaml"))
+	quizzes, codeFiles, err := quizdata.LoadFromBase(apiBase)
 	if err != nil {
-		log.Fatalf("quizes.yaml の読み込みに失敗しました: %v", err)
+		log.Fatal(err)
 	}
-	quizzes, err := quizhandler.ParseQuizzes(quizesYAML)
+	staticQuizzes := quizdata.BuildStaticQuizzes(quizzes, codeFiles)
+	quizDataJS, err := quizdata.MarshalJavaScript(staticQuizzes)
 	if err != nil {
-		log.Fatalf("quizes.yaml のパースに失敗しました: %v", err)
-	}
-
-	codeFiles, err := loadCodeFiles(quizzes, apiBase)
-	if err != nil {
-		log.Fatalf("コードファイルの読み込みに失敗しました: %v", err)
+		log.Fatal(err)
 	}
 
 	store := &inMemoryStore{}
@@ -138,6 +105,10 @@ func main() {
 	mux.HandleFunc("GET /admin/api/stats", func(w http.ResponseWriter, r *http.Request) {
 		h := &quizhandler.StatsHandler{DB: store}
 		h.GetStats(w, r)
+	})
+	mux.HandleFunc("GET /quiz-data.js", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+		w.Write(quizDataJS)
 	})
 	mux.Handle("/", http.FileServer(http.Dir("public")))
 

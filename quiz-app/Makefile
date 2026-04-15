@@ -12,11 +12,13 @@ PAGES_DIST  = gh-pages-dist
 
 build: $(QUIZ_WASM) $(STATS_WASM)
 	cp -r public/* dist/
+	$(GO) run ./cmd/generatequizdata -out dist/quiz-data.js
 
 build-pages:
 	rm -rf $(PAGES_DIST)
 	mkdir -p $(PAGES_DIST)
-	cp public/index.html public/quiz-config.js $(PAGES_DIST)/
+	cp -r public/* $(PAGES_DIST)/
+	$(GO) run ./cmd/generatequizdata -out $(PAGES_DIST)/quiz-data.js
 
 $(QUIZ_WASM): functions/api/quiz.go functions/api/quizes.yaml $(CODE_FILES)
 	mkdir -p dist/functions/api

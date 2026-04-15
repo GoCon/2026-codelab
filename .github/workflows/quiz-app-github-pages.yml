@@ -5,9 +5,15 @@ on:
     branches:
       - main
     paths:
-      - "quiz-app/public/index.html"
-      - "quiz-app/public/quiz-config.js"
+      - "quiz-app/public/**"
+      - "quiz-app/functions/api/quizes.yaml"
+      - "quiz-app/functions/api/code/**"
+      - "quiz-app/cmd/generatequizdata/**"
+      - "quiz-app/internal/quizdata/**"
+      - "quiz-app/gas/**"
       - "quiz-app/Makefile"
+      - "quiz-app/go.mod"
+      - "quiz-app/go.sum"
       - ".github/workflows/quiz-app-github-pages.yml"
 
 permissions:
@@ -20,42 +26,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check-config:
-    name: Check required config
-    runs-on: ubuntu-latest
-    outputs:
-      available: ${{ steps.check.outputs.available }}
-    steps:
-      - name: Check Pages variables
-        id: check
-        env:
-          API_BASE_URL: ${{ vars.QUIZ_API_BASE_URL }}
-        run: |
-          if [ -n "$API_BASE_URL" ]; then
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Repository variable QUIZ_API_BASE_URL が未設定のため GitHub Pages デプロイをスキップします"
-          fi
-
   build:
     name: Build GitHub Pages site
-    needs: check-config
-    if: needs.check-config.outputs.available == 'true'
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00  # v6.0.0
+        with:
+          go-version-file: quiz-app/go.mod
 
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745  # v5
 
       - name: Build public site
         working-directory: quiz-app
         env:
-          QUIZ_API_BASE_URL: ${{ vars.QUIZ_API_BASE_URL }}
+          QUIZ_TELEMETRY_ENDPOINT: ${{ vars.QUIZ_TELEMETRY_ENDPOINT }}
+          QUIZ_PREVIEW_UNLOCK_CODE: ${{ vars.QUIZ_PREVIEW_UNLOCK_CODE }}
         run: |
           make build-pages
-          printf 'window.__QUIZ_APP_CONFIG__ = Object.assign(window.__QUIZ_APP_CONFIG__ || {}, {\n  apiBaseUrl: "%s"\n});\n' "$QUIZ_API_BASE_URL" > gh-pages-dist/quiz-config.js
+          node <<'EOF'
+          const fs = require('fs');
+          const config = {
+            telemetryEndpoint: process.env.QUIZ_TELEMETRY_ENDPOINT || '',
+            previewUnlockCode: process.env.QUIZ_PREVIEW_UNLOCK_CODE || '',
+          };
+          fs.writeFileSync(
+            'gh-pages-dist/quiz-config.js',
+            `window.__QUIZ_APP_CONFIG__ = Object.assign(window.__QUIZ_APP_CONFIG__ || {}, ${JSON.stringify(config, null, 2)});\n`,
+          );
+          EOF
 
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b  # v4
         with:
@@ -63,10 +64,7 @@ jobs:
 
   deploy:
     name: Deploy GitHub Pages site
-    needs:
-      - check-config
-      - build
-    if: needs.check-config.outputs.available == 'true'
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
