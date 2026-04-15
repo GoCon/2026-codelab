@@ -238,3 +238,150 @@
     pkg.go.dev (testing/synctest): https://pkg.go.dev/testing/synctest
     Go Blog (synctest): https://go.dev/blog/synctest
     Go 1.24 リリースノート: https://go.dev/doc/go1.24
+
+# wancom Q1
+- id: "wancom_q1"
+  title: "select の実行順序"
+  text: "このコードの出力は何？"
+  question_code_ref: "code/wancom_q1_question.go"
+  choices:
+    - "Message from chA: msgA"
+    - "Message from chB: msgB-1"
+    - "Message from chC: msgC"
+    - "上記のどれか（どれが出るかはわからない）"
+  answer: 3
+  explanation: |
+    select はどの Channel から処理するかの順序を保証しません。
+    必要に応じて二重 select などを使用します。
+  answer_code_ref: "code/wancom_q1_answer.go"
+
+# wancom Q2
+- id: "wancom_q2"
+  title: "標準パッケージの対応フォーマット"
+  text: "標準パッケージでサポートされていないデータフォーマットは？"
+  choices:
+    - "gzip"
+    - "png"
+    - "mp3"
+    - "pem"
+  answer: 2
+  explanation: |
+    それぞれ、compress/gzip、image/png、encoding/pem が存在します。
+    mp3 だけ標準パッケージでは提供されていません。
+    ・ compress/gzip: https://pkg.go.dev/compress/gzip@go1.26.2
+    ・ image/png: https://pkg.go.dev/image/png@go1.26.2
+    ・ encoding/pem: https://pkg.go.dev/encoding/pem@go1.26.2
+
+# wancom Q3
+- id: "wancom_q3"
+  title: "pprof の提供データ"
+  text: "net/http/pprofとruntime/pprof両方で提供しているプロファイリングデータは？"
+  choices:
+    - "cmdline"
+    - "goroutine"
+    - "profile"
+    - "symbol"
+  answer: 1
+  explanation: |
+    goroutine は runtime/pprof から提供されるデータです。
+    cmdline、profile、symbol は net/http/pprof で独自に提供しているデータです。
+  answer_code_ref: "code/wancom_q3_answer.go"
+
+# sat0ken Q1
+- id: "sat0ken_q1"
+  title: "TinyGo 対応マイコン"
+  text: "TinyGoでサポートされているマイコンは？"
+  choices:
+    - "Arduino Uno"
+    - "Raspberry Pi Pico"
+    - "ESP32"
+    - "全て"
+  answer: 3
+  explanation: |
+    1~3番目の全てのマイコンがサポートされています。
+    公式ドキュメント: https://tinygo.org/docs/reference/microcontrollers/
+
+# sat0ken Q2
+- id: "sat0ken_q2"
+  title: "machine.PinMode"
+  text: |
+    TinyGoでLEDを光らせるには、machineパッケージでピンの入出力を指定する必要があります。
+    machine.PinModeで指定するタイプは次のうちどれですか？
+  choices:
+    - "machine.PinInput"
+    - "machine.PinOutput"
+    - "machine.PinAnalog"
+    - "machine.PinDigital"
+  answer: 1
+  explanation: |
+    LEDを光らせるには、ピンを出力モードである machine.PinOutput に設定する必要があります。
+    公式ドキュメント: https://pkg.go.dev/github.com/tinygo-org/tinygo/src/machine#PinMode
+
+# sat0ken Q3
+- id: "sat0ken_q3"
+  title: "Gopher Badge の色指定"
+  text: |
+    Gopher Badgeの画面の色を黒から赤に変えてみましょう。
+    color.RGBAでどのように指定すればよいでしょうか？
+
+    https://play.tinygo.org/
+  question_code_ref: "code/sat0ken_q3_question.go"
+  choices:
+    - "color.RGBA{0, 0, 0, 0}"
+    - "color.RGBA{255, 0, 0, 0}"
+    - "color.RGBA{255, 255, 0, 0}"
+    - "color.RGBA{255, 255, 255, 255}"
+  answer: 1
+  explanation: |
+    TinyGoでもimage/colorパッケージの使い方はGoと同じように、RGBAを指定します。
+    255, 0, 0, 0 を指定することで Gopher Badge の画面の色が黒から赤に変わります。
+
+# ryokotmng Q1
+- id: "ryokotmng_q1"
+  title: "append と共有配列"
+  text: "このコードの出力は何？"
+  question_code_ref: "code/ryokotmng_q1.go"
+  choices:
+    - "[1 2 3]"
+    - "[1 2 99]"
+    - "[99 2 3]"
+    - "[1 2 3 99]"
+  answer: 1
+  explanation: "b := a[:2] はコピーではなく同じ配列を参照するスライス。append がキャパシティ内（cap=3）なので新しい配列を確保せず、a[2] を 99 で上書きしてしまう。"
+
+# hasegawa_itsuki Q1
+- id: "hasegawa_itsuki_q1"
+  title: "Go のループ構文"
+  text: "Goにおいて、繰り返し処理を実現するために用意されているものは次のうちどれですか？"
+  choices:
+    - "foreach と for"
+    - "for のみ"
+    - "for と while"
+    - "for, while, do-while"
+  answer: 1
+  explanation: "for のみです。while や do-while, foreach に相当する構文も for を使って表現します。ループ構文を for に一本化することで、誰が書いても同じようなコードになり、可読性・一貫性が高まります。"
+
+# hasegawa_itsuki Q2
+- id: "hasegawa_itsuki_q2"
+  title: "Gopher のモチーフ"
+  text: "Goのマスコットキャラクター「Gopher」は何の生き物をモチーフにしている？"
+  choices:
+    - "ビーバー"
+    - "プレーリードッグ"
+    - "ウォンバット"
+    - "ホリネズミ"
+  answer: 3
+  explanation: "Gopherは英語でホリネズミ（pocket gopher）を指します。Go のマスコットキャラクターはRenee French がデザインしたホリネズミがモチーフです。"
+
+# hasegawa_itsuki Q3
+- id: "hasegawa_itsuki_q3"
+  title: "ポインタ渡しの更新"
+  text: "以下の A〜D のうち、関数を呼んだ後に msg の値が \"Original\" から\"Changed\" に変わるのはどれ？"
+  question_code_ref: "code/hasegawa_itsuki_q3_question.go"
+  choices:
+    - "A. updateA(msg)"
+    - "B. updateB(&msg)"
+    - "C. updateC(&msg)"
+    - "D. updateD(&ptr)"
+  answer: 2
+  explanation: "A は値渡しなので msg は変わりません。B は *string のコピーを差し替えるだけで msg に影響しません。C は *s = \"Changed\" でポインタの指す先を直接書き換えるため msg が Changed になります。D は ptr の向き先を変えるだけで msg は不変です。"
