@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
@@ -31,10 +32,10 @@ type logEntry struct {
 }
 
 type MemStore struct {
-	mu         sync.Mutex
-	entries    []logEntry
-	InsertErr  error // non-nil で InsertLog がこのエラーを返す
-	QueryErr   error // non-nil で QueryStats がこのエラーを返す
+	mu        sync.Mutex
+	entries   []logEntry
+	InsertErr error // non-nil で InsertLog がこのエラーを返す
+	QueryErr  error // non-nil で QueryStats がこのエラーを返す
 }
 
 func (m *MemStore) InsertLog(_ context.Context, questionID string, isCorrect bool) error {
@@ -832,6 +833,25 @@ func TestQuizesYAML_NoEmptyExplanations(t *testing.T) {
 	for _, q := range loadRealQuizzes(t) {
 		if strings.TrimSpace(q.Explanation) == "" {
 			t.Errorf("quiz %q: explanation が空です", q.ID)
+		}
+	}
+}
+
+func TestQuizesYAML_CodeRefsExist(t *testing.T) {
+	for _, q := range loadRealQuizzes(t) {
+		for _, ref := range []struct {
+			name string
+			path string
+		}{
+			{name: "question_code_ref", path: q.QuestionCodeRef},
+			{name: "answer_code_ref", path: q.AnswerCodeRef},
+		} {
+			if ref.path == "" {
+				continue
+			}
+			if _, err := os.Stat(filepath.Join("../../functions/api", ref.path)); err != nil {
+				t.Errorf("quiz %q: %s=%q の参照先が存在しません: %v", q.ID, ref.name, ref.path, err)
+			}
 		}
 	}
 }
