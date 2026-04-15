@@ -44,7 +44,7 @@ questions:
     # 正解時に表示するコードファイル (省略可)
     # answer_code_ref: "code/q3_question.go"
 
-  # Q3: 画面の色を変える
+  # Q3: gopher badgeの画面の色を変える
   - # 問題文
     text: |-
       Gopher Badgeの画面の色を黒から赤に変えてみましょう。
@@ -52,7 +52,7 @@ questions:
 
       https://play.tinygo.org/
     # 問題文に表示するコードファイル (quiz.yaml からの相対パス、省略可)
-    question_code_ref: "code/q2_code.go"
+    question_code_ref: "code/q3_question.go"
     # 選択肢 (4 つ)
     choices:
       - "color.RGBA{0, 0, 0, 0}"
@@ -67,3 +67,28 @@ questions:
       255, 0, 0, 0 を指定することでGopher Badgeの画面の色が黒から赤に変わります。
     # 正解時に表示するコードファイル (省略可)
     # answer_code_ref: "code/q2_answer.go"
+
+  # Q4: gopher badgeの目を光らせる
+  - # 問題文
+    text: |-
+      Gopher Badgeの目にはフルカラーLEDのWS2812がついています。このLEDを光らせるには、ws2812.New()でピン番号を指定する必要があります。
+      machine.xxxxxxxxとなっているピン番号の指定はどのように指定すればよいでしょうか？
+
+      ヒントは以下のソースです。
+      https://github.com/tinygo-org/tinygo/blob/dev/src/machine/board_gopher-badge.go
+    # 問題文に表示するコードファイル (quiz.yaml からの相対パス、省略可)
+    question_code_ref: "code/q4_question.go"
+    # 選択肢 (4 つ)
+    choices:
+      - "machine.GPIO0"
+      - "machine.GPIO1"
+      - "machine.GPIO10"
+      - "machine.NEOPIXELS"
+    # 正解の index (0-indexed)
+    answer: 3
+    # 解説
+    explanation: |-
+      TinyGoではサポートされているボードに応じてピン配置が定数として利用できます。
+      Gopher BadgeのフルカラーLEDはGPIO15に接続されていますが、これは以下のソースのようにmachine.NEOPIXELSとして参照することでできます。
+
+      https://github.com/tinygo-org/tinygo/blob/0755145824d6159e46d5ddf58bec3903f019ab9c/src/machine/board_gopher-badge.go#L22
