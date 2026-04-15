@@ -1,0 +1,39 @@
+# クイズのタイトル
+title: "Quiz Title"
+# 作成者の GitHub ユーザーネーム (setup.sh で自動設定されます)
+author: Rtosshy
+
+questions:
+  - # interfaceの問題
+    text: "このコードの出力は何？"
+    question_code_ref: "code/q1_question.go"
+    choices:
+      - "true"
+      - "false"
+      - "コンパイルエラー"
+      - "実行時エラー"
+    answer: 1
+    explanation: "Interfaceの内部には型情報と値の情報の2種類のポインタがあります。値がnilであっても型情報がnilでなければ、Interface全体としてはnilではありません。参考:https://go.dev/src/internal/abi/iface.go"
+    answer_code_ref: "code/q1_answer.go"
+
+  - # 消す系の組み込み関数の問題
+    text: "Goで存在する組み込み関数は？"
+    choices:
+      - "erase"
+      - "remove"
+      - "clear"
+      - "purge"
+    # 正解
+    answer: 2
+    explanation: "clearはGo 1.21で追加された組み込み関数で、sliceの要素をゼロ値に、mapの要素をすべて削除します。"
+
+  - # sliceを作ってappendするときの問題
+    text: "このコードの出力は何？"
+    question_code_ref: "code/q3_question.go"
+    choices:
+      - "[0 1 2 3 4 5 6 7 8 9]"
+      - "[]"
+      - "コンパイルエラー"
+      - "[0 0 0 0 0 0 0 0 0 0 0 1 2 3 4 5 6 7 8 9]"
+    answer: 3
+    explanation: "make([]int, 10) は長さ10のスライスを作るため、ゼロ値で埋められた要素が10個入った状態になります。そこに append すると末尾に追加されるため、計20要素になります。空のスライスに append したい場合は make([]int, 0, 10) のように長さ0・容量10で初期化しましょう。"
