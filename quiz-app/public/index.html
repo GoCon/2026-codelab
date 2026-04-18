@@ -188,6 +188,7 @@
     }
     .helper-message.error { color: var(--surface-primary-dark); }
     .helper-message.success { color: #1a7a6e; }
+    .helper-message.pending { color: var(--primitive-navy); }
     #preview-entry {
       display: none;
       margin-top: var(--space-s);
@@ -272,6 +273,17 @@
     }
     #result-badge.correct { color: var(--primitive-cyan); }
     #result-badge.incorrect { color: var(--surface-primary-dark); }
+    #correct-answer-text {
+      display: none;
+      margin-bottom: var(--space-xs);
+      padding: 12px var(--space-xs);
+      border-radius: 12px;
+      background: var(--surface-secondary);
+      color: var(--primitive-navy);
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.6;
+    }
     #explanation {
       color: var(--text-secondary);
       line-height: 1.75;
@@ -356,10 +368,25 @@
       padding-top: var(--space-s);
       border-top: 1px solid var(--surface-disabled);
     }
+    #perfect-score-section {
+      display: none;
+      margin-top: var(--space-s);
+      padding-top: var(--space-s);
+      border-top: 1px solid var(--surface-disabled);
+      text-align: left;
+    }
     #special-link-section p,
     #challenge-complete-section p {
       color: var(--text-secondary);
       margin-bottom: var(--space-xs);
+    }
+    #perfect-time-value {
+      font-family: var(--font-accent);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primitive-navy);
+      text-align: center;
+      margin-bottom: var(--space-xxs);
     }
     .special-link {
       display: inline-block;
@@ -471,6 +498,7 @@
 
       <div class="card" id="result" style="display:none">
         <div id="result-badge"></div>
+        <div id="correct-answer-text"></div>
         <div id="explanation"></div>
         <div id="answer-code-section">
           <div id="answer-code-label">Answer</div>
@@ -495,6 +523,24 @@
           <a class="special-link" href="https://example.com" target="_blank" rel="noopener noreferrer">
             スペシャルページへ
           </a>
+        </div>
+        <div id="perfect-score-section">
+          <div class="secret-title">解き終わるまでの時間</div>
+          <div id="perfect-time-value"></div>
+          <p class="secret-note" id="perfect-score-note">全問正解の記録を残せます。ニックネームを入力して送信してください。</p>
+          <div class="secret-row">
+            <input
+              class="secret-input"
+              id="nickname-input"
+              type="text"
+              autocomplete="nickname"
+              inputmode="text"
+              maxlength="40"
+              placeholder="ニックネームを入力"
+            >
+            <button class="c-button" data-compact="true" id="submit-perfect-score-btn" type="button">記録を送信</button>
+          </div>
+          <p class="helper-message" id="perfect-score-message"></p>
         </div>
         <div id="score-actions">
           <button class="c-button" id="restart-btn" type="button">もう一度チャレンジ</button>
@@ -528,6 +574,7 @@
     const codeBlock = document.getElementById('code-block');
     const choicesEl = document.getElementById('choices');
     const resultBadge = document.getElementById('result-badge');
+    const correctAnswerText = document.getElementById('correct-answer-text');
     const explanation = document.getElementById('explanation');
     const answerCodeSection = document.getElementById('answer-code-section');
     const answerCodeBlock = document.getElementById('answer-code-block');
@@ -536,6 +583,12 @@
     const scoreValue = document.getElementById('score-value');
     const specialLinkSection = document.getElementById('special-link-section');
     const challengeCompleteSection = document.getElementById('challenge-complete-section');
+    const perfectScoreSection = document.getElementById('perfect-score-section');
+    const perfectTimeValue = document.getElementById('perfect-time-value');
+    const perfectScoreNote = document.getElementById('perfect-score-note');
+    const nicknameInput = document.getElementById('nickname-input');
+    const submitPerfectScoreBtn = document.getElementById('submit-perfect-score-btn');
+    const perfectScoreMessage = document.getElementById('perfect-score-message');
     const challengeBtn = document.getElementById('challenge-btn');
     const restartBtn = document.getElementById('restart-btn');
     const scorePreviewBtn = document.getElementById('score-preview-btn');
@@ -558,6 +611,11 @@
     let isChallenge = false;
     let previewUnlocked = loadPreviewUnlocked();
     let sessionID = createSessionID();
+    let sessionStartedAt = null;
+    let latestAnswerElapsedSeconds = 0;
+    let perfectCompletionElapsedSeconds = null;
+    let perfectCompletionAt = '';
+    let perfectScoreSubmitted = false;
 
     function createSessionID() {
       if (window.crypto && typeof window.crypto.randomUUID === 'function') {
@@ -614,6 +672,18 @@
       secretMessage.style.display = 'block';
     }
 
+    function setPerfectScoreMessage(message, type) {
+      if (!message) {
+        perfectScoreMessage.style.display = 'none';
+        perfectScoreMessage.textContent = '';
+        perfectScoreMessage.className = 'helper-message';
+        return;
+      }
+      perfectScoreMessage.textContent = message;
+      perfectScoreMessage.className = type ? `helper-message ${type}` : 'helper-message';
+      perfectScoreMessage.style.display = 'block';
+    }
+
     function escapeHTML(str) {
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
@@ -663,6 +733,83 @@
       hljs.highlightElement(codeElement);
     }
 
+    function getElapsedSeconds(now = Date.now()) {
+      if (!sessionStartedAt) {
+        return 0;
+      }
+      return Math.max(0, Math.floor((now - sessionStartedAt) / 1000));
+    }
+
+    function formatElapsedSeconds(seconds) {
+      return `${seconds} 秒`;
+    }
+
+    function getTelemetryMode() {
+      return isChallenge ? 'extra' : 'normal';
+    }
+
+    function resetPerfectScoreState() {
+      latestAnswerElapsedSeconds = 0;
+      perfectCompletionElapsedSeconds = null;
+      perfectCompletionAt = '';
+      perfectScoreSubmitted = false;
+      perfectTimeValue.textContent = '';
+      perfectScoreNote.textContent = '全問正解の記録を残せます。ニックネームを入力して送信してください。';
+      nicknameInput.value = '';
+      nicknameInput.disabled = false;
+      submitPerfectScoreBtn.disabled = false;
+      submitPerfectScoreBtn.textContent = '記録を送信';
+      setPerfectScoreMessage('', '');
+    }
+
+    function postTelemetry(payload) {
+      if (!telemetryEndpoint) {
+        return Promise.reject(new Error('telemetry endpoint is not configured'));
+      }
+
+      const body = JSON.stringify(payload);
+      let sent = false;
+      if (navigator.sendBeacon) {
+        try {
+          sent = navigator.sendBeacon(
+            telemetryEndpoint,
+            new Blob([body], { type: 'text/plain;charset=UTF-8' })
+          );
+        } catch (_) {}
+      }
+
+      if (sent) {
+        return Promise.resolve();
+      }
+
+      return fetch(telemetryEndpoint, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+        body,
+      }).then(() => {});
+    }
+
+    function sendAnswerTelemetry(quiz, selectedAnswer, isCorrect, answeredAt, elapsedSeconds) {
+      if (!telemetryEndpoint) {
+        return;
+      }
+
+      postTelemetry({
+        event_type: 'answer',
+        question_id: quiz.id,
+        question_title: quiz.title,
+        selected_answer: selectedAnswer,
+        correct_answer: quiz.answer,
+        is_correct: isCorrect,
+        mode: getTelemetryMode(),
+        answered_at: answeredAt,
+        session_id: sessionID,
+        question_index: currentIndex + 1,
+        elapsed_seconds: elapsedSeconds,
+      }).catch(() => {});
+    }
+
     function renderHome() {
       hideError();
       homeCard.style.display = 'block';
@@ -670,8 +817,10 @@
       resultEl.style.display = 'none';
       nextBtn.style.display = 'none';
       scoreCard.style.display = 'none';
+      perfectScoreSection.style.display = 'none';
       progressEl.textContent = '';
       setSecretMessage('', '');
+      resetPerfectScoreState();
       updatePreviewButtons();
     }
 
@@ -689,9 +838,11 @@
       }
 
       sessionID = createSessionID();
+      sessionStartedAt = Date.now();
       session = pickSession(excludeIds);
       currentIndex = 0;
       correctCount = 0;
+      resetPerfectScoreState();
 
       homeCard.style.display = 'none';
       scoreCard.style.display = 'none';
@@ -712,6 +863,8 @@
       questionCard.style.display = 'block';
       choicesEl.innerHTML = '';
       resultEl.style.display = 'none';
+      correctAnswerText.style.display = 'none';
+      correctAnswerText.textContent = '';
       answerCodeSection.style.display = 'none';
       nextBtn.style.display = 'none';
 
@@ -737,56 +890,35 @@
       updateProgress();
     }
 
-    function sendTelemetry(quiz, selectedAnswer, isCorrect) {
-      if (!telemetryEndpoint) {
-        return;
-      }
-
-      const payload = JSON.stringify({
-        question_id: quiz.id,
-        question_title: quiz.title,
-        selected_answer: selectedAnswer,
-        correct_answer: quiz.answer,
-        is_correct: isCorrect,
-        mode: isChallenge ? 'challenge' : 'normal',
-        answered_at: new Date().toISOString(),
-        session_id: sessionID,
-        question_index: currentIndex + 1,
-      });
-
-      let sent = false;
-      if (navigator.sendBeacon) {
-        try {
-          sent = navigator.sendBeacon(
-            telemetryEndpoint,
-            new Blob([payload], { type: 'text/plain;charset=UTF-8' })
-          );
-        } catch (_) {}
-      }
-
-      if (!sent) {
-        fetch(telemetryEndpoint, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-          body: payload,
-        }).catch(() => {});
-      }
-    }
-
     function submitAnswer(quiz, answerIndex, clickedButton) {
       const buttons = document.querySelectorAll('.choice-btn');
       buttons.forEach(button => { button.disabled = true; });
+      correctAnswerText.style.display = 'none';
+      correctAnswerText.textContent = '';
 
       const isCorrect = answerIndex === quiz.answer;
+      const answeredAt = new Date().toISOString();
+      const elapsedSeconds = getElapsedSeconds();
+      latestAnswerElapsedSeconds = elapsedSeconds;
       if (isCorrect) {
         correctCount++;
       }
-      sendTelemetry(quiz, answerIndex, isCorrect);
+      if (currentIndex === session.length - 1 && correctCount === session.length) {
+        perfectCompletionElapsedSeconds = elapsedSeconds;
+        perfectCompletionAt = answeredAt;
+      }
+      sendAnswerTelemetry(quiz, answerIndex, isCorrect, answeredAt, elapsedSeconds);
 
       clickedButton.classList.add(isCorrect ? 'correct' : 'incorrect');
+      if (!isCorrect && buttons[quiz.answer]) {
+        buttons[quiz.answer].classList.add('correct');
+      }
       resultBadge.textContent = isCorrect ? '正解！' : '不正解...';
       resultBadge.className = isCorrect ? 'correct' : 'incorrect';
+      if (!isCorrect && typeof quiz.choices[quiz.answer] === 'string') {
+        correctAnswerText.textContent = `正解は「${quiz.choices[quiz.answer]}」です。`;
+        correctAnswerText.style.display = 'block';
+      }
       explanation.innerHTML = linkify(quiz.explanation);
 
       if (isCorrect && (quiz.answer_code || quiz.answer_code_play_ref)) {
@@ -834,9 +966,65 @@
       scoreValue.textContent = `${totalCorrect} / ${totalAnswered}`;
       challengeCompleteSection.style.display = challengePerfect ? 'block' : 'none';
       specialLinkSection.style.display = (!isChallenge && allCorrect) ? 'block' : 'none';
+      perfectScoreSection.style.display = allCorrect ? 'block' : 'none';
+      if (allCorrect) {
+        const elapsedSeconds = perfectCompletionElapsedSeconds ?? latestAnswerElapsedSeconds;
+        perfectTimeValue.textContent = formatElapsedSeconds(elapsedSeconds);
+        if (!telemetryEndpoint) {
+          perfectScoreNote.textContent = '解き終わった時間は表示中です。現在は記録送信エンドポイントが設定されていません。';
+          nicknameInput.disabled = true;
+          submitPerfectScoreBtn.disabled = true;
+        }
+      }
       challengeBtn.style.display = canChallengeMore && ((!isChallenge && allCorrect) || (isChallenge && !allCorrect)) ? '' : 'none';
       scoreCard.style.display = 'block';
       updatePreviewButtons();
+    }
+
+    async function submitPerfectScore() {
+      if (perfectCompletionElapsedSeconds === null || !perfectCompletionAt) {
+        setPerfectScoreMessage('送信できるクリア記録が見つかりません。', 'error');
+        return;
+      }
+      if (!telemetryEndpoint) {
+        setPerfectScoreMessage('記録送信エンドポイントが設定されていません。', 'error');
+        return;
+      }
+
+      const nickname = nicknameInput.value.trim();
+      if (!nickname) {
+        setPerfectScoreMessage('ニックネームを入力してください。', 'error');
+        nicknameInput.focus();
+        return;
+      }
+      if (nickname.length > 40) {
+        setPerfectScoreMessage('ニックネームは40文字以内で入力してください。', 'error');
+        nicknameInput.focus();
+        return;
+      }
+
+      nicknameInput.disabled = true;
+      submitPerfectScoreBtn.disabled = true;
+      setPerfectScoreMessage('記録を送信しています…', 'pending');
+
+      try {
+        await postTelemetry({
+          event_type: 'perfect_score',
+          nickname,
+          elapsed_seconds: perfectCompletionElapsedSeconds,
+          completed_at: perfectCompletionAt,
+          mode: getTelemetryMode(),
+          session_id: sessionID,
+        });
+        perfectScoreSubmitted = true;
+        perfectScoreNote.textContent = '記録を送信しました。別の記録を残すには、もう一度クイズに挑戦してください。';
+        submitPerfectScoreBtn.textContent = '送信済み';
+        setPerfectScoreMessage('クリア記録を送信しました。', 'success');
+      } catch (_) {
+        nicknameInput.disabled = false;
+        submitPerfectScoreBtn.disabled = false;
+        setPerfectScoreMessage('記録の送信に失敗しました。通信環境を確認して、もう一度お試しください。', 'error');
+      }
     }
 
     function openPreviewPage() {
@@ -857,6 +1045,7 @@
       pastCorrect += correctCount;
       startSession([...seenIds]);
     });
+    submitPerfectScoreBtn.addEventListener('click', submitPerfectScore);
     previewBtn.addEventListener('click', openPreviewPage);
     scorePreviewBtn.addEventListener('click', openPreviewPage);
     unlockBtn.addEventListener('click', () => {
@@ -877,6 +1066,12 @@
       if (event.key === 'Enter') {
         event.preventDefault();
         unlockBtn.click();
+      }
+    });
+    nicknameInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        submitPerfectScore();
       }
     });
 

@@ -9,6 +9,7 @@ Go Conference 2026 のコードラボ向け Go クイズアプリです。
 - 問題・選択肢・Go コードのシンタックスハイライト表示
 - 回答後に正誤・解説・解答コード・Go Playground リンクを表示
 - 全問正解でスペシャルページへのリンクを表示
+- 回答開始からの経過秒数を計測し、全問正解時はクリアタイム表示とニックネーム送信が可能
 - エクストラモードで未出問題へ継続挑戦、累計スコアを表示
 - 旧 admin の問題一覧モードを公開 UI に統合
   - 初回ページで秘密のコードを入力すると解放
@@ -90,7 +91,7 @@ gh-pages-dist/
 ### 1. スプレッドシートを作成
 
 任意の Google スプレッドシートを 1 つ用意します。  
-Apps Script は `Logs` と `Summary` の 2 シートを自動で作成・更新します。
+Apps Script は `Logs`、`Summary`、`PerfectScores` の 3 シートを自動で作成・更新します。
 
 ### 2. Apps Script を作成
 
@@ -102,10 +103,11 @@ Apps Script は `Logs` と `Summary` の 2 シートを自動で作成・更新�
 6. アクセスできるユーザーを **全員**
 7. 発行された Web アプリ URL を控える
 
-受信 payload は以下のような JSON です。
+回答ログは以下のような JSON です。
 
 ```json
 {
+  "event_type": "answer",
   "question_id": "alice_q1",
   "question_title": "range の仕様",
   "selected_answer": 1,
@@ -114,11 +116,27 @@ Apps Script は `Logs` と `Summary` の 2 シートを自動で作成・更新�
   "mode": "normal",
   "session_id": "....",
   "question_index": 3,
+  "elapsed_seconds": 42,
   "answered_at": "2026-04-15T12:34:56.000Z"
 }
 ```
 
-`Logs` シートには全回答が追記され、`Summary` シートには問題ごとの回答数・正答数・正答率が再計算されます。
+全問正解時にニックネーム送信用フォームから送られる payload は以下です。
+
+```json
+{
+  "event_type": "perfect_score",
+  "nickname": "gopher",
+  "elapsed_seconds": 42,
+  "completed_at": "2026-04-15T12:39:56.000Z",
+  "mode": "extra",
+  "session_id": "...."
+}
+```
+
+- `Logs` シートには全回答が追記され、各回答時点の `elapsed_seconds` も保存されます
+- `Summary` シートには問題ごとの回答数・正答数・正答率が再計算されます
+- `PerfectScores` シートには全問正解時に送信されたニックネーム、クリアタイム、回答完了日時、`mode`（`normal` / `extra`）が追記されます
 
 ## GitHub Pages workflow 設定
 
@@ -128,13 +146,13 @@ GitHub の **Settings > Secrets and variables > Actions > Variables** に、必�
 
 | Variable 名 | 必須 | 説明 |
 |---|---|---|
-| `QUIZ_TELEMETRY_ENDPOINT` | 任意 | Apps Script の Web アプリ URL |
+| `QUIZ_TELEMETRY_ENDPOINT` | 任意 | Apps Script の Web アプリ URL（未設定時は `public/quiz-config.js` の既定値を使用） |
 | `QUIZ_PREVIEW_UNLOCK_CODE` | 任意 | 初回ページで問題一覧モードを解放する秘密のコード |
 
-- `QUIZ_TELEMETRY_ENDPOINT` が空でも GitHub Pages の静的サイトはデプロイされます
+- `QUIZ_TELEMETRY_ENDPOINT` が空でも GitHub Pages の静的サイトはデプロイされ、`public/quiz-config.js` に含まれる既定の Apps Script URL が使われます
 - `QUIZ_PREVIEW_UNLOCK_CODE` が空なら、問題一覧モードはエクストラモード全問正解でのみ解放されます
 
-workflow は build 時に `gh-pages-dist/quiz-config.js` を上書きして、この設定を埋め込みます。
+workflow は build 時に `public/quiz-config.js` の既定値を読み込み、Actions Variables が設定されている項目だけ `gh-pages-dist/quiz-config.js` へ上書きします。
 
 ## 旧 Cloudflare Functions ビルド
 

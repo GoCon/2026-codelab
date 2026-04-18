@@ -48,9 +48,16 @@ jobs:
           make build-pages
           node <<'EOF'
           const fs = require('fs');
+          const vm = require('vm');
+          const sandbox = { window: {} };
+          vm.createContext(sandbox);
+          vm.runInContext(fs.readFileSync('public/quiz-config.js', 'utf8'), sandbox);
+
+          const defaults = sandbox.window.__QUIZ_APP_CONFIG__ || {};
           const config = {
-            telemetryEndpoint: process.env.QUIZ_TELEMETRY_ENDPOINT || '',
-            previewUnlockCode: process.env.QUIZ_PREVIEW_UNLOCK_CODE || '',
+            ...defaults,
+            ...(process.env.QUIZ_TELEMETRY_ENDPOINT ? { telemetryEndpoint: process.env.QUIZ_TELEMETRY_ENDPOINT } : {}),
+            ...(process.env.QUIZ_PREVIEW_UNLOCK_CODE ? { previewUnlockCode: process.env.QUIZ_PREVIEW_UNLOCK_CODE } : {}),
           };
           fs.writeFileSync(
             'gh-pages-dist/quiz-config.js',

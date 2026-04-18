@@ -1,5 +1,7 @@
 const LOG_SHEET_NAME = 'Logs';
 const SUMMARY_SHEET_NAME = 'Summary';
+const PERFECT_SCORE_SHEET_NAME = 'PerfectScores';
+const MAX_NICKNAME_LENGTH = 40;
 
 const LOG_HEADERS = [
   'question_id',
@@ -10,6 +12,7 @@ const LOG_HEADERS = [
   'is_correct',
   'session_id',
   'question_index',
+  'elapsed_seconds',
   'answered_at',
   'received_at',
 ];
@@ -22,15 +25,28 @@ const SUMMARY_HEADERS = [
   'accuracy',
 ];
 
+const PERFECT_SCORE_HEADERS = [
+  'nickname',
+  'elapsed_seconds',
+  'completed_at',
+  'mode',
+  'session_id',
+  'received_at',
+];
+
 function doPost(e) {
   try {
     const payload = parsePayload_(e);
     const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-    const logSheet = ensureSheet_(spreadsheet, LOG_SHEET_NAME, LOG_HEADERS);
-    const summarySheet = ensureSheet_(spreadsheet, SUMMARY_SHEET_NAME, SUMMARY_HEADERS);
-
-    appendLogRow_(logSheet, payload);
-    rebuildSummary_(logSheet, summarySheet);
+    if (payload.event_type === 'perfect_score') {
+      const perfectScoreSheet = ensureSheet_(spreadsheet, PERFECT_SCORE_SHEET_NAME, PERFECT_SCORE_HEADERS);
+      appendPerfectScoreRow_(perfectScoreSheet, payload);
+    } else {
+      const logSheet = ensureSheet_(spreadsheet, LOG_SHEET_NAME, LOG_HEADERS);
+      const summarySheet = ensureSheet_(spreadsheet, SUMMARY_SHEET_NAME, SUMMARY_HEADERS);
+      appendLogRow_(logSheet, payload);
+      rebuildSummary_(logSheet, summarySheet);
+    }
 
     return jsonResponse_(200, { ok: true });
   } catch (err) {
@@ -44,7 +60,7 @@ function doPost(e) {
 function doGet() {
   return jsonResponse_(200, {
     ok: true,
-    message: 'POST telemetry JSON to this Apps Script web app URL.',
+    message: 'POST answer or perfect-score telemetry JSON to this Apps Script web app URL.',
   });
 }
 
@@ -59,19 +75,29 @@ function parsePayload_(e) {
   }
 
   const payload = JSON.parse(raw);
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new Error('payload must be a JSON object');
+  }
+  if (payload.event_type === 'perfect_score') {
+    return parsePerfectScorePayload_(payload);
+  }
+  return parseAnswerPayload_(payload);
+}
+
+function parseAnswerPayload_(payload) {
+  payload.event_type = 'answer';
   if (typeof payload.question_id !== 'string' || payload.question_id.trim() === '') {
     throw new Error('question_id is required');
   }
+  payload.question_id = payload.question_id.trim();
   if (typeof payload.question_title !== 'string') {
     payload.question_title = '';
   }
-  if (payload.mode !== 'challenge') {
-    payload.mode = 'normal';
-  }
-  if (typeof payload.selected_answer !== 'number') {
+  payload.mode = normalizeMode_(payload.mode);
+  if (!isFiniteNumber_(payload.selected_answer)) {
     throw new Error('selected_answer must be a number');
   }
-  if (typeof payload.correct_answer !== 'number') {
+  if (!isFiniteNumber_(payload.correct_answer)) {
     throw new Error('correct_answer must be a number');
   }
   if (typeof payload.is_correct !== 'boolean') {
@@ -80,11 +106,37 @@ function parsePayload_(e) {
   if (typeof payload.session_id !== 'string') {
     payload.session_id = '';
   }
-  if (typeof payload.question_index !== 'number') {
+  if (!isFiniteNumber_(payload.question_index)) {
     payload.question_index = '';
+  }
+  if (!isFiniteNumber_(payload.elapsed_seconds) || payload.elapsed_seconds < 0) {
+    payload.elapsed_seconds = '';
   }
   if (typeof payload.answered_at !== 'string' || payload.answered_at.trim() === '') {
     payload.answered_at = new Date().toISOString();
+  }
+
+  return payload;
+}
+
+function parsePerfectScorePayload_(payload) {
+  payload.event_type = 'perfect_score';
+  if (typeof payload.nickname !== 'string' || payload.nickname.trim() === '') {
+    throw new Error('nickname is required');
+  }
+  payload.nickname = payload.nickname.trim();
+  if (payload.nickname.length > MAX_NICKNAME_LENGTH) {
+    throw new Error(`nickname must be ${MAX_NICKNAME_LENGTH} characters or less`);
+  }
+  payload.mode = normalizeMode_(payload.mode);
+  if (!isFiniteNumber_(payload.elapsed_seconds) || payload.elapsed_seconds < 0) {
+    throw new Error('elapsed_seconds must be a non-negative number');
+  }
+  if (typeof payload.completed_at !== 'string' || payload.completed_at.trim() === '') {
+    payload.completed_at = new Date().toISOString();
+  }
+  if (typeof payload.session_id !== 'string') {
+    payload.session_id = '';
   }
 
   return payload;
@@ -117,7 +169,19 @@ function appendLogRow_(sheet, payload) {
     payload.is_correct,
     payload.session_id,
     payload.question_index,
+    payload.elapsed_seconds,
     payload.answered_at,
+    new Date().toISOString(),
+  ]);
+}
+
+function appendPerfectScoreRow_(sheet, payload) {
+  sheet.appendRow([
+    payload.nickname,
+    payload.elapsed_seconds,
+    payload.completed_at,
+    payload.mode,
+    payload.session_id,
     new Date().toISOString(),
   ]);
 }
@@ -173,6 +237,17 @@ function rebuildSummary_(logSheet, summarySheet) {
 
   summarySheet.getRange(2, 1, summaryRows.length, SUMMARY_HEADERS.length).setValues(summaryRows);
   summarySheet.getRange(2, 5, summaryRows.length, 1).setNumberFormat('0.0%');
+}
+
+function isFiniteNumber_(value) {
+  return typeof value === 'number' && isFinite(value);
+}
+
+function normalizeMode_(value) {
+  if (value === 'extra' || value === 'challenge') {
+    return 'extra';
+  }
+  return 'normal';
 }
 
 function jsonResponse_(statusCode, body) {
