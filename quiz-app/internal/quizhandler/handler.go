@@ -3,6 +3,7 @@ package quizhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -10,18 +11,25 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	QuizModeBoth   = "both"
+	QuizModeNormal = "normal"
+	QuizModeExtra  = "extra"
+)
+
 // Quiz represents a quiz question loaded from quizes.yaml.
 // Answer and Explanation are excluded from JSON responses via json:"-".
 type Quiz struct {
-	ID               string   `yaml:"id"                    json:"id"`
-	Title            string   `yaml:"title"                 json:"title"`
-	Text             string   `yaml:"text"                  json:"text"`
-	Choices          []string `yaml:"choices"               json:"choices"`
-	Answer           int      `yaml:"answer"                json:"-"`
-	Explanation      string   `yaml:"explanation"           json:"-"`
-	QuestionCodeRef  string   `yaml:"question_code_ref"     json:"-"`
-	AnswerCodeRef    string   `yaml:"answer_code_ref"       json:"-"`
-	AnswerCodePlayRef string  `yaml:"answer_code_play_ref"  json:"-"`
+	ID                string   `yaml:"id"                   json:"id"`
+	Title             string   `yaml:"title"                json:"title"`
+	Text              string   `yaml:"text"                 json:"text"`
+	Mode              string   `yaml:"mode"                 json:"mode,omitempty"`
+	Choices           []string `yaml:"choices"              json:"choices"`
+	Answer            int      `yaml:"answer"               json:"-"`
+	Explanation       string   `yaml:"explanation"          json:"-"`
+	QuestionCodeRef   string   `yaml:"question_code_ref"    json:"-"`
+	AnswerCodeRef     string   `yaml:"answer_code_ref"      json:"-"`
+	AnswerCodePlayRef string   `yaml:"answer_code_play_ref" json:"-"`
 }
 
 // ParseQuizzes unmarshals YAML quiz data.
@@ -30,7 +38,34 @@ func ParseQuizzes(data []byte) ([]Quiz, error) {
 	if err := yaml.Unmarshal(data, &quizzes); err != nil {
 		return nil, err
 	}
+	for i := range quizzes {
+		mode, err := NormalizeQuizMode(quizzes[i].Mode)
+		if err != nil {
+			label := quizzes[i].ID
+			if label == "" {
+				label = fmt.Sprintf("#%d", i+1)
+			}
+			return nil, fmt.Errorf("quiz %s: %w", label, err)
+		}
+		quizzes[i].Mode = mode
+	}
 	return quizzes, nil
+}
+
+// NormalizeQuizMode normalizes quiz pool metadata from YAML/static data.
+// Empty values default to "both" so legacy quiz definitions stay available in
+// both normal and extra sessions until authors opt into pool-specific behavior.
+func NormalizeQuizMode(mode string) (string, error) {
+	switch strings.ToLower(strings.TrimSpace(mode)) {
+	case "", QuizModeBoth:
+		return QuizModeBoth, nil
+	case QuizModeNormal:
+		return QuizModeNormal, nil
+	case QuizModeExtra:
+		return QuizModeExtra, nil
+	default:
+		return "", fmt.Errorf("unsupported mode %q", mode)
+	}
 }
 
 // QuizResponse is the public quiz payload. Answer and Explanation are intentionally absent.
@@ -56,23 +91,9 @@ type AnswerResponse struct {
 	AnswerCodePlayRef string `json:"answer_code_play_ref,omitempty"`
 }
 
-// QuestionStat holds per-question aggregated statistics.
-// CorrectRate is computed by StatsHandler from Total and Correct.
-type QuestionStat struct {
-	QuestionID  string  `json:"question_id"`
-	Total       int     `json:"total"`
-	Correct     int     `json:"correct"`
-	CorrectRate float64 `json:"correct_rate"`
-}
-
 // LogStore persists answer logs.
 type LogStore interface {
 	InsertLog(ctx context.Context, questionID string, isCorrect bool) error
-}
-
-// StatsStore returns raw per-question totals (CorrectRate not populated).
-type StatsStore interface {
-	QueryStats(ctx context.Context) ([]QuestionStat, error)
 }
 
 // QuizHandler serves GET /api/quiz and POST /api/quiz/answer.
@@ -199,70 +220,4 @@ func (h *QuizHandler) PostAnswer(w http.ResponseWriter, r *http.Request) {
 		resp.AnswerCodePlayRef = target.AnswerCodePlayRef
 	}
 	json.NewEncoder(w).Encode(resp)
-}
-
-// AdminQuizDetail is the full quiz payload returned for admin preview.
-type AdminQuizDetail struct {
-	ID               string   `json:"id"`
-	Title            string   `json:"title"`
-	Text             string   `json:"text"`
-	Choices          []string `json:"choices"`
-	Answer           int      `json:"answer"`
-	Explanation      string   `json:"explanation"`
-	QuestionCode     string   `json:"question_code,omitempty"`
-	AnswerCode       string   `json:"answer_code,omitempty"`
-	AnswerCodePlayRef string  `json:"answer_code_play_ref,omitempty"`
-}
-
-// GetAdminQuizzes returns all quizzes with full details (answer, explanation, code).
-// This is intended for the admin UI only.
-func (h *QuizHandler) GetAdminQuizzes(w http.ResponseWriter, r *http.Request) {
-	details := make([]AdminQuizDetail, 0, len(h.Quizzes))
-	for _, q := range h.Quizzes {
-		d := AdminQuizDetail{
-			ID:          q.ID,
-			Title:       q.Title,
-			Text:        q.Text,
-			Choices:     q.Choices,
-			Answer:      q.Answer,
-			Explanation: q.Explanation,
-		}
-		if q.QuestionCodeRef != "" {
-			d.QuestionCode = h.CodeFiles[q.QuestionCodeRef]
-		}
-		if q.AnswerCodeRef != "" {
-			d.AnswerCode = h.CodeFiles[q.AnswerCodeRef]
-		}
-		if q.AnswerCodePlayRef != "" {
-			d.AnswerCodePlayRef = q.AnswerCodePlayRef
-		}
-		details = append(details, d)
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(details)
-}
-
-
-type StatsHandler struct {
-	DB StatsStore
-}
-
-func (h *StatsHandler) GetStats(w http.ResponseWriter, r *http.Request) {
-	stats, err := h.DB.QueryStats(r.Context())
-	if err != nil {
-		http.Error(w, "failed to query stats", http.StatusInternalServerError)
-		return
-	}
-	if stats == nil {
-		stats = []QuestionStat{}
-	}
-	// CorrectRate は DB から取得した Total/Correct を元にここで計算する。
-	// Total == 0 はありえないが（GROUP BY は件数 0 の行を返さない）、ゼロ除算防御として残す。
-	for i := range stats {
-		if stats[i].Total > 0 {
-			stats[i].CorrectRate = float64(stats[i].Correct) / float64(stats[i].Total) * 100
-		}
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(stats)
 }

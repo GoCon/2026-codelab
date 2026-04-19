@@ -1,122 +1,199 @@
 # quiz-app
 
 Go Conference 2026 のコードラボ向け Go クイズアプリです。  
-Cloudflare Pages + D1 + TinyGo (WebAssembly) で動作します。
+公開 UI は GitHub Pages に静的配信し、回答ログと問題ごとの正答率集計は Google Apps Script + Google スプレッドシートで扱います。
 
 ## 機能
 
-- ランダムに選ばれた 5 問を出題 (セッション単位でユニーク)
+- ランダムに選ばれた 5 問を出題
+- 問題ごとに `normal` / `extra` / `both` の出題プールを持てる
 - 問題・選択肢・Go コードのシンタックスハイライト表示
-- 回答後に正誤・解説・解答コードを表示
+- 選択肢順は出題ごとにランダムシャッフル
+- 回答後に正誤・解説・解答コード・Go Playground リンクを表示
 - 全問正解でスペシャルページへのリンクを表示
-- チャレンジモード: 既出問題を除いた全問に挑戦、累計スコア表示
-- 管理画面 (`/admin`): 問題ごとの正答率集計・問題内容プレビュー
+- 回答開始からの経過秒数を計測し、全問正解時はクリアタイム表示とニックネーム送信が可能
+- エクストラモードで未出問題へ継続挑戦、累計スコアを表示
+- 問題プレビューモードを公開 UI に統合
+  - フッターを 10 回タップすると hidden Keyword ポップアップが開き、Keyword で問題プレビューモードを開ける
+  - またはエクストラモード全問正解で解放
+- 回答イベントを Google Apps Script に送信し、スプレッドシートで問題ごとの集計を更新
 
 ## 技術スタック
 
 | 層 | 技術 |
 |---|---|
 | フロントエンド | バニラ HTML/CSS/JS、[highlight.js](https://highlightjs.org/) |
-| API (WebAssembly) | Go 1.25 + [TinyGo 0.40.1](https://tinygo.org/) |
-| Workers ランタイム | [syumai/workers](https://github.com/syumai/workers) |
-| データベース | Cloudflare D1 (SQLite 互換) |
-| ホスティング | Cloudflare Pages |
-| インフラ管理 | Terraform (Cloudflare Provider) |
-| ローカル開発 | 標準 Go HTTP サーバー (インメモリ DB) |
+| 静的データ生成 | Go |
+| ホスティング | GitHub Pages |
+| 集計 | Google Apps Script + Google スプレッドシート |
+| ローカル開発 | 標準 Go HTTP サーバー |
+| 互換用ビルド | Go + TinyGo + Cloudflare Pages Functions |
 
 ## ディレクトリ構成
 
-```
+```text
 quiz-app/
-├── cmd/local/          # ローカル開発用 Go HTTP サーバー
+├── cmd/
+│   ├── generatequizdata/   # quizes.yaml から quiz-data.js を生成
+│   └── local/              # ローカル開発用サーバー
 ├── functions/
 │   └── api/
-│       ├── quiz.go         # クイズ API (WASM エントリーポイント)
 │       ├── quizes.yaml     # 問題データ
-│       ├── code/           # 問題・解答コードファイル
-│       └── admin/
-│           └── stats.go    # 管理 API (WASM エントリーポイント)
+│       ├── code/           # 問題・解答コード
+│       ├── quiz.go         # 互換用 quiz API (Cloudflare Pages Functions)
+├── gas/
+│   └── telemetry.gs        # Apps Script の集計エンドポイント
 ├── internal/
-│   └── quizhandler/
-│       ├── handler.go      # ビジネスロジック
-│       └── handler_test.go
+│   ├── quizdata/           # 静的クイズデータ生成の共通処理
+│   └── quizhandler/        # 互換用サーバーロジック
 ├── public/
-│   ├── index.html          # クイズ画面
-│   └── admin/index.html    # 管理画面
-├── terraform/              # Cloudflare インフラ定義
-├── schema.sql              # D1 テーブル定義
-├── wrangler.toml           # Cloudflare Pages 設定
+│   ├── index.html          # 公開クイズ画面
+│   ├── preview/index.html  # 解放後の問題プレビューモード
+│   └── quiz-config.js      # telemetry / 秘密コード設定
 ├── Makefile
 └── go.mod
 ```
 
 ## ローカル開発
 
-> Go 1.25 が必要です。[https://go.dev/dl/](https://go.dev/dl/) からインストールしてください。
+> Go 1.25 以上が必要です。
 
 ```bash
 cd quiz-app
 make local
-# http://localhost:8788 でアクセス
+# http://localhost:8788
 ```
 
-PORT 環境変数でポートを変更できます:
+`make local` は `public/` を配信しつつ、`/quiz-data.js` を動的生成します。  
+`PORT=3000 make local` のようにポート変更も可能です。
+
+## GitHub Pages 用の静的ビルド
 
 ```bash
-PORT=3000 make local
+cd quiz-app
+make build-pages
 ```
 
-`make local` はインメモリの回答ログストアを使用するため、D1 は不要です。
+成果物は `gh-pages-dist/` に出力されます。
 
-## ビルド (Cloudflare Pages 用 WASM)
-
-以下のツールが必要です。
-
-| ツール | バージョン | インストール |
-|---|---|---|
-| Go | 1.25.x | [https://go.dev/dl/](https://go.dev/dl/) |
-| TinyGo | 0.40.1 | [https://tinygo.org/getting-started/install/](https://tinygo.org/getting-started/install/) |
-
-> TinyGo 0.40.1 がサポートする Go は 1.19〜1.25 です。システムの Go が 1.26 以上の場合は `GO` 変数で 1.25 系を指定してください。
-
-```bash
-make build GO=/usr/local/go/bin/go
-```
-
-成果物は `dist/` に出力されます。
-
-```
-dist/
+```text
+gh-pages-dist/
 ├── index.html
-├── admin/index.html
-└── functions/api/
-    ├── quiz.wasm
-    └── admin/stats.wasm
+├── preview/index.html
+├── quiz-config.js
+└── quiz-data.js
 ```
 
-## Wrangler でのローカル動作確認
+`quiz-data.js` は `functions/api/quizes.yaml` と `functions/api/code/*` から生成されます。
+
+## Google Apps Script + スプレッドシート設定
+
+### 1. スプレッドシートを作成
+
+任意の Google スプレッドシートを 1 つ用意します。  
+Apps Script は `Logs`、`Summary`、`Attempts`、`PerfectScores` の 4 シートを自動で作成・更新します。
+
+### 2. Apps Script を作成
+
+1. スプレッドシートで **拡張機能 > Apps Script** を開く
+2. `quiz-app/gas/telemetry.gs` の内容を貼り付ける
+3. **デプロイ > 新しいデプロイ**
+4. 種類を **ウェブアプリ** にする
+5. 実行ユーザーを **自分**
+6. アクセスできるユーザーを **全員**
+7. 発行された Web アプリ URL を控える
+
+回答ログは以下のような JSON です。
+
+```json
+{
+  "event_type": "answer",
+  "question_id": "alice_q1",
+  "question_title": "range の仕様",
+  "selected_answer": 1,
+  "correct_answer": 1,
+  "selected_display_index": 2,
+  "correct_display_index": 2,
+  "selected_choice_text": "for range",
+  "correct_choice_text": "for range",
+  "choice_order": [3, 0, 1, 2],
+  "is_correct": true,
+  "mode": "normal",
+  "session_id": "same-browser-session-id",
+  "attempt_id": "single-quiz-run-id",
+  "question_index": 3,
+  "session_size": 5,
+  "elapsed_seconds": 42,
+  "question_elapsed_seconds": 11,
+  "answered_at": "2026-04-15T12:34:56.000Z"
+}
+```
+
+- `session_id`: 同じブラウザセッション内の再挑戦をまたいで共通の ID
+- `attempt_id`: 1 回の 5 問チャレンジごとに新しく採番される ID
+- `selected_answer` / `correct_answer`: `quizes.yaml` 上の元の選択肢 index
+- `selected_display_index` / `correct_display_index`: シャッフル後に画面へ表示された index
+- `choice_order`: 表示順から元の index への対応（例: `[3,0,1,2]` は「表示1番目=元の4番目」）
+
+全問正解時にニックネーム送信用フォームから送られる payload は以下です。
+
+```json
+{
+  "event_type": "perfect_score",
+  "nickname": "gopher",
+  "elapsed_seconds": 42,
+  "completed_at": "2026-04-15T12:39:56.000Z",
+  "mode": "extra",
+  "session_id": "same-browser-session-id",
+  "attempt_id": "single-quiz-run-id"
+}
+```
+
+- `Logs` シートには全回答が追記され、`session_id`、`attempt_id`、各回答時点の `elapsed_seconds`、各問題にかかった `question_elapsed_seconds` に加えて、元の選択肢 index / 表示 index / 選択肢テキスト / `choice_order` が保存されます
+- `Summary` シートには問題ごとの **初回回答時の正答率** と **最終回答時の正答率**、および初回/最終回答時点の平均所要秒数が再計算されます
+- `Attempts` シートには各 `attempt_id` ごとの回答数、完走有無、最後に到達した問題番号、総経過秒数がまとまり、途中離脱の分析に使えます
+- `PerfectScores` シートには全問正解時に送信されたニックネーム、クリアタイム、回答完了日時、`mode`（`normal` / `extra`）、`attempt_id` が追記されます
+
+## GitHub Pages workflow 設定
+
+workflow: `.github/workflows/quiz-app-github-pages.yml`
+
+GitHub の **Settings > Secrets and variables > Actions > Variables** に、必要に応じて次を追加してください。
+
+| Variable 名 | 必須 | 説明 |
+|---|---|---|
+| `QUIZ_TELEMETRY_ENDPOINT` | 任意 | Apps Script の Web アプリ URL（未設定時は `public/quiz-config.js` の既定値を使用） |
+| `QUIZ_PREVIEW_UNLOCK_CODE` | 任意 | フッター 10 タップ後に開く hidden Keyword ポップアップで使うコード（未設定時は `gofar,gotogether`） |
+
+- `QUIZ_TELEMETRY_ENDPOINT` が空でも GitHub Pages の静的サイトはデプロイされ、`public/quiz-config.js` に含まれる既定の Apps Script URL が使われます
+- `QUIZ_PREVIEW_UNLOCK_CODE` を未設定のまま使う場合、既定の hidden Keyword は `gofar,gotogether` です
+
+workflow は build 時に `public/quiz-config.js` の既定値を読み込み、Actions Variables が設定されている項目だけ `gh-pages-dist/quiz-config.js` へ上書きします。
+
+## 旧 Cloudflare Functions ビルド
+
+互換確認用に、従来の Cloudflare Pages Functions 向けビルドも残しています。
 
 ```bash
-# D1 スキーマの初期化
-npx wrangler d1 execute quiz-db --local --file=schema.sql --yes
-
-# 静的ファイルをビルドしてから起動
-make build GO=... && npx wrangler pages dev dist
+cd quiz-app
+make build GO=/usr/lib/go-1.22/bin/go
 ```
+
+> TinyGo 0.40.1 は Go 1.26 を直接サポートしないため、環境によっては `GO=/usr/lib/go-1.22/bin/go` のように指定してください。
 
 ## テスト
 
 ```bash
 cd quiz-app
 go test ./...
+make test-browser
 ```
 
 ## 問題の追加方法
 
 ### 1. コードファイルを配置
 
-`functions/api/code/` に Go ファイルを追加します。  
-ファイル名は `{author}_{qN}_question.go` / `{author}_{qN}_answer.go` の形式を推奨します。
+`functions/api/code/` に Go ファイルを追加します。
 
 ```go
 //go:build ignore
@@ -130,203 +207,33 @@ func main() {
 }
 ```
 
-> `//go:build ignore` の行は API レスポンス時に自動で除去されます。
+`//go:build ignore` は公開用コード表示時に自動で除去されます。
 
 ### 2. `quizes.yaml` に問題を追加
 
 ```yaml
 - id: "author_q1"
   title: "問題のタイトル"
-  text: "問題文をここに書く"
-  question_code_ref: "code/author_q1_question.go"   # 省略可
+  text: "問題文"
+  mode: "extra"
+  question_code_ref: "code/author_q1_question.go"
   choices:
     - "選択肢 A"
     - "選択肢 B"
     - "選択肢 C"
     - "選択肢 D"
-  answer: 2                                           # 0始まりのインデックス
-  explanation: "解説文。URL は自動でリンクになります。"
-  answer_code_ref: "code/author_q1_answer.go"        # 省略可
-  answer_code_play_ref: "https://go.dev/play/p/..."  # 省略可
+  answer: 2
+  explanation: "解説文"
+  answer_code_ref: "code/author_q1_answer.go"
+  answer_code_play_ref: "https://go.dev/play/p/..."
 ```
 
-## API リファレンス
+`mode` は省略可能です。値は次の 3 つです。
 
-### クイズ API
+- `both`（既定値）: ノーマル / エクストラの両方で出題候補に入る
+- `normal`: ノーマルモードのみで出題する
+- `extra`: エクストラモードのみで出題する
 
-| メソッド | パス | 説明 |
-|---|---|---|
-| GET | `/api/quiz/session` | ユニーク 5 問のセッションを取得 |
-| GET | `/api/quiz` | ランダム 1 問を取得 |
-| POST | `/api/quiz/answer` | 回答を送信し正誤・解説を受け取る |
+`answer` は **元の choices 配列に対する正解 index** を指定します。公開 UI 側では表示時に choices をシャッフルしますが、telemetry には元 index と表示 index の両方が送られます。
 
-**GET /api/quiz/session**
-
-クエリパラメータ `exclude` に除外する問題 ID をカンマ区切りで指定できます。  
-(チャレンジモードで既出問題をスキップするために使用)
-
-```
-GET /api/quiz/session?exclude=sivchari_q1,tomtwinkle_q3
-```
-
-**POST /api/quiz/answer**
-
-```json
-// リクエスト
-{ "question_id": "sivchari_q1", "answer": 2 }
-
-// レスポンス
-{
-  "correct": true,
-  "explanation": "...",
-  "answer_code": "...",
-  "answer_code_play_ref": "https://go.dev/play/p/..."
-}
-```
-
-### 管理 API
-
-| メソッド | パス | 説明 |
-|---|---|---|
-| GET | `/admin/api/stats` | 問題ごとの正答率一覧 |
-| GET | `/admin/api/quizzes` | 全問題の完全データ (答え・解説含む) |
-
-管理 API は Cloudflare Access によって保護されています。
-
-## GitHub Secrets の設定
-
-CI/CD と Terraform が動作するために、リポジトリに以下の secrets を設定してください。  
-GitHub の **Settings > Secrets and variables > Actions** から追加します。
-
-| Secret 名 | 説明 | 取得方法 |
-|---|---|---|
-| `CLOUDFLARE_API_TOKEN` | Cloudflare API トークン | Cloudflare ダッシュボード > My Profile > API Tokens |
-| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare アカウント ID | Cloudflare ダッシュボード > 右サイドバー |
-| `CF_ZONE_ID` | gocon.jp ゾーン ID | Cloudflare ダッシュボード > gocon.jp > Overview |
-
-> `CLOUDFLARE_API_TOKEN` には **Cloudflare Pages, D1, DNS** への編集権限が必要です。  
-> `CLOUDFLARE_API_TOKEN` と `CLOUDFLARE_ACCOUNT_ID` が未設定の場合、Terraform CI は自動的にスキップされます。
-
-## インフラのセットアップ (初回のみ)
-
-### 1. terraform.tfvars を編集
-
-```bash
-cd quiz-app/terraform
-```
-
-`terraform.tfvars` に実際の値を設定します。
-
-```hcl
-cloudflare_api_token  = "your-api-token"
-cloudflare_account_id = "your-account-id"
-cloudflare_zone_id    = "your-zone-id"
-
-allowed_emails = [
-  "admin@example.com",  # 管理画面・ステージングにアクセスできるメールアドレス
-]
-```
-
-### 2. Terraform を実行
-
-```bash
-terraform init
-terraform plan
-terraform apply
-```
-
-`terraform apply` が成功すると、以下のリソースが作成されます。
-
-| Cloudflare リソース | 内容 |
-|---|---|
-| Pages Project | `quiz-app` (本番: `quiz.gocon.jp`) |
-| D1 Database | `quiz-db` |
-| DNS Record | `quiz.gocon.jp` / `staging.quiz.gocon.jp` |
-| Access Application | 管理画面 (`/admin`) とステージング環境を保護 |
-
-### 3. wrangler.toml に D1 の database_id を設定
-
-Terraform 出力の D1 database ID を `wrangler.toml` に記入します。
-
-```bash
-terraform output  # database_id を確認
-```
-
-```toml
-# wrangler.toml
-[[d1_databases]]
-binding = "DB"
-database_name = "quiz-db"
-database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"  # ← ここに設定
-```
-
-## ステージングへのデプロイ
-
-`main` 以外のブランチをプッシュすると、Cloudflare Pages が自動でプレビュー環境を作成します。
-
-```bash
-git push origin feature/your-branch
-```
-
-プレビュー URL は `https://<hash>.quiz-app.pages.dev` の形式で発行されます。  
-ステージング用カスタムドメイン (`staging.quiz.gocon.jp`) は Cloudflare Access で保護されており、`allowed_emails` に登録済みのアカウントのみアクセス可能です。
-
-### ステージングの D1 スキーマを初期化する場合
-
-```bash
-npx wrangler d1 execute quiz-db \
-  --file=quiz-app/schema.sql \
-  --remote \
-  --env staging
-```
-
-## 本番環境へのデプロイ
-
-`main` ブランチへのプッシュ (PR マージ) が自動デプロイのトリガーです。
-
-```
-main へのマージ
-  └─ quiz-app / Deploy (GitHub Actions)
-       ├─ TinyGo で WASM ビルド
-       ├─ D1 スキーマのマイグレーション (--remote)
-       └─ Cloudflare Pages へデプロイ
-```
-
-> `CLOUDFLARE_API_TOKEN` と `CLOUDFLARE_ACCOUNT_ID` が GitHub Secrets に設定されていない場合、デプロイワークフローは失敗します。
-
-デプロイ完了後は `https://quiz.gocon.jp` で本番サイトを確認できます。
-
-## アクセス許可の追加
-
-管理画面 (`/admin`) およびステージング環境へのアクセスは Cloudflare Access で制御されます。  
-許可するメールアドレスを追加するには、`terraform.tfvars` を編集して `terraform apply` を実行します。
-
-```hcl
-# terraform/terraform.tfvars
-allowed_emails = [
-  "admin@example.com",
-  "newmember@example.com",  # 追加
-]
-```
-
-```bash
-cd quiz-app/terraform
-terraform apply
-```
-
-または GitHub Actions の Terraform CI が `main` マージ時に自動 apply します (`quiz-app/terraform/**` 変更時)。
-
-## インフラ (Terraform)
-
-Terraform の CI は以下のように動作します。
-
-| イベント | 動作 |
-|---|---|
-| PR 作成・更新 | `terraform plan` を実行し結果を PR にコメント |
-| `main` マージ | `terraform apply` を実行し state をコミット |
-| Secrets 未設定 | CI をスキップ (notice を表示) |
-
-## 注意事項
-
-- TinyGo 0.40.1 は Go 1.19〜1.25 をサポートしています。Go 1.26 以上のシステムでは `make build GO=<go1.25パス>` を使用してください。
-- `quiz-app/` は独立した Go モジュールです (`github.com/GoCon/2026-codelab/quiz-app`)。リポジトリルートの Go モジュールとは別管理です。
+`make build-pages` または `make local` 実行時に静的データが再生成されます。

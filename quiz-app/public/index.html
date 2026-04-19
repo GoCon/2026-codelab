@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GoCon 2026 Quiz</title>
+  <title>Go Conference 2026 CodeLab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/go.min.js"></script>
+  <script src="./quiz-config.js"></script>
+  <script src="./quiz-data.js"></script>
   <style>
-    /* ---- Design tokens (GoCon 2026) ---- */
     :root {
       --primitive-black:      #333333;
       --primitive-light-gray: #d5e1e8;
@@ -35,7 +36,6 @@
       --text-secondary: var(--primitive-dark-gray);
       --text-on-fill:   var(--primitive-white);
       --text-accent:    var(--primitive-blue);
-      --text-accent2:   var(--primitive-red);
 
       --radius-button:  999px;
       --radius-objects: 16px;
@@ -61,7 +61,6 @@
       line-height: 1.75;
     }
 
-    /* ---- Header (matches GoCon 2026 header) ---- */
     .header {
       position: fixed;
       width: 100%;
@@ -101,7 +100,6 @@
       letter-spacing: 0.04em;
     }
 
-    /* ---- Main ---- */
     .main-content { padding-top: 81px; }
     main {
       max-width: 760px;
@@ -109,7 +107,6 @@
       padding: var(--space-m) var(--space-xs);
     }
 
-    /* ---- Card ---- */
     .card {
       background: var(--surface-primary);
       border-radius: var(--radius-objects);
@@ -118,7 +115,6 @@
       margin-bottom: var(--space-xs);
     }
 
-    /* ---- Chip (matches GoCon 2026 .chip) ---- */
     .chip {
       display: inline-block;
       background: var(--surface-secondary-dark);
@@ -131,6 +127,64 @@
       letter-spacing: 0.05em;
     }
 
+    .home-title {
+      font-family: var(--font-accent);
+      font-size: 2rem;
+      line-height: 1.2;
+      color: var(--primitive-navy);
+      margin-bottom: var(--space-xs);
+    }
+    .home-lead {
+      color: var(--text-secondary);
+      margin-bottom: var(--space-s);
+    }
+    .home-actions,
+    #score-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xxs);
+      margin-top: var(--space-s);
+    }
+    .secret-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--primitive-navy);
+      margin-bottom: var(--space-xxs);
+    }
+    .secret-note {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: var(--space-xs);
+    }
+    .secret-row {
+      display: flex;
+      gap: var(--space-xxs);
+      align-items: stretch;
+    }
+    #nickname-input,
+    #admin-keyword-input {
+      flex: 1;
+      min-width: 0;
+    }
+    .helper-message {
+      display: none;
+      margin-top: var(--space-xxs);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+    .helper-message.error { color: var(--surface-primary-dark); }
+    .helper-message.success { color: #1a7a6e; }
+    .helper-message.pending { color: var(--primitive-navy); }
+    #preview-entry {
+      display: none;
+      margin-top: var(--space-s);
+    }
+    .unlock-note {
+      margin-top: var(--space-xxs);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
     #question-text {
       font-size: 1rem;
       line-height: 1.75;
@@ -138,8 +192,6 @@
       color: var(--text-primary);
       margin-top: var(--space-xxs);
     }
-
-    /* ---- Code block ---- */
     pre {
       background: var(--surface-secondary);
       border: 1px solid var(--surface-disabled);
@@ -159,7 +211,6 @@
       line-height: inherit;
     }
 
-    /* ---- Choices ---- */
     #choices {
       display: flex;
       flex-direction: column;
@@ -183,7 +234,6 @@
       white-space: normal;
       word-break: break-word;
       overflow-wrap: break-word;
-      height: auto;
     }
     .choice-btn:hover:not(:disabled) {
       border-color: var(--text-accent);
@@ -201,8 +251,6 @@
     }
     .choice-btn:disabled { cursor: default; }
 
-    /* ---- Result ---- */
-    #result { display: none; }
     #result-badge {
       font-family: var(--font-accent);
       font-size: 1.4rem;
@@ -211,6 +259,17 @@
     }
     #result-badge.correct { color: var(--primitive-cyan); }
     #result-badge.incorrect { color: var(--surface-primary-dark); }
+    #correct-answer-text {
+      display: none;
+      margin-bottom: var(--space-xs);
+      padding: 12px var(--space-xs);
+      border-radius: 12px;
+      background: var(--surface-secondary);
+      color: var(--primitive-navy);
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.6;
+    }
     #explanation {
       color: var(--text-secondary);
       line-height: 1.75;
@@ -222,8 +281,10 @@
       text-decoration: none;
       word-break: break-all;
     }
-    #explanation a:hover { text-decoration: underline; }
-    #answer-code-section { display: none; margin-top: var(--space-xs); }
+    #answer-code-section {
+      display: none;
+      margin-top: var(--space-xs);
+    }
     #answer-code-label {
       font-size: 0.8rem;
       font-weight: 700;
@@ -233,7 +294,7 @@
       text-transform: uppercase;
     }
     #play-link {
-      display: inline-block;
+      display: none;
       margin-top: var(--space-xxs);
       font-size: 0.85rem;
       color: var(--text-accent);
@@ -241,7 +302,6 @@
     }
     #play-link:hover { text-decoration: underline; }
 
-    /* ---- Buttons (matches GoCon 2026 .c-button) ---- */
     .c-button {
       appearance: none;
       width: 100%;
@@ -257,102 +317,72 @@
       cursor: pointer;
       display: block;
       text-align: center;
-      transition: background-color 160ms ease, color 160ms ease,
-                  border-color 160ms ease, opacity 160ms ease;
-    }
-    .c-button:not(:disabled):hover { opacity: 0.88; }
-    .c-button[data-variant="secondary"] {
-      background: var(--surface-secondary-dark);
+      transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
     }
     .c-button[data-variant="tertiary"] {
       background: var(--surface-primary);
-      color: var(--text-primary);
+      color: var(--primitive-navy);
       border-color: var(--primitive-navy);
     }
-    .c-button[data-variant="tertiary"]:hover {
-      background: var(--surface-secondary);
-      opacity: 1;
+    .c-button[data-compact="true"] {
+      width: auto;
+      min-width: 120px;
+      padding: 12px var(--space-s);
     }
-    .c-button:disabled {
-      background: var(--surface-disabled);
-      color: var(--text-on-fill);
-      cursor: not-allowed;
-    }
+    .c-button:hover { opacity: 0.88; }
 
-    #next-btn  { display: none; margin-top: var(--space-xs); }
-    #score-card { display: none; text-align: center; }
-    #score-label { color: var(--text-secondary); margin-bottom: var(--space-xxs); }
-    #score-value {
-      font-family: var(--font-accent);
-      font-size: 3.5rem;
-      font-weight: 700;
-      color: var(--primitive-navy);
-      line-height: 1;
-      margin-bottom: var(--space-s);
-    }
-    #special-link-section {
+    #score-card {
       display: none;
-      margin-bottom: var(--space-s);
+      text-align: center;
     }
-    #special-link-section p {
-      font-size: 0.9rem;
+    #score-label {
+      font-size: 0.95rem;
       color: var(--text-secondary);
       margin-bottom: var(--space-xxs);
     }
+    #score-value {
+      font-family: var(--font-accent);
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--primitive-navy);
+      margin-bottom: var(--space-xs);
+    }
+    #special-link-section,
     #challenge-complete-section {
       display: none;
-      margin-bottom: var(--space-s);
-      padding: var(--space-s);
-      background: linear-gradient(135deg, var(--primitive-navy), #1a5fa8);
-      border-radius: var(--radius-objects);
-      color: var(--text-on-fill);
+      margin-top: var(--space-s);
+      padding-top: var(--space-s);
+      border-top: 1px solid var(--surface-disabled);
     }
+    #perfect-score-section {
+      display: none;
+      margin-top: var(--space-s);
+      padding-top: var(--space-s);
+      border-top: 1px solid var(--surface-disabled);
+      text-align: left;
+    }
+    #special-link-section p,
     #challenge-complete-section p {
-      font-size: 1rem;
+      color: var(--text-secondary);
       margin-bottom: var(--space-xs);
-      line-height: 1.6;
+    }
+    #perfect-time-value {
+      font-family: var(--font-accent);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primitive-navy);
+      text-align: center;
+      margin-bottom: var(--space-xxs);
     }
     .special-link {
       display: inline-block;
-      background: var(--primitive-yellow);
-      color: var(--primitive-navy);
-      font-family: var(--font-accent);
-      font-size: 1rem;
-      font-weight: 700;
-      padding: var(--space-xs) var(--space-s);
-      border-radius: var(--radius-button);
+      background: linear-gradient(90deg, var(--primitive-blue), var(--primitive-cyan));
+      color: var(--text-on-fill);
       text-decoration: none;
-      letter-spacing: 0.04em;
-      transition: opacity 160ms ease;
-      width: 100%;
-      text-align: center;
-      box-sizing: border-box;
+      padding: 14px 28px;
+      border-radius: 999px;
+      font-weight: 700;
     }
-    .special-link:hover { opacity: 0.88; }
-    #score-actions {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-xxs);
-      margin-top: var(--space-xs);
-    }
-
-    /* ---- Loading / Error ---- */
-    #loading {
-      text-align: center;
-      padding: var(--space-l);
-      color: var(--text-secondary);
-    }
-    .spinner {
-      display: inline-block;
-      width: 36px;
-      height: 36px;
-      border: 3px solid var(--surface-disabled);
-      border-top-color: var(--text-accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-bottom: var(--space-xs);
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
 
     #error-msg {
       display: none;
@@ -364,7 +394,6 @@
       margin-bottom: var(--space-xs);
     }
 
-    /* ---- Footer (matches GoCon 2026 footer) ---- */
     .footer-gradient {
       width: 100%;
       height: 8px;
@@ -382,20 +411,61 @@
       font-size: 0.875rem;
       color: var(--text-secondary);
     }
+    .admin-keyword-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 2500;
+      align-items: center;
+      justify-content: center;
+      background: rgba(16, 57, 114, 0.45);
+      padding: var(--space-xs);
+    }
+    .admin-keyword-modal {
+      position: relative;
+      width: min(480px, 100%);
+      background: var(--surface-primary);
+      border-radius: var(--radius-objects);
+      box-shadow: 0 12px 48px rgba(16, 57, 114, 0.18);
+      padding: var(--space-s);
+    }
+    .admin-keyword-close {
+      position: absolute;
+      top: var(--space-xs);
+      right: var(--space-xs);
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 1.25rem;
+      line-height: 1;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .admin-keyword-close:hover {
+      background: var(--surface-secondary);
+    }
 
     @media (max-width: 768px) {
       .header { padding: 4px var(--space-s); height: 56px; }
       .header-tagline { display: none; }
       .main-content { padding-top: 56px; }
       main { padding: var(--space-s) var(--space-xs); }
+      .home-title { font-size: 1.6rem; }
+      .secret-row {
+        flex-direction: column;
+      }
+      .c-button[data-compact="true"] {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
-
   <header class="header">
     <div class="header-logo">
-      <span class="accent">Go</span>Con 2026 Quiz
+      <span class="accent">Go</span> Conference 2026 CodeLab
       <span class="header-tagline">Go の知識を試してみよう！</span>
     </div>
     <span id="progress"></span>
@@ -403,21 +473,35 @@
 
   <div class="main-content">
     <main>
-      <div id="loading">
-        <div class="spinner"></div>
-        <p>問題を読み込み中...</p>
-      </div>
       <div id="error-msg"></div>
 
+      <div class="card" id="home-card">
+        <div class="chip">WELCOME</div>
+        <h1 class="home-title">Go Conference 2026 CodeLab</h1>
+        <p class="home-lead">
+          ランダムに選ばれた 5 問に答える Go クイズです。<br>
+          全問正解でスペシャルページ、エクストラモード全問正解で問題一覧モードへの扉が開きます。
+        </p>
+
+        <div class="home-actions">
+          <button class="c-button" id="start-btn" type="button">クイズを始める</button>
+        </div>
+
+        <div id="preview-entry">
+          <button class="c-button" data-variant="tertiary" id="preview-btn" type="button">問題一覧を見る</button>
+          <p class="unlock-note">このブラウザでは問題一覧モードが解放されています。</p>
+        </div>
+      </div>
+
       <div class="card" id="question-card" style="display:none">
-        <div class="chip" id="question-title"></div>
         <div id="question-text"></div>
         <pre id="code-block" style="display:none"><code class="language-go"></code></pre>
         <div id="choices"></div>
       </div>
 
-      <div class="card" id="result">
+      <div class="card" id="result" style="display:none">
         <div id="result-badge"></div>
+        <div id="correct-answer-text"></div>
         <div id="explanation"></div>
         <div id="answer-code-section">
           <div id="answer-code-label">Answer</div>
@@ -426,13 +510,13 @@
         </div>
       </div>
 
-      <button class="c-button" id="next-btn">次の問題へ</button>
+      <button class="c-button" id="next-btn" type="button" style="display:none">次の問題へ</button>
 
       <div class="card" id="score-card">
         <div id="score-label">クイズ終了！ あなたのスコア</div>
         <div id="score-value"></div>
         <div id="challenge-complete-section">
-          <p>チャレンジモード全問正解！<br>スペシャルページへの扉が開かれました</p>
+          <p>エクストラモード全問正解！ スペシャルページと問題一覧モードが解放されました。</p>
           <a class="special-link" href="https://example.com" target="_blank" rel="noopener noreferrer">
             スペシャルページへ進む
           </a>
@@ -443,9 +527,27 @@
             スペシャルページへ
           </a>
         </div>
+        <div id="perfect-score-section">
+          <div class="secret-title">解き終わるまでの時間</div>
+          <div id="perfect-time-value"></div>
+          <p class="secret-note" id="perfect-score-note">全問正解の記録を残せます。ニックネームを入力して送信してください。</p>
+          <div class="secret-row">
+            <input
+              id="nickname-input"
+              type="text"
+              autocomplete="nickname"
+              inputmode="text"
+              maxlength="40"
+              placeholder="ニックネームを入力"
+            >
+            <button class="c-button" data-compact="true" id="submit-perfect-score-btn" type="button">記録を送信</button>
+          </div>
+          <p class="helper-message" id="perfect-score-message"></p>
+        </div>
         <div id="score-actions">
-          <button class="c-button" id="restart-btn">もう一度チャレンジ</button>
-          <button class="c-button" data-variant="tertiary" id="challenge-btn">全問異なる問題に挑戦</button>
+          <button class="c-button" id="restart-btn" type="button">もう一度チャレンジ</button>
+          <button class="c-button" data-variant="tertiary" id="challenge-btn" type="button">エクストラモードに挑戦</button>
+          <button class="c-button" data-variant="tertiary" id="score-preview-btn" type="button" style="display:none">問題一覧を見る</button>
         </div>
       </div>
     </main>
@@ -453,40 +555,175 @@
 
   <div class="footer-gradient"></div>
   <footer>
-    <p class="footer-copyright">© 2026 Go Conference Organizing Team</p>
+    <p class="footer-copyright" id="footer-copyright">© 2026 Go Conference Organizing Team</p>
   </footer>
 
+  <div class="admin-keyword-overlay" id="admin-keyword-overlay">
+    <div class="admin-keyword-modal" role="dialog" aria-modal="true" aria-labelledby="admin-keyword-title">
+      <button class="admin-keyword-close" id="admin-keyword-close-btn" type="button" aria-label="閉じる">✕</button>
+      <div class="secret-title" id="admin-keyword-title">秘密のKeywordを入力</div>
+      <p class="secret-note">正しいKeywordを入力すると問題プレビューモードを開きます。</p>
+      <div class="secret-row">
+        <input
+          id="admin-keyword-input"
+          type="text"
+          autocomplete="off"
+          inputmode="text"
+          placeholder="Keywordを入力"
+        >
+        <button class="c-button" data-compact="true" id="open-admin-btn" type="button">開く</button>
+      </div>
+      <p class="helper-message" id="admin-keyword-message"></p>
+    </div>
+  </div>
+
   <script>
-    const loading            = document.getElementById('loading');
-    const errorMsg           = document.getElementById('error-msg');
-    const questionCard       = document.getElementById('question-card');
-    const questionTitle      = document.getElementById('question-title');
-    const questionText       = document.getElementById('question-text');
-    const codeBlock          = document.getElementById('code-block');
-    const choicesEl          = document.getElementById('choices');
-    const resultEl           = document.getElementById('result');
-    const resultBadge        = document.getElementById('result-badge');
-    const explanation        = document.getElementById('explanation');
-    const answerCodeSection  = document.getElementById('answer-code-section');
-    const answerCodeBlock    = document.getElementById('answer-code-block');
-    const playLink           = document.getElementById('play-link');
-    const nextBtn            = document.getElementById('next-btn');
-    const scoreCard          = document.getElementById('score-card');
-    const scoreValue         = document.getElementById('score-value');
-    const specialLinkSection     = document.getElementById('special-link-section');
+    const appConfig = window.__QUIZ_APP_CONFIG__ || {};
+    const allQuizzes = Array.isArray(window.__QUIZ_DATA__) ? window.__QUIZ_DATA__.map(normalizeQuizData) : [];
+    const telemetryEndpoint = typeof appConfig.telemetryEndpoint === 'string' ? appConfig.telemetryEndpoint.trim() : '';
+    const previewUnlockCode = typeof appConfig.previewUnlockCode === 'string' ? appConfig.previewUnlockCode : '';
+    const telemetrySessionStorageKey = 'quiz-telemetry-session-id';
+    const previewStorageKey = 'quiz-preview-unlocked';
+
+    const progressEl = document.getElementById('progress');
+    const errorMsg = document.getElementById('error-msg');
+    const homeCard = document.getElementById('home-card');
+    const questionCard = document.getElementById('question-card');
+    const resultEl = document.getElementById('result');
+    const scoreCard = document.getElementById('score-card');
+    const questionText = document.getElementById('question-text');
+    const codeBlock = document.getElementById('code-block');
+    const choicesEl = document.getElementById('choices');
+    const resultBadge = document.getElementById('result-badge');
+    const correctAnswerText = document.getElementById('correct-answer-text');
+    const explanation = document.getElementById('explanation');
+    const answerCodeSection = document.getElementById('answer-code-section');
+    const answerCodeBlock = document.getElementById('answer-code-block');
+    const playLink = document.getElementById('play-link');
+    const nextBtn = document.getElementById('next-btn');
+    const scoreValue = document.getElementById('score-value');
+    const specialLinkSection = document.getElementById('special-link-section');
     const challengeCompleteSection = document.getElementById('challenge-complete-section');
-    const restartBtn         = document.getElementById('restart-btn');
-    const challengeBtn       = document.getElementById('challenge-btn');
-    const progressEl         = document.getElementById('progress');
+    const perfectScoreSection = document.getElementById('perfect-score-section');
+    const perfectTimeValue = document.getElementById('perfect-time-value');
+    const perfectScoreNote = document.getElementById('perfect-score-note');
+    const nicknameInput = document.getElementById('nickname-input');
+    const submitPerfectScoreBtn = document.getElementById('submit-perfect-score-btn');
+    const perfectScoreMessage = document.getElementById('perfect-score-message');
+    const challengeBtn = document.getElementById('challenge-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const scorePreviewBtn = document.getElementById('score-preview-btn');
+    const startBtn = document.getElementById('start-btn');
+    const previewBtn = document.getElementById('preview-btn');
+    const previewEntry = document.getElementById('preview-entry');
+    const footerCopyright = document.getElementById('footer-copyright');
+    const adminKeywordOverlay = document.getElementById('admin-keyword-overlay');
+    const adminKeywordInput = document.getElementById('admin-keyword-input');
+    const adminKeywordMessage = document.getElementById('admin-keyword-message');
+    const adminKeywordCloseBtn = document.getElementById('admin-keyword-close-btn');
+    const openAdminBtn = document.getElementById('open-admin-btn');
 
-    const TOTAL = 5;
+    const totalPerSession = 5;
+    const previewURL = './preview/';
+    const adminTapThreshold = 10;
 
-    let session      = [];
+    let session = [];
     let currentIndex = 0;
     let correctCount = 0;
-    let pastCorrect  = 0;          // チャレンジで過去セッションの正解数累計
-    let seenIds      = new Set();  // セッションをまたいで既出問題を追跡
-    let isChallenge  = false;      // チャレンジモード中か
+    let pastCorrect = 0;
+    let seenIds = new Set();
+    let isChallenge = false;
+    let previewUnlocked = loadPreviewUnlocked();
+    let sessionID = loadOrCreateSessionID();
+    let attemptID = '';
+    let sessionSize = 0;
+    let sessionStartedAt = null;
+    let currentQuestionStartedAt = null;
+    let latestAnswerElapsedSeconds = 0;
+    let perfectCompletionElapsedSeconds = null;
+    let perfectCompletionAt = '';
+    let perfectScoreSubmitted = false;
+    let footerTapCount = 0;
+
+    function createSessionID() {
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID();
+      }
+      return `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function loadOrCreateSessionID() {
+      try {
+        const existing = window.sessionStorage.getItem(telemetrySessionStorageKey);
+        if (existing) {
+          return existing;
+        }
+        const generated = createSessionID();
+        window.sessionStorage.setItem(telemetrySessionStorageKey, generated);
+        return generated;
+      } catch (_) {
+        return createSessionID();
+      }
+    }
+
+    function loadPreviewUnlocked() {
+      try {
+        return window.sessionStorage.getItem(previewStorageKey) === '1';
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function setPreviewUnlocked(value) {
+      previewUnlocked = value;
+      try {
+        if (value) {
+          window.sessionStorage.setItem(previewStorageKey, '1');
+        } else {
+          window.sessionStorage.removeItem(previewStorageKey);
+        }
+      } catch (_) {}
+      updatePreviewButtons();
+    }
+
+    function updatePreviewButtons() {
+      previewEntry.style.display = previewUnlocked ? 'block' : 'none';
+      scorePreviewBtn.style.display = previewUnlocked ? '' : 'none';
+    }
+
+    function showError(message) {
+      errorMsg.textContent = message;
+      errorMsg.style.display = 'block';
+    }
+
+    function hideError() {
+      errorMsg.style.display = 'none';
+      errorMsg.textContent = '';
+    }
+
+    function setPerfectScoreMessage(message, type) {
+      if (!message) {
+        perfectScoreMessage.style.display = 'none';
+        perfectScoreMessage.textContent = '';
+        perfectScoreMessage.className = 'helper-message';
+        return;
+      }
+      perfectScoreMessage.textContent = message;
+      perfectScoreMessage.className = type ? `helper-message ${type}` : 'helper-message';
+      perfectScoreMessage.style.display = 'block';
+    }
+
+    function setAdminKeywordMessage(message, type) {
+      if (!message) {
+        adminKeywordMessage.style.display = 'none';
+        adminKeywordMessage.textContent = '';
+        adminKeywordMessage.className = 'helper-message';
+        return;
+      }
+      adminKeywordMessage.textContent = message;
+      adminKeywordMessage.className = type ? `helper-message ${type}` : 'helper-message';
+      adminKeywordMessage.style.display = 'block';
+    }
 
     function escapeHTML(str) {
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -499,161 +736,523 @@
       );
     }
 
+    function normalizeQuizMode(value) {
+      if (value === 'normal' || value === 'extra') {
+        return value;
+      }
+      return 'both';
+    }
+
+    function normalizeQuizData(quiz) {
+      return {
+        ...quiz,
+        mode: normalizeQuizMode(quiz && quiz.mode),
+      };
+    }
+
+    function quizSupportsMode(quiz, mode) {
+      const quizMode = normalizeQuizMode(quiz && quiz.mode);
+      return quizMode === 'both' || quizMode === mode;
+    }
+
+    function getQuizPool(mode) {
+      return allQuizzes.filter(quiz => quizSupportsMode(quiz, mode));
+    }
+
+    function getSeenCount(mode) {
+      return getQuizPool(mode).reduce((count, quiz) => count + (seenIds.has(quiz.id) ? 1 : 0), 0);
+    }
+
+    function countQuizzesForMode(quizzes, mode) {
+      return quizzes.reduce((count, quiz) => count + (quizSupportsMode(quiz, mode) ? 1 : 0), 0);
+    }
+
     function updateProgress() {
-      if (session.length === 0) { progressEl.textContent = ''; return; }
+      if (session.length === 0 || scoreCard.style.display === 'block' || homeCard.style.display === 'block') {
+        progressEl.textContent = '';
+        return;
+      }
       if (isChallenge) {
-        const base = seenIds.size;
+        const base = getSeenCount('extra');
         progressEl.textContent = `${base + currentIndex + 1} / ${base + session.length}`;
       } else {
         progressEl.textContent = `${currentIndex + 1} / ${session.length}`;
       }
     }
 
-    async function startSession(excludeIds = []) {
-      isChallenge = excludeIds.length > 0;
-      if (!isChallenge) pastCorrect = 0;
-      loading.style.display      = 'block';
-      errorMsg.style.display     = 'none';
-      questionCard.style.display = 'none';
-      resultEl.style.display     = 'none';
-      scoreCard.style.display    = 'none';
-      nextBtn.style.display      = 'none';
-      progressEl.textContent     = '';
+    function shuffle(items) {
+      const copy = items.slice();
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
 
-      try {
-        const url = excludeIds.length > 0
-          ? `/api/quiz/session?exclude=${excludeIds.join(',')}`
-          : '/api/quiz/session';
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('問題の取得に失敗しました');
-        const data = await res.json();
-        session      = data.quizzes;
-        currentIndex = 0;
-        correctCount = 0;
-        showQuestion();
-      } catch (e) {
-        loading.style.display  = 'none';
-        errorMsg.textContent   = e.message;
-        errorMsg.style.display = 'block';
+    function createSessionQuiz(quiz) {
+      const originalChoices = Array.isArray(quiz.choices) ? quiz.choices.slice() : [];
+      const choiceOrder = shuffle(originalChoices.map((_, index) => index));
+      const correctDisplayIndex = choiceOrder.indexOf(quiz.answer);
+
+      return {
+        ...quiz,
+        original_answer: quiz.answer,
+        original_choices: originalChoices,
+        choice_order: choiceOrder,
+        choices: choiceOrder.map(index => originalChoices[index]),
+        answer: correctDisplayIndex >= 0 ? correctDisplayIndex : quiz.answer,
+      };
+    }
+
+    function getOriginalChoiceIndex(quiz, displayedIndex) {
+      if (!Array.isArray(quiz.choice_order)) {
+        return displayedIndex;
+      }
+      const originalIndex = quiz.choice_order[displayedIndex];
+      return Number.isInteger(originalIndex) ? originalIndex : displayedIndex;
+    }
+
+    function getOriginalCorrectAnswerIndex(quiz) {
+      return Number.isInteger(quiz.original_answer) ? quiz.original_answer : quiz.answer;
+    }
+
+    function getOriginalChoiceText(quiz, originalIndex) {
+      const sourceChoices = Array.isArray(quiz.original_choices) ? quiz.original_choices : quiz.choices;
+      return typeof sourceChoices[originalIndex] === 'string' ? sourceChoices[originalIndex] : '';
+    }
+
+    function pickSession(excludeIds, mode) {
+      const excludeSet = new Set(excludeIds);
+      const pool = getQuizPool(mode);
+      let candidates = pool.filter(quiz => !excludeSet.has(quiz.id));
+      if (candidates.length === 0) {
+        candidates = pool.slice();
+      }
+      return shuffle(candidates)
+        .slice(0, Math.min(totalPerSession, candidates.length))
+        .map(createSessionQuiz);
+    }
+
+    function highlightCodeBlock(codeElement, codeText) {
+      codeElement.textContent = codeText;
+      codeElement.removeAttribute('data-highlighted');
+      codeElement.classList.remove('hljs');
+      hljs.highlightElement(codeElement);
+    }
+
+    function getElapsedSeconds(now = Date.now()) {
+      if (!sessionStartedAt) {
+        return 0;
+      }
+      return Math.max(0, Math.floor((now - sessionStartedAt) / 1000));
+    }
+
+    function formatElapsedSeconds(seconds) {
+      return `${seconds} 秒`;
+    }
+
+    function getTelemetryMode() {
+      return isChallenge ? 'extra' : 'normal';
+    }
+
+    function resetPerfectScoreState() {
+      latestAnswerElapsedSeconds = 0;
+      perfectCompletionElapsedSeconds = null;
+      perfectCompletionAt = '';
+      perfectScoreSubmitted = false;
+      perfectTimeValue.textContent = '';
+      perfectScoreNote.textContent = '全問正解の記録を残せます。ニックネームを入力して送信してください。';
+      nicknameInput.value = '';
+      nicknameInput.disabled = false;
+      submitPerfectScoreBtn.disabled = false;
+      submitPerfectScoreBtn.textContent = '記録を送信';
+      setPerfectScoreMessage('', '');
+    }
+
+    function openPreviewPage() {
+      window.location.href = previewURL;
+    }
+
+    function openAdminKeywordPopup() {
+      footerTapCount = 0;
+      adminKeywordOverlay.style.display = 'flex';
+      adminKeywordInput.value = '';
+      setAdminKeywordMessage('', '');
+      if (typeof window.setTimeout === 'function') {
+        window.setTimeout(() => adminKeywordInput.focus(), 0);
+      } else {
+        adminKeywordInput.focus();
       }
     }
 
+    function closeAdminKeywordPopup() {
+      adminKeywordOverlay.style.display = 'none';
+      adminKeywordInput.value = '';
+      setAdminKeywordMessage('', '');
+    }
+
+    function submitAdminKeyword() {
+      const enteredKeyword = adminKeywordInput.value.trim();
+      if (!previewUnlockCode) {
+        setAdminKeywordMessage('Keyword は設定されていません。', 'error');
+        return;
+      }
+      if (!enteredKeyword) {
+        setAdminKeywordMessage('Keyword を入力してください。', 'error');
+        adminKeywordInput.focus();
+        return;
+      }
+      if (enteredKeyword !== previewUnlockCode) {
+        setAdminKeywordMessage('Keyword が違います。', 'error');
+        adminKeywordInput.focus();
+        return;
+      }
+
+      setPreviewUnlocked(true);
+      closeAdminKeywordPopup();
+      openPreviewPage();
+    }
+
+    function postTelemetry(payload) {
+      if (!telemetryEndpoint) {
+        return Promise.reject(new Error('telemetry endpoint is not configured'));
+      }
+
+      const body = JSON.stringify(payload);
+      let sent = false;
+      if (navigator.sendBeacon) {
+        try {
+          sent = navigator.sendBeacon(
+            telemetryEndpoint,
+            new Blob([body], { type: 'text/plain;charset=UTF-8' })
+          );
+        } catch (_) {}
+      }
+
+      if (sent) {
+        return Promise.resolve();
+      }
+
+      return fetch(telemetryEndpoint, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+        body,
+      }).then(() => {});
+    }
+
+    function sendAnswerTelemetry(quiz, selectedAnswer, isCorrect, answeredAt, elapsedSeconds, questionElapsedSeconds) {
+      if (!telemetryEndpoint) {
+        return;
+      }
+
+      const selectedOriginalAnswer = getOriginalChoiceIndex(quiz, selectedAnswer);
+      const correctOriginalAnswer = getOriginalCorrectAnswerIndex(quiz);
+
+      postTelemetry({
+        event_type: 'answer',
+        question_id: quiz.id,
+        question_title: quiz.title,
+        selected_answer: selectedOriginalAnswer,
+        correct_answer: correctOriginalAnswer,
+        is_correct: isCorrect,
+        mode: getTelemetryMode(),
+        answered_at: answeredAt,
+        session_id: sessionID,
+        attempt_id: attemptID,
+        question_index: currentIndex + 1,
+        session_size: sessionSize,
+        elapsed_seconds: elapsedSeconds,
+        question_elapsed_seconds: questionElapsedSeconds,
+        selected_display_index: selectedAnswer,
+        correct_display_index: quiz.answer,
+        selected_choice_text: typeof quiz.choices[selectedAnswer] === 'string' ? quiz.choices[selectedAnswer] : '',
+        correct_choice_text: getOriginalChoiceText(quiz, correctOriginalAnswer),
+        choice_order: Array.isArray(quiz.choice_order) ? quiz.choice_order.slice() : [],
+      }).catch(() => {});
+    }
+
+    function renderHome() {
+      hideError();
+      homeCard.style.display = 'block';
+      questionCard.style.display = 'none';
+      resultEl.style.display = 'none';
+      nextBtn.style.display = 'none';
+      scoreCard.style.display = 'none';
+      perfectScoreSection.style.display = 'none';
+      progressEl.textContent = '';
+      sessionSize = 0;
+      attemptID = '';
+      currentQuestionStartedAt = null;
+      closeAdminKeywordPopup();
+      resetPerfectScoreState();
+      updatePreviewButtons();
+    }
+
+    function startSession(excludeIds = []) {
+      if (allQuizzes.length === 0) {
+        showError('クイズデータの読み込みに失敗しました');
+        return;
+      }
+
+      hideError();
+      isChallenge = excludeIds.length > 0;
+      if (!isChallenge) {
+        pastCorrect = 0;
+        seenIds.clear();
+      }
+
+      sessionID = sessionID || loadOrCreateSessionID();
+      attemptID = createSessionID();
+      sessionStartedAt = Date.now();
+      session = pickSession(excludeIds, getTelemetryMode());
+      sessionSize = session.length;
+      if (sessionSize === 0) {
+        renderHome();
+        showError(isChallenge ? 'エクストラモード用の問題がありません' : '表示できる問題がありません');
+        return;
+      }
+      currentIndex = 0;
+      correctCount = 0;
+      resetPerfectScoreState();
+
+      homeCard.style.display = 'none';
+      scoreCard.style.display = 'none';
+      resultEl.style.display = 'none';
+      nextBtn.style.display = 'none';
+
+      showQuestion();
+    }
+
     function showQuestion() {
-      const q = session[currentIndex];
+      const quiz = session[currentIndex];
+      if (!quiz) {
+        showError('表示できる問題がありません');
+        renderHome();
+        return;
+      }
+
+      questionCard.style.display = 'block';
       choicesEl.innerHTML = '';
-      resultEl.style.display          = 'none';
+      resultEl.style.display = 'none';
+      correctAnswerText.style.display = 'none';
+      correctAnswerText.textContent = '';
       answerCodeSection.style.display = 'none';
-      nextBtn.style.display           = 'none';
+      nextBtn.style.display = 'none';
 
-      questionTitle.textContent = q.title;
-      questionText.textContent  = q.text;
+      questionText.textContent = quiz.text;
 
-      if (q.code) {
-        const codeEl = codeBlock.querySelector('code');
-        codeEl.textContent = q.code;
-        hljs.highlightElement(codeEl);
+      if (quiz.question_code) {
+        highlightCodeBlock(codeBlock.querySelector('code'), quiz.question_code);
         codeBlock.style.display = 'block';
       } else {
         codeBlock.style.display = 'none';
       }
 
-      q.choices.forEach((choice, idx) => {
-        const btn = document.createElement('button');
-        btn.className   = 'choice-btn';
-        btn.textContent = choice;
-        btn.addEventListener('click', () => submitAnswer(q.id, idx, btn));
-        choicesEl.appendChild(btn);
+      quiz.choices.forEach((choice, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'choice-btn';
+        button.textContent = choice;
+        button.addEventListener('click', () => submitAnswer(quiz, index, button));
+        choicesEl.appendChild(button);
       });
 
+      currentQuestionStartedAt = Date.now();
       updateProgress();
-      loading.style.display      = 'none';
-      questionCard.style.display = 'block';
     }
 
-    async function submitAnswer(questionId, answerIdx, clickedBtn) {
-      document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+    function submitAnswer(quiz, answerIndex, clickedButton) {
+      const buttons = document.querySelectorAll('.choice-btn');
+      buttons.forEach(button => { button.disabled = true; });
+      correctAnswerText.style.display = 'none';
+      correctAnswerText.textContent = '';
 
-      try {
-        const res = await fetch('/api/quiz/answer', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question_id: questionId, answer: answerIdx }),
-        });
-        if (!res.ok) throw new Error('回答の送信に失敗しました');
-        const data = await res.json();
+      const isCorrect = answerIndex === quiz.answer;
+      const answeredAtTime = Date.now();
+      const answeredAt = new Date(answeredAtTime).toISOString();
+      const elapsedSeconds = getElapsedSeconds(answeredAtTime);
+      const questionElapsedSeconds = currentQuestionStartedAt
+        ? Math.max(0, Math.floor((answeredAtTime - currentQuestionStartedAt) / 1000))
+        : '';
+      currentQuestionStartedAt = null;
+      latestAnswerElapsedSeconds = elapsedSeconds;
+      if (isCorrect) {
+        correctCount++;
+      }
+      if (currentIndex === session.length - 1 && correctCount === session.length) {
+        perfectCompletionElapsedSeconds = elapsedSeconds;
+        perfectCompletionAt = answeredAt;
+      }
+      sendAnswerTelemetry(quiz, answerIndex, isCorrect, answeredAt, elapsedSeconds, questionElapsedSeconds);
 
-        if (data.correct) correctCount++;
+      clickedButton.classList.add(isCorrect ? 'correct' : 'incorrect');
+      if (!isCorrect && buttons[quiz.answer]) {
+        buttons[quiz.answer].classList.add('correct');
+      }
+      resultBadge.textContent = isCorrect ? '正解！' : '不正解...';
+      resultBadge.className = isCorrect ? 'correct' : 'incorrect';
+      if (!isCorrect && typeof quiz.choices[quiz.answer] === 'string') {
+        correctAnswerText.textContent = `正解は「${quiz.choices[quiz.answer]}」です。`;
+        correctAnswerText.style.display = 'block';
+      }
+      explanation.innerHTML = linkify(quiz.explanation);
 
-        clickedBtn.classList.add(data.correct ? 'correct' : 'incorrect');
-        resultBadge.textContent = data.correct ? '正解！' : '不正解...';
-        resultBadge.className   = data.correct ? 'correct' : 'incorrect';
-        explanation.innerHTML   = linkify(data.explanation);
-
-        if (data.correct && data.answer_code) {
-          const answerCodeEl = answerCodeBlock.querySelector('code');
-          answerCodeEl.textContent = data.answer_code;
-          hljs.highlightElement(answerCodeEl);
-          playLink.style.display = data.answer_code_play_ref ? 'inline-block' : 'none';
-          if (data.answer_code_play_ref) playLink.href = data.answer_code_play_ref;
-          answerCodeSection.style.display = 'block';
+      if (isCorrect && (quiz.answer_code || quiz.answer_code_play_ref)) {
+        if (quiz.answer_code) {
+          highlightCodeBlock(answerCodeBlock.querySelector('code'), quiz.answer_code);
+          answerCodeBlock.style.display = 'block';
         } else {
-          answerCodeSection.style.display = 'none';
+          answerCodeBlock.style.display = 'none';
         }
-
-        resultEl.style.display = 'block';
-
-        const isLast = currentIndex === session.length - 1;
-        nextBtn.textContent   = isLast ? '結果を見る' : '次の問題へ';
-        nextBtn.style.display = 'block';
-      } catch (e) {
-        errorMsg.textContent   = e.message;
-        errorMsg.style.display = 'block';
-      }
-    }
-
-    nextBtn.addEventListener('click', () => {
-      const isLast = currentIndex === session.length - 1;
-      if (isLast) {
-        showScore();
+        if (quiz.answer_code_play_ref) {
+          playLink.href = quiz.answer_code_play_ref;
+          playLink.style.display = 'inline-block';
+        } else {
+          playLink.style.display = 'none';
+        }
+        answerCodeSection.style.display = 'block';
       } else {
-        currentIndex++;
-        showQuestion();
+        playLink.style.display = 'none';
+        answerCodeSection.style.display = 'none';
       }
-    });
+
+      resultEl.style.display = 'block';
+      nextBtn.textContent = currentIndex === session.length - 1 ? '結果を見る' : '次の問題へ';
+      nextBtn.style.display = 'block';
+    }
 
     function showScore() {
-      session.forEach(q => seenIds.add(q.id));
+      session.forEach(quiz => seenIds.add(quiz.id));
 
       questionCard.style.display = 'none';
-      resultEl.style.display     = 'none';
-      nextBtn.style.display      = 'none';
-      progressEl.textContent     = '';
+      resultEl.style.display = 'none';
+      nextBtn.style.display = 'none';
+      progressEl.textContent = '';
 
-      const totalAnswered = isChallenge ? seenIds.size : session.length;
-      const totalCorrect  = isChallenge ? pastCorrect + correctCount : correctCount;
-      scoreValue.textContent = `${totalCorrect} / ${totalAnswered}`;
-
+      const extraPoolSize = getQuizPool('extra').length;
+      const totalAnswered = isChallenge ? getSeenCount('extra') : session.length;
+      const totalCorrect = isChallenge ? pastCorrect + correctCount : correctCount;
       const allCorrect = correctCount === session.length;
-      challengeCompleteSection.style.display = (isChallenge && allCorrect) ? 'block' : 'none';
-      specialLinkSection.style.display       = (!isChallenge && allCorrect) ? 'block' : 'none';
-      challengeBtn.style.display             = (!isChallenge && allCorrect) || (isChallenge && !allCorrect) ? '' : 'none';
+      const challengePerfect = isChallenge && allCorrect;
+      const canChallengeMore = getSeenCount('extra') < extraPoolSize;
 
+      if (challengePerfect) {
+        setPreviewUnlocked(true);
+      }
+
+      scoreValue.textContent = `${totalCorrect} / ${totalAnswered}`;
+      challengeCompleteSection.style.display = challengePerfect ? 'block' : 'none';
+      specialLinkSection.style.display = (!isChallenge && allCorrect) ? 'block' : 'none';
+      perfectScoreSection.style.display = allCorrect ? 'block' : 'none';
+      if (allCorrect) {
+        const elapsedSeconds = perfectCompletionElapsedSeconds ?? latestAnswerElapsedSeconds;
+        perfectTimeValue.textContent = formatElapsedSeconds(elapsedSeconds);
+        if (!telemetryEndpoint) {
+          perfectScoreNote.textContent = '解き終わった時間は表示中です。現在は記録送信エンドポイントが設定されていません。';
+          nicknameInput.disabled = true;
+          submitPerfectScoreBtn.disabled = true;
+        }
+      }
+      challengeBtn.style.display = canChallengeMore && ((!isChallenge && allCorrect) || (isChallenge && !allCorrect)) ? '' : 'none';
       scoreCard.style.display = 'block';
+      updatePreviewButtons();
     }
 
-    restartBtn.addEventListener('click', () => {
-      seenIds.clear();
-      pastCorrect = 0;
-      startSession();
-    });
+    async function submitPerfectScore() {
+      if (perfectCompletionElapsedSeconds === null || !perfectCompletionAt) {
+        setPerfectScoreMessage('送信できるクリア記録が見つかりません。', 'error');
+        return;
+      }
+      if (!telemetryEndpoint) {
+        setPerfectScoreMessage('記録送信エンドポイントが設定されていません。', 'error');
+        return;
+      }
 
+      const nickname = nicknameInput.value.trim();
+      if (!nickname) {
+        setPerfectScoreMessage('ニックネームを入力してください。', 'error');
+        nicknameInput.focus();
+        return;
+      }
+      if (nickname.length > 40) {
+        setPerfectScoreMessage('ニックネームは40文字以内で入力してください。', 'error');
+        nicknameInput.focus();
+        return;
+      }
+
+      nicknameInput.disabled = true;
+      submitPerfectScoreBtn.disabled = true;
+      setPerfectScoreMessage('記録を送信しています…', 'pending');
+
+      try {
+        await postTelemetry({
+          event_type: 'perfect_score',
+          nickname,
+          elapsed_seconds: perfectCompletionElapsedSeconds,
+          completed_at: perfectCompletionAt,
+          mode: getTelemetryMode(),
+          session_id: sessionID,
+          attempt_id: attemptID,
+        });
+        perfectScoreSubmitted = true;
+        perfectScoreNote.textContent = '記録を送信しました。別の記録を残すには、もう一度クイズに挑戦してください。';
+        submitPerfectScoreBtn.textContent = '送信済み';
+        setPerfectScoreMessage('クリア記録を送信しました。', 'success');
+      } catch (_) {
+        nicknameInput.disabled = false;
+        submitPerfectScoreBtn.disabled = false;
+        setPerfectScoreMessage('記録の送信に失敗しました。通信環境を確認して、もう一度お試しください。', 'error');
+      }
+    }
+
+    startBtn.addEventListener('click', () => startSession());
+    nextBtn.addEventListener('click', () => {
+      if (currentIndex === session.length - 1) {
+        showScore();
+        return;
+      }
+      currentIndex++;
+      showQuestion();
+    });
+    restartBtn.addEventListener('click', () => startSession());
     challengeBtn.addEventListener('click', () => {
-      pastCorrect += correctCount;
+      pastCorrect = isChallenge ? pastCorrect + correctCount : countQuizzesForMode(session, 'extra');
       startSession([...seenIds]);
     });
+    submitPerfectScoreBtn.addEventListener('click', submitPerfectScore);
+    previewBtn.addEventListener('click', openPreviewPage);
+    scorePreviewBtn.addEventListener('click', openPreviewPage);
+    nicknameInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        submitPerfectScore();
+      }
+    });
+    adminKeywordInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        submitAdminKeyword();
+      }
+    });
+    footerCopyright.addEventListener('click', () => {
+      footerTapCount++;
+      if (footerTapCount >= adminTapThreshold) {
+        openAdminKeywordPopup();
+      }
+    });
+    adminKeywordCloseBtn.addEventListener('click', closeAdminKeywordPopup);
+    openAdminBtn.addEventListener('click', submitAdminKeyword);
+    adminKeywordOverlay.addEventListener('click', event => {
+      if (event.target === adminKeywordOverlay) {
+        closeAdminKeywordPopup();
+      }
+    });
 
-    startSession();
-
+    if (allQuizzes.length === 0) {
+      showError('クイズデータの読み込みに失敗しました');
+    }
+    renderHome();
   </script>
 </body>
 </html>

@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Go Conference 2026 CodeLab - 問題一覧</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/go.min.js"></script>
+  <script src="../quiz-config.js"></script>
+  <script src="../quiz-data.js"></script>
+  <style>
+    :root {
+      --primitive-black:      #333333;
+      --primitive-light-gray: #d5e1e8;
+      --primitive-dark-gray:  #798992;
+      --primitive-blue:       #00c1e5;
+      --primitive-navy:       #103972;
+      --primitive-white:      #ffffff;
+      --primitive-light-blue: #edfcff;
+      --primitive-light-cyan: #eefffd;
+      --primitive-red:        #fd7045;
+      --primitive-cyan:       #55d3c2;
+
+      --surface-primary:        var(--primitive-white);
+      --surface-secondary:      var(--primitive-light-blue);
+      --surface-disabled:       var(--primitive-light-gray);
+      --surface-primary-dark:   var(--primitive-red);
+      --surface-secondary-dark: var(--primitive-navy);
+
+      --text-primary:   var(--primitive-black);
+      --text-secondary: var(--primitive-dark-gray);
+      --text-on-fill:   var(--primitive-white);
+      --text-accent:    var(--primitive-blue);
+
+      --radius-button:  999px;
+      --radius-objects: 16px;
+
+      --space-xxs: 8px;
+      --space-xs:  16px;
+      --space-s:   24px;
+      --space-m:   40px;
+
+      --font-base:   "Noto Sans JP", sans-serif;
+      --font-accent: "Barlow", sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-base);
+      background: var(--surface-secondary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.75;
+    }
+
+    .header {
+      position: fixed;
+      inset: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 40px;
+      height: 81px;
+      background: var(--surface-primary);
+      box-shadow: 0 1px 0 var(--surface-disabled);
+      z-index: 1000;
+    }
+    .header-logo {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-xxs);
+      font-family: var(--font-accent);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primitive-navy);
+      text-decoration: none;
+    }
+    .header-logo .accent { color: var(--text-accent); }
+    .header-badge {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-on-fill);
+      background: var(--surface-secondary-dark);
+      border-radius: var(--radius-objects);
+      padding: 4px 12px;
+    }
+
+    .main-content { padding-top: 81px; }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: var(--space-m) var(--space-xs);
+    }
+
+    .toolbar {
+      margin-bottom: var(--space-xs);
+    }
+    .back-link {
+      color: var(--text-accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+    .back-link:hover { text-decoration: underline; }
+
+    .page-title {
+      font-family: var(--font-accent);
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--primitive-navy);
+      margin-bottom: var(--space-xxs);
+    }
+    .page-lead {
+      color: var(--text-secondary);
+      margin-bottom: var(--space-s);
+    }
+
+    .card {
+      background: var(--surface-primary);
+      border-radius: var(--radius-objects);
+      box-shadow: 0 2px 12px rgba(16, 57, 114, 0.06);
+      overflow: hidden;
+      margin-bottom: var(--space-xs);
+    }
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 360px;
+    }
+    thead {
+      background: var(--surface-secondary);
+      border-bottom: 2px solid var(--surface-disabled);
+    }
+    th, td {
+      padding: var(--space-xs) var(--space-s);
+      text-align: left;
+    }
+    th {
+      color: var(--primitive-navy);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    td {
+      border-bottom: 1px solid var(--surface-secondary);
+      vertical-align: middle;
+    }
+    tbody tr { cursor: pointer; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #f7fdff; }
+    .empty-msg {
+      text-align: center;
+      color: var(--text-secondary);
+      padding: var(--space-m);
+    }
+
+    #error-msg {
+      display: none;
+      background: #fff4f1;
+      border: 1px solid var(--surface-primary-dark);
+      border-radius: var(--radius-objects);
+      color: var(--surface-primary-dark);
+      padding: var(--space-xs) var(--space-s);
+      margin-bottom: var(--space-xs);
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(16, 57, 114, 0.45);
+      z-index: 2000;
+      align-items: flex-start;
+      justify-content: flex-start;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface-primary);
+      box-shadow: 0 8px 40px rgba(16, 57, 114, 0.18);
+      width: min(760px, 100%);
+      min-height: 100dvh;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: var(--space-s);
+      right: var(--space-s);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      line-height: 1;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .modal-close:hover { background: var(--surface-secondary); }
+    .panel-content {
+      min-height: 100dvh;
+      padding: var(--space-s);
+      padding-right: calc(var(--space-s) + 56px);
+    }
+    .modal-title {
+      font-family: var(--font-accent);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--primitive-navy);
+      margin-bottom: var(--space-xxs);
+      line-height: 1.4;
+    }
+    .panel-selected-meta {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: var(--space-xs);
+    }
+    .modal-section-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-top: var(--space-s);
+      margin-bottom: var(--space-xxs);
+    }
+    .modal-text {
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+      line-height: 1.75;
+    }
+    .choice-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xxs);
+      margin-top: var(--space-xxs);
+    }
+    .choice-btn {
+      appearance: none;
+      background: var(--surface-primary);
+      border: 2px solid var(--surface-disabled);
+      border-radius: 12px;
+      color: var(--text-primary);
+      cursor: pointer;
+      font-family: var(--font-base);
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.6;
+      padding: 12px var(--space-xs);
+      text-align: left;
+      width: 100%;
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+    .choice-btn:hover:not(:disabled) {
+      border-color: var(--text-accent);
+      background: var(--surface-secondary);
+    }
+    .choice-btn.correct {
+      border-color: var(--primitive-cyan);
+      background: var(--primitive-light-cyan);
+      color: #1a7a6e;
+    }
+    .choice-btn.incorrect {
+      border-color: var(--surface-primary-dark);
+      background: #fff4f1;
+      color: var(--surface-primary-dark);
+    }
+    .choice-btn:disabled { cursor: default; }
+    .result-card {
+      display: none;
+      margin-top: var(--space-s);
+      padding: var(--space-s);
+      background: var(--surface-secondary);
+      border: 1px solid var(--surface-disabled);
+      border-radius: 12px;
+    }
+    #modal-result-badge {
+      font-family: var(--font-accent);
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: var(--space-xxs);
+    }
+    #modal-result-badge.correct { color: var(--primitive-cyan); }
+    #modal-result-badge.incorrect { color: var(--surface-primary-dark); }
+    .answer-summary {
+      color: var(--primitive-navy);
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: var(--space-xs);
+    }
+    pre {
+      background: var(--surface-secondary);
+      border: 1px solid var(--surface-disabled);
+      border-left: 4px solid var(--text-accent);
+      border-radius: 8px;
+      padding: var(--space-xs);
+      overflow-x: auto;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      margin-top: var(--space-xxs);
+    }
+    pre code.hljs {
+      background: transparent;
+      padding: 0;
+      font-size: inherit;
+    }
+    #modal-explanation a,
+    #modal-play-link {
+      color: var(--text-accent);
+      text-decoration: none;
+      word-break: break-all;
+    }
+    #modal-explanation a:hover,
+    #modal-play-link:hover {
+      text-decoration: underline;
+    }
+
+    .footer-gradient {
+      width: 100%;
+      height: 8px;
+      background: linear-gradient(90deg, var(--primitive-blue), var(--primitive-cyan));
+    }
+    footer {
+      background: var(--surface-secondary);
+      padding: var(--space-s) var(--space-m);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid var(--surface-disabled);
+    }
+    .footer-copyright {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    @media (max-width: 768px) {
+      .header { padding: 4px var(--space-s); height: 56px; }
+      .main-content { padding-top: 56px; }
+      main { padding: var(--space-s) var(--space-xs); }
+      th, td { padding: var(--space-xxs) var(--space-xs); }
+      .modal { width: 100%; }
+      .panel-content {
+        min-height: 100dvh;
+        padding: var(--space-s) var(--space-xs);
+      }
+      .modal-close {
+        top: var(--space-xs);
+        right: var(--space-xs);
+      }
+      .modal-title {
+        padding-right: 40px;
+        font-size: 1.15rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-logo">
+      <span class="accent">Go</span> Conference 2026 CodeLab
+    </div>
+    <span class="header-badge">問題一覧</span>
+  </header>
+
+  <div class="main-content">
+    <main>
+      <div class="toolbar">
+        <a class="back-link" href="../">← トップへ戻る</a>
+      </div>
+      <h1 class="page-title">クイズ出題一覧</h1>
+      <p class="page-lead">一覧から問題を選ぶと、解説・コード付きで内容を閲覧できます。</p>
+      <div id="error-msg"></div>
+
+      <div class="card">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>問題ID</th>
+              </tr>
+            </thead>
+            <tbody id="quiz-list-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="footer-gradient"></div>
+  <footer>
+    <p class="footer-copyright">© 2026 Go Conference Organizing Team</p>
+  </footer>
+
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close" id="modal-close" aria-label="閉じる">✕</button>
+      <div class="panel-content">
+        <div class="modal-title" id="modal-title">問題を選択してください</div>
+        <div class="panel-selected-meta" id="panel-selected-meta">一覧から問題を選ぶと詳細を表示します。</div>
+        <div class="modal-section-label">問題文</div>
+        <div class="modal-text" id="modal-text"></div>
+        <div id="modal-question-code-wrap" style="display:none">
+          <div class="modal-section-label">問題コード</div>
+          <pre><code class="language-go" id="modal-question-code"></code></pre>
+        </div>
+        <div class="modal-section-label">選択肢</div>
+        <div class="choice-list" id="modal-choices"></div>
+        <div class="result-card" id="modal-result">
+          <div id="modal-result-badge"></div>
+          <div class="answer-summary" id="modal-answer-summary"></div>
+          <div class="modal-section-label" style="margin-top:0">解説</div>
+          <div class="modal-text" id="modal-explanation"></div>
+          <div id="modal-answer-code-wrap" style="display:none">
+            <div class="modal-section-label">解答コード</div>
+            <pre id="modal-answer-code-block"><code class="language-go" id="modal-answer-code"></code></pre>
+            <a id="modal-play-link" href="#" target="_blank" rel="noopener" style="display:none;margin-top:var(--space-xxs);font-size:0.85rem">
+              ▶ Go Playground で確認する
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const previewStorageKey = 'quiz-preview-unlocked';
+    const allQuizzes = Array.isArray(window.__QUIZ_DATA__) ? window.__QUIZ_DATA__ : [];
+
+    let hasPreviewAccess = false;
+    try {
+      hasPreviewAccess = window.sessionStorage.getItem(previewStorageKey) === '1';
+    } catch (_) {}
+    if (!hasPreviewAccess) {
+      window.location.replace('../');
+    }
+
+    const errorMsg = document.getElementById('error-msg');
+    const quizListBody = document.getElementById('quiz-list-body');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const modalClose = document.getElementById('modal-close');
+    const modalTitle = document.getElementById('modal-title');
+    const panelSelectedMeta = document.getElementById('panel-selected-meta');
+    const modalText = document.getElementById('modal-text');
+    const modalChoices = document.getElementById('modal-choices');
+    const modalResult = document.getElementById('modal-result');
+    const modalResultBadge = document.getElementById('modal-result-badge');
+    const modalAnswerSummary = document.getElementById('modal-answer-summary');
+    const modalExplanation = document.getElementById('modal-explanation');
+    const modalQCodeWrap = document.getElementById('modal-question-code-wrap');
+    const modalQCode = document.getElementById('modal-question-code');
+    const modalACodeWrap = document.getElementById('modal-answer-code-wrap');
+    const modalACodeBlock = document.getElementById('modal-answer-code-block');
+    const modalACode = document.getElementById('modal-answer-code');
+    const modalPlayLink = document.getElementById('modal-play-link');
+
+    let selectedQuiz = null;
+    let selectedAnswerIndex = null;
+
+    function showError(message) {
+      errorMsg.textContent = message;
+      errorMsg.style.display = 'block';
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function linkify(text) {
+      return escapeHtml(text).replace(
+        /(https?:\/\/[^\s]+)/g,
+        '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+      );
+    }
+
+    function setHighlightedCode(el, code) {
+      el.textContent = code;
+      el.removeAttribute('data-highlighted');
+      el.classList.remove('hljs');
+      hljs.highlightElement(el);
+    }
+
+    function renderQuizList() {
+      quizListBody.innerHTML = '';
+
+      if (allQuizzes.length === 0) {
+        quizListBody.innerHTML = '<tr><td colspan="1" class="empty-msg">表示できるクイズがありません</td></tr>';
+        return;
+      }
+
+      allQuizzes.forEach(quiz => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(quiz.id)}</td>
+        `;
+        tr.addEventListener('click', () => openPanel(quiz));
+        quizListBody.appendChild(tr);
+      });
+    }
+
+    function renderSelectedQuiz() {
+      if (!selectedQuiz) {
+        return;
+      }
+
+      const hasAnswered = Number.isInteger(selectedAnswerIndex);
+
+      modalTitle.textContent = selectedQuiz.id;
+      panelSelectedMeta.textContent = hasAnswered
+        ? `${selectedAnswerIndex === selectedQuiz.answer ? '正解' : '不正解'}`
+        : '選択肢を選ぶと解答と解説を表示します';
+      modalText.textContent = selectedQuiz.text;
+
+      if (selectedQuiz.question_code) {
+        setHighlightedCode(modalQCode, selectedQuiz.question_code);
+        modalQCodeWrap.style.display = 'block';
+      } else {
+        modalQCodeWrap.style.display = 'none';
+      }
+
+      modalChoices.innerHTML = '';
+      selectedQuiz.choices.forEach((choice, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'choice-btn';
+        button.textContent = choice;
+
+        if (hasAnswered) {
+          button.disabled = true;
+          if (index === selectedQuiz.answer) {
+            button.classList.add('correct');
+          } else if (index === selectedAnswerIndex) {
+            button.classList.add('incorrect');
+          }
+        } else {
+          button.addEventListener('click', () => {
+            selectedAnswerIndex = index;
+            renderSelectedQuiz();
+          });
+        }
+
+        modalChoices.appendChild(button);
+      });
+
+      if (!hasAnswered) {
+        modalResult.style.display = 'none';
+        modalACodeWrap.style.display = 'none';
+        modalPlayLink.style.display = 'none';
+        return;
+      }
+
+      modalResult.style.display = 'block';
+      modalResultBadge.textContent = selectedAnswerIndex === selectedQuiz.answer ? '正解！' : '不正解...';
+      modalResultBadge.className = selectedAnswerIndex === selectedQuiz.answer ? 'correct' : 'incorrect';
+      modalAnswerSummary.textContent = `正解: ${selectedQuiz.choices[selectedQuiz.answer]}`;
+      modalExplanation.innerHTML = linkify(selectedQuiz.explanation);
+
+      if (selectedQuiz.answer_code || selectedQuiz.answer_code_play_ref) {
+        modalACodeWrap.style.display = 'block';
+        if (selectedQuiz.answer_code) {
+          setHighlightedCode(modalACode, selectedQuiz.answer_code);
+          modalACodeBlock.style.display = 'block';
+        } else {
+          modalACodeBlock.style.display = 'none';
+        }
+        if (selectedQuiz.answer_code_play_ref) {
+          modalPlayLink.href = selectedQuiz.answer_code_play_ref;
+          modalPlayLink.style.display = 'inline-block';
+        } else {
+          modalPlayLink.style.display = 'none';
+        }
+      } else {
+        modalACodeWrap.style.display = 'none';
+        modalPlayLink.style.display = 'none';
+      }
+    }
+
+    function openPanel(quiz) {
+      selectedQuiz = quiz;
+      selectedAnswerIndex = null;
+      renderSelectedQuiz();
+      modalOverlay.classList.add('open');
+    }
+
+    function closeModal() {
+      selectedAnswerIndex = null;
+      modalOverlay.classList.remove('open');
+    }
+
+    modalClose.addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', event => {
+      if (event.target === modalOverlay) {
+        closeModal();
+      }
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        closeModal();
+      }
+    });
+
+    if (allQuizzes.length === 0) {
+      showError('クイズデータの読み込みに失敗しました');
+    }
+    renderQuizList();
+  </script>
+</body>
+</html>
