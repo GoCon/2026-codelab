@@ -154,21 +154,21 @@ Apps Script は `Logs`、`Summary`、`Attempts`、`PerfectScores` の 4 シー�
 - `Attempts` シートには各 `attempt_id` ごとの回答数、完走有無、最後に到達した問題番号、総経過秒数がまとまり、途中離脱の分析に使えます
 - `PerfectScores` シートには全問正解時に送信されたニックネーム、クリアタイム、回答完了日時、`mode`（`normal` / `extra`）、`attempt_id` が追記されます
 
-## GitHub Pages workflow 設定
+## GitHub Pages デプロイについて
 
-workflow: `.github/workflows/quiz-app-github-pages.yml`
+GitHub Pages 向けの静的成果物は `make build-pages` で生成できますが、**公開日までは自動デプロイ workflow を無効化**しています。
 
-GitHub の **Settings > Secrets and variables > Actions > Variables** に、必要に応じて次を追加してください。
+再度 GitHub Pages 自動公開を有効にする場合は、workflow で次の Variables を使う想定です。
 
 | Variable 名 | 必須 | 説明 |
 |---|---|---|
 | `QUIZ_TELEMETRY_ENDPOINT` | 任意 | Apps Script の Web アプリ URL（未設定時は `public/quiz-config.js` の既定値を使用） |
 | `QUIZ_PREVIEW_UNLOCK_CODE` | 任意 | フッター 10 タップ後に開く hidden Keyword ポップアップで使うコード（未設定時は `gofar,gotogether`） |
 
-- `QUIZ_TELEMETRY_ENDPOINT` が空でも GitHub Pages の静的サイトはデプロイされ、`public/quiz-config.js` に含まれる既定の Apps Script URL が使われます
+- `QUIZ_TELEMETRY_ENDPOINT` が空でも静的サイト自体はビルドでき、`public/quiz-config.js` に含まれる既定の Apps Script URL が使われます
 - `QUIZ_PREVIEW_UNLOCK_CODE` を未設定のまま使う場合、既定の hidden Keyword は `gofar,gotogether` です
-
-workflow は build 時に `public/quiz-config.js` の既定値を読み込み、Actions Variables が設定されている項目だけ `gh-pages-dist/quiz-config.js` へ上書きします。
+ 
+再度 workflow を作る場合は、build 時に `public/quiz-config.js` の既定値を読み込み、Actions Variables が設定されている項目だけ `gh-pages-dist/quiz-config.js` へ上書きする運用を想定しています。
 
 ## 旧 Cloudflare Functions ビルド
 
