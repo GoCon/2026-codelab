@@ -35,3 +35,18 @@ questions:
     answer_code_ref: "code/q2_answer.go"
     answer_code_play_ref: "https://go.dev/play/p/g-_VO1PYt6b"
 
+  # generics
+  - text: "型パラメータ付き関数「MyFunc」の引数にできない型はどれ？"
+    question_code_ref: "code/q3_question.go"
+    choices:
+      - "[]MyType1"
+      - "[]MyType2"
+      - "[]MyType3"
+      - "[]MyType4"
+    answer: 2
+    explanation: |
+      MyFuncの引数は型制約によりMyIfaceを実装している型のスライスとなっています。
+      MyIface、つまりm1()メソッドの実装があるのはMyType1のみですが、MyType2はMyType1のエイリアスなのでMyType1単なる別名であり、またMyType4は埋め込みによりインターフェイスを満たします。
+      一方、新たな型として定義しているMyType3はm1()メソッドが無いため、MyFuncの引数にはできません。
+
+      Genericsが使えるようになったことで、このようなスライスを受け取る関数を利用するときにスライスを詰め直したり、型ごとに関数を用意する必要がなくなりました。
