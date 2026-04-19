@@ -84,8 +84,5 @@ func main() {
 		quizhandler.SetPublicAPIHeaders(w)
 		newQuizHandler().PostAnswer(w, r)
 	})
-	mux.HandleFunc("GET /admin/api/quizzes", func(w http.ResponseWriter, r *http.Request) {
-		newQuizHandler().GetAdminQuizzes(w, r)
-	})
 	workers.Serve(mux)
 }

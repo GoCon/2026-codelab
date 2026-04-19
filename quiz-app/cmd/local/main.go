@@ -9,50 +9,16 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"sync"
 
 	"github.com/GoCon/2026-codelab/quiz-app/internal/quizdata"
 	"github.com/GoCon/2026-codelab/quiz-app/internal/quizhandler"
 )
 
-// inMemoryStore は LogStore と StatsStore をオンメモリで実装する。
-type inMemoryStore struct {
-	mu   sync.Mutex
-	logs []logEntry
-}
-
-type logEntry struct {
-	questionID string
-	isCorrect  bool
-}
+// inMemoryStore はローカル開発用の簡易 LogStore 実装。
+type inMemoryStore struct{}
 
 func (s *inMemoryStore) InsertLog(_ context.Context, questionID string, isCorrect bool) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.logs = append(s.logs, logEntry{questionID: questionID, isCorrect: isCorrect})
 	return nil
-}
-
-func (s *inMemoryStore) QueryStats(_ context.Context) ([]quizhandler.QuestionStat, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	index := make(map[string]*quizhandler.QuestionStat)
-	for _, l := range s.logs {
-		if _, ok := index[l.questionID]; !ok {
-			index[l.questionID] = &quizhandler.QuestionStat{QuestionID: l.questionID}
-		}
-		index[l.questionID].Total++
-		if l.isCorrect {
-			index[l.questionID].Correct++
-		}
-	}
-
-	stats := make([]quizhandler.QuestionStat, 0, len(index))
-	for _, v := range index {
-		stats = append(stats, *v)
-	}
-	return stats, nil
 }
 
 func fail(logger *slog.Logger, msg string, err error) {
@@ -104,13 +70,6 @@ func main() {
 	mux.HandleFunc("POST /api/quiz/answer", func(w http.ResponseWriter, r *http.Request) {
 		quizhandler.SetPublicAPIHeaders(w)
 		newQuizHandler().PostAnswer(w, r)
-	})
-	mux.HandleFunc("GET /admin/api/quizzes", func(w http.ResponseWriter, r *http.Request) {
-		newQuizHandler().GetAdminQuizzes(w, r)
-	})
-	mux.HandleFunc("GET /admin/api/stats", func(w http.ResponseWriter, r *http.Request) {
-		h := &quizhandler.StatsHandler{DB: store}
-		h.GetStats(w, r)
 	})
 	mux.HandleFunc("GET /quiz-data.js", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")

@@ -10,7 +10,6 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 	"sync"
 	"testing"
@@ -20,9 +19,8 @@ import (
 
 // ---- Test doubles -------------------------------------------------------
 //
-// MemStore は LogStore と StatsStore の両インターフェースを実装する。
-// モックではなく、ログエントリを実際に保持して集計する本物の代替実装。
-// SQL GROUP BY / ORDER BY question_id の意味論を Go コードで再現する。
+// MemStore は LogStore の代替実装。
+// モックではなく、ログエントリを実際に保持する本物の代替実装。
 
 type logEntry struct {
 	questionID string
@@ -33,7 +31,6 @@ type MemStore struct {
 	mu        sync.Mutex
 	entries   []logEntry
 	InsertErr error // non-nil で InsertLog がこのエラーを返す
-	QueryErr  error // non-nil で QueryStats がこのエラーを返す
 }
 
 func (m *MemStore) InsertLog(_ context.Context, questionID string, isCorrect bool) error {
@@ -44,45 +41,6 @@ func (m *MemStore) InsertLog(_ context.Context, questionID string, isCorrect boo
 	defer m.mu.Unlock()
 	m.entries = append(m.entries, logEntry{questionID, isCorrect})
 	return nil
-}
-
-// QueryStats はエントリを question_id でグループ化し、Total と Correct を返す。
-// CorrectRate はハンドラ側で計算されるため、ここでは 0 のままにする。
-func (m *MemStore) QueryStats(_ context.Context) ([]quizhandler.QuestionStat, error) {
-	if m.QueryErr != nil {
-		return nil, m.QueryErr
-	}
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	type counts struct{ total, correct int }
-	grouped := make(map[string]*counts)
-	for _, e := range m.entries {
-		if grouped[e.questionID] == nil {
-			grouped[e.questionID] = &counts{}
-		}
-		grouped[e.questionID].total++
-		if e.isCorrect {
-			grouped[e.questionID].correct++
-		}
-	}
-
-	keys := make([]string, 0, len(grouped))
-	for k := range grouped {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	stats := make([]quizhandler.QuestionStat, 0, len(keys))
-	for _, id := range keys {
-		c := grouped[id]
-		stats = append(stats, quizhandler.QuestionStat{
-			QuestionID: id,
-			Total:      c.total,
-			Correct:    c.correct,
-		})
-	}
-	return stats, nil
 }
 
 // Entries は蓄積されたログエントリのスナップショットを返す（状態検証用）。
@@ -677,163 +635,6 @@ func TestPostAnswer_LogPersistedCorrectly(t *testing.T) {
 				i, entries[i].questionID, entries[i].isCorrect,
 				tt.questionID, tt.isCorrect)
 		}
-	}
-}
-
-// =========================================================================
-// GetStats
-// =========================================================================
-
-func newStatsHandler(db quizhandler.StatsStore) *quizhandler.StatsHandler {
-	return &quizhandler.StatsHandler{DB: db}
-}
-
-func getStats(t *testing.T, h *quizhandler.StatsHandler) *httptest.ResponseRecorder {
-	t.Helper()
-	req := httptest.NewRequest(http.MethodGet, "/admin/api/stats", nil)
-	w := httptest.NewRecorder()
-	h.GetStats(w, req)
-	return w
-}
-
-func TestGetStats_EmptyStore_ReturnsEmptyArray(t *testing.T) {
-	w := getStats(t, newStatsHandler(&MemStore{}))
-
-	if w.Code != http.StatusOK {
-		t.Fatalf("got %d, want 200", w.Code)
-	}
-	// null ではなく [] であること
-	body := strings.TrimSpace(w.Body.String())
-	if !strings.HasPrefix(body, "[") {
-		t.Errorf("empty result should be JSON array, got: %s", body)
-	}
-	var stats []quizhandler.QuestionStat
-	if err := json.Unmarshal([]byte(body), &stats); err != nil {
-		t.Fatal(err)
-	}
-	if len(stats) != 0 {
-		t.Errorf("expected 0 stats, got %d", len(stats))
-	}
-}
-
-// 境界値: 全問正解 → correct_rate = 100.0
-func TestGetStats_AllCorrect_100Percent(t *testing.T) {
-	store := &MemStore{}
-	store.InsertLog(context.Background(), "q1", true)
-	store.InsertLog(context.Background(), "q1", true)
-	store.InsertLog(context.Background(), "q1", true)
-
-	w := getStats(t, newStatsHandler(store))
-	stats := decodeJSON[[]quizhandler.QuestionStat](t, w)
-
-	if len(stats) != 1 {
-		t.Fatalf("expected 1 stat, got %d", len(stats))
-	}
-	if stats[0].CorrectRate != 100.0 {
-		t.Errorf("correct_rate: got %f, want 100.0", stats[0].CorrectRate)
-	}
-	if stats[0].Total != 3 || stats[0].Correct != 3 {
-		t.Errorf("total/correct: got %d/%d, want 3/3", stats[0].Total, stats[0].Correct)
-	}
-}
-
-// 境界値: 全問不正解 → correct_rate = 0.0
-func TestGetStats_NoneCorrect_0Percent(t *testing.T) {
-	store := &MemStore{}
-	store.InsertLog(context.Background(), "q1", false)
-	store.InsertLog(context.Background(), "q1", false)
-
-	w := getStats(t, newStatsHandler(store))
-	stats := decodeJSON[[]quizhandler.QuestionStat](t, w)
-
-	if stats[0].CorrectRate != 0.0 {
-		t.Errorf("correct_rate: got %f, want 0.0", stats[0].CorrectRate)
-	}
-}
-
-// 境界値: 1/2 正解 → correct_rate = 50.0
-func TestGetStats_HalfCorrect_50Percent(t *testing.T) {
-	store := &MemStore{}
-	store.InsertLog(context.Background(), "q1", true)
-	store.InsertLog(context.Background(), "q1", false)
-
-	w := getStats(t, newStatsHandler(store))
-	stats := decodeJSON[[]quizhandler.QuestionStat](t, w)
-
-	if stats[0].CorrectRate != 50.0 {
-		t.Errorf("correct_rate: got %f, want 50.0", stats[0].CorrectRate)
-	}
-}
-
-// 境界値: 1/3 正解 → correct_rate ≈ 33.33...（小数演算の精度確認）
-func TestGetStats_OneThirdCorrect(t *testing.T) {
-	store := &MemStore{}
-	store.InsertLog(context.Background(), "q1", true)
-	store.InsertLog(context.Background(), "q1", false)
-	store.InsertLog(context.Background(), "q1", false)
-
-	w := getStats(t, newStatsHandler(store))
-	stats := decodeJSON[[]quizhandler.QuestionStat](t, w)
-
-	want := 100.0 / 3.0
-	if stats[0].CorrectRate < want-0.001 || stats[0].CorrectRate > want+0.001 {
-		t.Errorf("correct_rate: got %f, want ~%f", stats[0].CorrectRate, want)
-	}
-}
-
-// 境界値: 1件だけのログ（Total=1 の最小ケース）
-func TestGetStats_SingleEntry(t *testing.T) {
-	store := &MemStore{}
-	store.InsertLog(context.Background(), "q1", true)
-
-	w := getStats(t, newStatsHandler(store))
-	stats := decodeJSON[[]quizhandler.QuestionStat](t, w)
-
-	if len(stats) != 1 {
-		t.Fatalf("expected 1 stat, got %d", len(stats))
-	}
-	if stats[0].Total != 1 || stats[0].Correct != 1 {
-		t.Errorf("total/correct: got %d/%d, want 1/1", stats[0].Total, stats[0].Correct)
-	}
-}
-
-// 複数問題が question_id の昇順でソートされること（SQL の ORDER BY 再現）
-func TestGetStats_MultipleQuestions_SortedByID(t *testing.T) {
-	store := &MemStore{}
-	// 意図的に逆順で投入
-	for _, id := range []string{"q3", "q1", "q2"} {
-		store.InsertLog(context.Background(), id, true)
-	}
-
-	w := getStats(t, newStatsHandler(store))
-	stats := decodeJSON[[]quizhandler.QuestionStat](t, w)
-
-	if len(stats) != 3 {
-		t.Fatalf("expected 3 stats, got %d", len(stats))
-	}
-	want := []string{"q1", "q2", "q3"}
-	for i, s := range stats {
-		if s.QuestionID != want[i] {
-			t.Errorf("stats[%d].QuestionID: got %q, want %q", i, s.QuestionID, want[i])
-		}
-	}
-}
-
-func TestGetStats_DBError_Returns500(t *testing.T) {
-	store := &MemStore{QueryErr: errors.New("db connection lost")}
-	w := getStats(t, newStatsHandler(store))
-
-	if w.Code != http.StatusInternalServerError {
-		t.Errorf("got %d, want 500", w.Code)
-	}
-}
-
-func TestGetStats_ContentTypeIsJSON(t *testing.T) {
-	w := getStats(t, newStatsHandler(&MemStore{}))
-
-	ct := w.Header().Get("Content-Type")
-	if !strings.HasPrefix(ct, "application/json") {
-		t.Errorf("Content-Type: got %q, want application/json", ct)
 	}
 }
 

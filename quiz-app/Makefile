@@ -6,11 +6,10 @@
 GO := go
 
 QUIZ_WASM   = dist/functions/api/quiz.wasm
-STATS_WASM  = dist/functions/api/admin/stats.wasm
 CODE_FILES  := $(wildcard functions/api/code/*.go)
 PAGES_DIST  = gh-pages-dist
 
-build: $(QUIZ_WASM) $(STATS_WASM)
+build: $(QUIZ_WASM)
 	cp -r public/* dist/
 	$(GO) run ./cmd/generatequizdata -out dist/quiz-data.js
 
@@ -24,11 +23,6 @@ $(QUIZ_WASM): functions/api/quiz.go functions/api/quizes.yaml $(CODE_FILES)
 	mkdir -p dist/functions/api
 	GOROOT=$$($(GO) env GOROOT) PATH=$$($(GO) env GOROOT)/bin:$$PATH \
 	  GOARCH=wasm GOOS=js tinygo build -o $@ ./functions/api/
-
-$(STATS_WASM): functions/api/admin/stats.go
-	mkdir -p dist/functions/api/admin
-	GOROOT=$$($(GO) env GOROOT) PATH=$$($(GO) env GOROOT)/bin:$$PATH \
-	  GOARCH=wasm GOOS=js tinygo build -o $@ ./functions/api/admin/
 
 clean:
 	rm -rf dist/ $(PAGES_DIST)

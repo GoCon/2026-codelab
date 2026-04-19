@@ -562,7 +562,7 @@
     <div class="admin-keyword-modal" role="dialog" aria-modal="true" aria-labelledby="admin-keyword-title">
       <button class="admin-keyword-close" id="admin-keyword-close-btn" type="button" aria-label="閉じる">✕</button>
       <div class="secret-title" id="admin-keyword-title">秘密のKeywordを入力</div>
-      <p class="secret-note">正しいKeywordを入力すると admin ページを開きます。</p>
+      <p class="secret-note">正しいKeywordを入力すると問題プレビューモードを開きます。</p>
       <div class="secret-row">
         <input
           id="admin-keyword-input"
@@ -584,7 +584,6 @@
     const previewUnlockCode = typeof appConfig.previewUnlockCode === 'string' ? appConfig.previewUnlockCode : '';
     const telemetrySessionStorageKey = 'quiz-telemetry-session-id';
     const previewStorageKey = 'quiz-preview-unlocked';
-    const adminAccessStorageKey = 'quiz-admin-unlocked';
 
     const progressEl = document.getElementById('progress');
     const errorMsg = document.getElementById('error-msg');
@@ -626,7 +625,6 @@
 
     const totalPerSession = 5;
     const previewURL = './preview/';
-    const adminURL = './admin/';
     const adminTapThreshold = 10;
 
     let session = [];
@@ -636,7 +634,6 @@
     let seenIds = new Set();
     let isChallenge = false;
     let previewUnlocked = loadPreviewUnlocked();
-    let adminUnlocked = loadAdminUnlocked();
     let sessionID = loadOrCreateSessionID();
     let attemptID = '';
     let sessionSize = 0;
@@ -677,14 +674,6 @@
       }
     }
 
-    function loadAdminUnlocked() {
-      try {
-        return window.sessionStorage.getItem(adminAccessStorageKey) === '1';
-      } catch (_) {
-        return false;
-      }
-    }
-
     function setPreviewUnlocked(value) {
       previewUnlocked = value;
       try {
@@ -695,17 +684,6 @@
         }
       } catch (_) {}
       updatePreviewButtons();
-    }
-
-    function setAdminUnlocked(value) {
-      adminUnlocked = value;
-      try {
-        if (value) {
-          window.sessionStorage.setItem(adminAccessStorageKey, '1');
-        } else {
-          window.sessionStorage.removeItem(adminAccessStorageKey);
-        }
-      } catch (_) {}
     }
 
     function updatePreviewButtons() {
@@ -891,8 +869,8 @@
       setPerfectScoreMessage('', '');
     }
 
-    function openAdminPage() {
-      window.location.href = adminURL;
+    function openPreviewPage() {
+      window.location.href = previewURL;
     }
 
     function openAdminKeywordPopup() {
@@ -930,10 +908,9 @@
         return;
       }
 
-      setAdminUnlocked(true);
       setPreviewUnlocked(true);
       closeAdminKeywordPopup();
-      openAdminPage();
+      openPreviewPage();
     }
 
     function postTelemetry(payload) {
@@ -1244,12 +1221,8 @@
       startSession([...seenIds]);
     });
     submitPerfectScoreBtn.addEventListener('click', submitPerfectScore);
-    previewBtn.addEventListener('click', () => {
-      window.location.href = previewURL;
-    });
-    scorePreviewBtn.addEventListener('click', () => {
-      window.location.href = previewURL;
-    });
+    previewBtn.addEventListener('click', openPreviewPage);
+    scorePreviewBtn.addEventListener('click', openPreviewPage);
     nicknameInput.addEventListener('keydown', event => {
       if (event.key === 'Enter') {
         event.preventDefault();

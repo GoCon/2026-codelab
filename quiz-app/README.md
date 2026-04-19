@@ -13,8 +13,8 @@ Go Conference 2026 のコードラボ向け Go クイズアプリです。
 - 全問正解でスペシャルページへのリンクを表示
 - 回答開始からの経過秒数を計測し、全問正解時はクリアタイム表示とニックネーム送信が可能
 - エクストラモードで未出問題へ継続挑戦、累計スコアを表示
-- 旧 admin の問題一覧モードを公開 UI に統合
-  - フッターを 10 回タップすると hidden Keyword ポップアップが開き、Keyword で問題一覧モードと `/admin/` を解放可能
+- 問題プレビューモードを公開 UI に統合
+  - フッターを 10 回タップすると hidden Keyword ポップアップが開き、Keyword で問題プレビューモードを開ける
   - またはエクストラモード全問正解で解放
 - 回答イベントを Google Apps Script に送信し、スプレッドシートで問題ごとの集計を更新
 
@@ -41,17 +41,14 @@ quiz-app/
 │       ├── quizes.yaml     # 問題データ
 │       ├── code/           # 問題・解答コード
 │       ├── quiz.go         # 互換用 quiz API (Cloudflare Pages Functions)
-│       └── admin/
-│           └── stats.go    # 互換用 stats API
 ├── gas/
 │   └── telemetry.gs        # Apps Script の集計エンドポイント
 ├── internal/
 │   ├── quizdata/           # 静的クイズデータ生成の共通処理
 │   └── quizhandler/        # 互換用サーバーロジック
 ├── public/
-│   ├── admin/index.html     # 隠し Keyword で開く admin ルート
 │   ├── index.html          # 公開クイズ画面
-│   ├── preview/index.html  # 解放後の問題一覧モード
+│   ├── preview/index.html  # 解放後の問題プレビューモード
 │   └── quiz-config.js      # telemetry / 秘密コード設定
 ├── Makefile
 └── go.mod
@@ -81,7 +78,6 @@ make build-pages
 
 ```text
 gh-pages-dist/
-├── admin/index.html
 ├── index.html
 ├── preview/index.html
 ├── quiz-config.js

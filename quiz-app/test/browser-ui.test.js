@@ -316,6 +316,7 @@ function createHarness(quizzes = sampleQuizzes) {
   return {
     beacons,
     elements,
+    location: context.window.location,
     currentQuiz,
     choiceButtons,
     parseBeaconPayloads,
@@ -324,6 +325,15 @@ function createHarness(quizzes = sampleQuizzes) {
     },
     clickChallenge() {
       elements.get('challenge-btn').trigger('click');
+    },
+    openHiddenKeywordPopup() {
+      for (let i = 0; i < 10; i += 1) {
+        elements.get('footer-copyright').trigger('click');
+      }
+    },
+    submitHiddenKeyword(keyword) {
+      elements.get('admin-keyword-input').value = keyword;
+      elements.get('open-admin-btn').trigger('click');
     },
     answerCurrentQuestionCorrectly,
     answerCurrentQuestionIncorrectly,
@@ -341,6 +351,18 @@ test('nickname and admin keyword fields use plain text inputs', () => {
   assert.doesNotMatch(adminKeywordTag, /class="[^"]*\bsecret-input\b/);
 
   assert.doesNotMatch(appHTML, /\.secret-input\b/);
+});
+
+test('hidden keyword unlock opens preview mode directly', () => {
+  const app = createHarness();
+
+  app.openHiddenKeywordPopup();
+  app.submitHiddenKeyword('secret');
+
+  assert.equal(app.location.href, './preview/');
+  assert.equal(app.elements.get('preview-entry').style.display, 'block');
+  assert.equal(app.elements.get('score-preview-btn').style.display, '');
+  assert.doesNotMatch(appHTML, /\/admin\//);
 });
 
 test('normal mode excludes extra-only quizzes and keeps canonical telemetry after shuffling', () => {
