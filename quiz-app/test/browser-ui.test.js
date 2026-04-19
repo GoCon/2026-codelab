@@ -18,10 +18,10 @@ function extractInputTag(id) {
   return match[0];
 }
 
-function assertFooterInfoMarkup(html) {
+function assertFooterInfoMarkup(html, imagePath) {
   assert.match(html, /<footer id="footer-copyright">[\s\S]*?<div class="footer-info">/);
   assert.match(html, /class="logo-container"/);
-  assert.match(html, /class="footer-logo"/);
+  assert.match(html, new RegExp(`class="footer-logo" src="${imagePath.replace(/\./g, '\\.').replace(/\//g, '\\/')}" alt="Go Conference 2026"`));
   assert.match(html, /Go Conference 2026/);
   assert.match(html, /href="https:\/\/reneefrench\.blogspot\.com\/"/);
   assert.match(html, /Renée French/);
@@ -402,24 +402,24 @@ test('nickname and admin keyword fields use plain text inputs', () => {
 });
 
 test('top page footer uses the conference attribution block', () => {
-  assertFooterInfoMarkup(appHTML);
+  assertFooterInfoMarkup(appHTML, './assets/go-conference-2026-logo.svg');
 });
 
 test('preview page footer uses the conference attribution block', () => {
-  assertFooterInfoMarkup(previewHTML);
+  assertFooterInfoMarkup(previewHTML, '../assets/go-conference-2026-logo.svg');
 });
 
 test('top page header uses the conference logo with CodeLab label', () => {
-  const headerMarkup = assertHeaderConferenceLogo(appHTML, './go-conference-2026-logo.svg');
+  const headerMarkup = assertHeaderConferenceLogo(appHTML, './assets/go-conference-2026-logo.svg');
   assert.match(headerMarkup, /Go の知識を試してみよう！/);
 });
 
 test('preview page header uses the conference logo with CodeLab label', () => {
-  assertHeaderConferenceLogo(previewHTML, '../go-conference-2026-logo.svg');
+  assertHeaderConferenceLogo(previewHTML, '../assets/go-conference-2026-logo.svg');
 });
 
 test('preview page header does not render the right-side badge', () => {
-  const headerMarkup = assertHeaderConferenceLogo(previewHTML, '../go-conference-2026-logo.svg');
+  const headerMarkup = assertHeaderConferenceLogo(previewHTML, '../assets/go-conference-2026-logo.svg');
   assert.doesNotMatch(headerMarkup, /header-badge/);
   assert.doesNotMatch(headerMarkup, /<span[^>]*>\s*問題一覧\s*<\/span>/);
 });
@@ -430,7 +430,7 @@ test('progress is rendered as a reward-style subheader below the header', () => 
   assert.doesNotMatch(headerMatch[1], /id="progress"/);
   assert.match(
     appHTML,
-    /<div class="progress-subheader" id="progress-subheader">[\s\S]*?<div class="progress-reward" aria-live="polite">[\s\S]*?Answered[\s\S]*?id="progress-fill"[\s\S]*?id="progress-mascot-anchor"[\s\S]*?id="progress-mascot" src="\.\/progress-gopher\.png"[\s\S]*?<\/div>/,
+    /<div class="progress-subheader" id="progress-subheader">[\s\S]*?<div class="progress-reward" aria-live="polite">[\s\S]*?Answered[\s\S]*?id="progress-fill"[\s\S]*?id="progress-mascot-anchor"[\s\S]*?id="progress-mascot" src="\.\/assets\/progress-gopher\.png"[\s\S]*?<\/div>/,
   );
   assert.doesNotMatch(appHTML, /id="progress-star-/);
 });
