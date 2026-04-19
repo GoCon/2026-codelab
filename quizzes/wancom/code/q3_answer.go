@@ -1,3 +1,5 @@
+//go:build ignore
+
 // 参考: https://pkg.go.dev/net/http/pprof@go1.26.2
 
 package main

@@ -1,3 +1,5 @@
+//go:build ignore
+
 // See: https://gopherbadge.com/
 
 package main
