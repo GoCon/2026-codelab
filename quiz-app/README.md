@@ -157,7 +157,8 @@ Apps Script は `Logs`、`Summary`、`Attempts`、`PerfectScores` の 4 シー�
 ## GitHub Pages デプロイについて
 
 GitHub Pages 向けの静的成果物は `make build-pages` で生成できます。  
-`.github/workflows/quiz-app-github-pages.yml` では **build job だけ動かし、deploy job は公開日まで skip** しています。
+`.github/workflows/quiz-app-github-pages.yml` では **build job と artifact upload だけ動かし、deploy job は公開日まで skip** しています。  
+リポジトリの GitHub Pages は公開日まで有効化しない前提のため、workflow は `actions/configure-pages` を呼ばずに静的成果物の build 確認だけを行います。
 
 workflow では次の Variables を使います。
 
@@ -170,6 +171,8 @@ workflow では次の Variables を使います。
 - `QUIZ_PREVIEW_UNLOCK_CODE` を未設定のまま使う場合、既定の hidden Keyword は `gofar,gotogether` です
  
 workflow の build job は `public/quiz-config.js` の既定値を読み込み、Actions Variables が設定されている項目だけ `gh-pages-dist/quiz-config.js` へ上書きします。
+
+公開を再開する場合は、リポジトリ設定で GitHub Pages を **GitHub Actions** ソースとして有効化したうえで、deploy job の guard を外してください。
 
 ## 旧 Cloudflare Functions ビルド
 
