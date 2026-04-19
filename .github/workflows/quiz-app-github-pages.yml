@@ -10,7 +10,6 @@ on:
       - "quiz-app/functions/api/code/**"
       - "quiz-app/cmd/generatequizdata/**"
       - "quiz-app/internal/quizdata/**"
-      - "quiz-app/gas/**"
       - "quiz-app/Makefile"
       - "quiz-app/go.mod"
       - "quiz-app/go.sum"
