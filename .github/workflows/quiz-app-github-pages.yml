@@ -6,8 +6,7 @@ on:
       - main
     paths:
       - "quiz-app/public/**"
-      - "quiz-app/functions/api/quizes.yaml"
-      - "quiz-app/functions/api/code/**"
+      - "quiz-app/quizzes/**"
       - "quiz-app/cmd/generatequizdata/**"
       - "quiz-app/internal/quizdata/**"
       - "quiz-app/Makefile"

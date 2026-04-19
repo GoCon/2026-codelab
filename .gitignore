@@ -31,5 +31,6 @@ go.work.sum
 /preview
 
 # Editor/IDE
-# .idea/
-# .vscode/
+.idea/
+.vscode/
+.zed/
