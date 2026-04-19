@@ -13,6 +13,7 @@ on:
       - "quiz-app/go.sum"
       - "quiz-app/Makefile"
       - ".github/workflows/quiz-app-test.yml"
+      - ".github/workflows/quiz-app-github-pages.yml"
 
 permissions:
   contents: read
