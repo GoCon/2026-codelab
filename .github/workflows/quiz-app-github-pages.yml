@@ -10,7 +10,6 @@ on:
       - "quiz-app/functions/api/code/**"
       - "quiz-app/cmd/generatequizdata/**"
       - "quiz-app/internal/quizdata/**"
-      - "quiz-app/gas/**"
       - "quiz-app/Makefile"
       - "quiz-app/go.mod"
       - "quiz-app/go.sum"
@@ -37,7 +36,7 @@ jobs:
         with:
           go-version-file: quiz-app/go.mod
 
-      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745  # v5
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b  # v5
 
       - name: Build public site
         working-directory: quiz-app
@@ -72,6 +71,7 @@ jobs:
   deploy:
     name: Deploy GitHub Pages site
     needs: build
+    if: ${{ false }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
