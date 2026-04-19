@@ -459,6 +459,31 @@ test('progress reward UI tracks answered questions in the current session', () =
   assert.equal(app.elements.get('progress-mascot-anchor').style.left, '100%');
 });
 
+test('multiline choices preserve line breaks in quiz data and choice button styling', () => {
+  assert.match(appHTML, /\.choice-btn \{[\s\S]*?white-space: pre-wrap;/);
+  assert.match(previewHTML, /\.choice-btn \{[\s\S]*?white-space: pre-wrap;/);
+
+  const app = createHarness([
+    {
+      id: 'multiline_q1',
+      title: 'multiline question',
+      text: 'multiline question',
+      choices: ['i=0 v=日\ni=1 v=本\ni=2 v=語', 'コンパイルエラー'],
+      answer: 0,
+      explanation: 'multiline explanation',
+    },
+  ]);
+
+  app.clickStart();
+  assert.equal(app.choiceButtons()[0].textContent, 'i=0 v=日\ni=1 v=本\ni=2 v=語');
+
+  app.choiceButtons()[1].trigger('click');
+  assert.equal(
+    app.elements.get('correct-answer-text').textContent,
+    '正解は「i=0 v=日\ni=1 v=本\ni=2 v=語」です。',
+  );
+});
+
 test('hidden keyword unlock opens preview mode directly', () => {
   const app = createHarness();
 
