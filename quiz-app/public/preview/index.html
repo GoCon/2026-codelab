@@ -63,7 +63,7 @@
       inset: 0 0 auto;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       padding: 4px 40px;
       height: 81px;
       background: var(--surface-primary);
@@ -72,22 +72,28 @@
     }
     .header-logo {
       display: flex;
-      align-items: baseline;
-      gap: var(--space-xxs);
+      align-items: center;
+      min-width: 0;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .header-conference-logo {
+      display: block;
+      width: min(136px, 42vw);
+      height: auto;
+      flex-shrink: 0;
+    }
+    .header-product-mark {
       font-family: var(--font-accent);
       font-size: 1.5rem;
       font-weight: 700;
       color: var(--primitive-navy);
-      text-decoration: none;
-    }
-    .header-logo .accent { color: var(--text-accent); }
-    .header-badge {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: var(--text-on-fill);
-      background: var(--surface-secondary-dark);
-      border-radius: var(--radius-objects);
-      padding: 4px 12px;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
     }
 
     .main-content { padding-top: 81px; }
@@ -333,18 +339,52 @@
     footer {
       background: var(--surface-secondary);
       padding: var(--space-s) var(--space-m);
-      display: flex;
-      align-items: center;
-      justify-content: center;
       border-top: 1px solid var(--surface-disabled);
     }
-    .footer-copyright {
+    .footer-info {
+      width: min(760px, 100%);
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      color: var(--primitive-navy);
+      font-family: var(--font-accent);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .footer-logo {
+      display: block;
+      width: min(196px, 100%);
+      height: auto;
+    }
+    .copyright {
       font-size: 0.875rem;
       color: var(--text-secondary);
+    }
+    .copyright a {
+      color: var(--primitive-blue);
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .copyright a:hover {
+      text-decoration: underline;
     }
 
     @media (max-width: 768px) {
       .header { padding: 4px var(--space-s); height: 56px; }
+      .header-conference-logo {
+        width: 112px;
+      }
+      .header-product-mark {
+        font-size: 1.25rem;
+      }
       .main-content { padding-top: 56px; }
       main { padding: var(--space-s) var(--space-xs); }
       th, td { padding: var(--space-xxs) var(--space-xs); }
@@ -361,15 +401,25 @@
         padding-right: 40px;
         font-size: 1.15rem;
       }
+      footer {
+        padding: var(--space-s) var(--space-xs);
+      }
+      .footer-info,
+      .logo-container {
+        align-items: center;
+        text-align: center;
+      }
     }
   </style>
 </head>
 <body>
   <header class="header">
     <div class="header-logo">
-      <span class="accent">Go</span> Conference 2026 CodeLab
+      <div class="header-brand">
+        <img class="header-conference-logo" src="../assets/go-conference-2026-logo.svg" alt="Go Conference 2026">
+        <span class="header-product-mark">CodeLab</span>
+      </div>
     </div>
-    <span class="header-badge">問題一覧</span>
   </header>
 
   <div class="main-content">
@@ -397,8 +447,17 @@
   </div>
 
   <div class="footer-gradient"></div>
-  <footer>
-    <p class="footer-copyright">© 2026 Go Conference Organizing Team</p>
+  <footer id="footer-copyright">
+    <div class="footer-info">
+      <div class="logo-container">
+        <img class="footer-logo" src="../assets/go-conference-2026-logo.svg" alt="Go Conference 2026">
+        <span>Go Conference 2026</span>
+      </div>
+      <p class="copyright">
+        The Go gopher was designed by <a href="https://reneefrench.blogspot.com/">Renée French</a>. Illustrations by
+        <a href="https://x.com/avocadoneko">avocadoneko</a>.
+      </p>
+    </div>
   </footer>
 
   <div class="modal-overlay" id="modal-overlay">

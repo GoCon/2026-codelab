@@ -5,6 +5,7 @@ const test = require('node:test');
 const vm = require('node:vm');
 
 const appHTML = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
+const previewHTML = fs.readFileSync(path.join(__dirname, '..', 'public', 'preview', 'index.html'), 'utf8');
 const scripts = [...appHTML.matchAll(/<script>([\s\S]*?)<\/script>/g)];
 if (scripts.length === 0) {
   throw new Error('public/index.html does not contain an inline app script');
@@ -17,13 +18,41 @@ function extractInputTag(id) {
   return match[0];
 }
 
+function assertFooterInfoMarkup(html, imagePath) {
+  assert.match(html, /<footer id="footer-copyright">[\s\S]*?<div class="footer-info">/);
+  assert.match(html, /class="logo-container"/);
+  assert.match(html, new RegExp(`class="footer-logo" src="${imagePath.replace(/\./g, '\\.').replace(/\//g, '\\/')}" alt="Go Conference 2026"`));
+  assert.match(html, /Go Conference 2026/);
+  assert.match(html, /href="https:\/\/reneefrench\.blogspot\.com\/"/);
+  assert.match(html, /Renée French/);
+  assert.match(html, /href="https:\/\/x\.com\/avocadoneko"/);
+  assert.match(html, /Illustrations by/);
+  assert.match(html, /avocadoneko/);
+  assert.doesNotMatch(html, /© 2026 Go Conference Organizing Team/);
+}
+
+function assertHeaderConferenceLogo(html, imagePath) {
+  const headerMatch = html.match(/<header class="header">([\s\S]*?)<\/header>/);
+  assert.ok(headerMatch, 'expected header markup');
+  assert.match(headerMatch[1], new RegExp(`class="header-conference-logo" src="${imagePath.replace(/\./g, '\\.').replace(/\//g, '\\/')}" alt="Go Conference 2026"`));
+  assert.match(headerMatch[1], /class="header-product-mark">CodeLab<\/span>/);
+  assert.doesNotMatch(headerMatch[1], /<span class="accent">Go<\/span> Conference 2026 CodeLab/);
+  return headerMatch[1];
+}
+
 const elementIDs = [
   'progress',
+  'progress-subheader',
+  'progress-meter',
+  'progress-fill',
+  'progress-mascot-anchor',
+  'progress-mascot',
   'error-msg',
   'home-card',
   'question-card',
   'result',
   'score-card',
+  'celebration-layer',
   'question-text',
   'code-block',
   'choices',
@@ -89,7 +118,12 @@ const sampleQuizzes = [
 class FakeElement {
   constructor(id = '') {
     this.id = id;
-    this.style = { display: '' };
+    this.style = {
+      display: '',
+      setProperty(name, value) {
+        this[name] = String(value);
+      },
+    };
     this.textContent = '';
     this.value = '';
     this.disabled = false;
@@ -147,6 +181,13 @@ class FakeElement {
 
   removeAttribute(name) {
     delete this.attributes[name];
+  }
+
+  setAttribute(name, value) {
+    this.attributes[name] = String(value);
+    if (name === 'class') {
+      this.className = String(value);
+    }
   }
 
   focus() {}
@@ -344,6 +385,13 @@ function createHarness(quizzes = sampleQuizzes) {
 test('nickname and admin keyword fields use plain text inputs', () => {
   const nicknameTag = extractInputTag('nickname-input');
   assert.match(nicknameTag, /type="text"/);
+  assert.match(nicknameTag, /autocomplete="off"/);
+  assert.match(nicknameTag, /spellcheck="false"/);
+  assert.match(nicknameTag, /data-1p-ignore="true"/);
+  assert.match(nicknameTag, /data-lpignore="true"/);
+  assert.match(nicknameTag, /data-bwignore="true"/);
+  assert.match(nicknameTag, /data-form-type="other"/);
+  assert.doesNotMatch(nicknameTag, /autocomplete="nickname"/);
   assert.doesNotMatch(nicknameTag, /class="[^"]*\bsecret-input\b/);
 
   const adminKeywordTag = extractInputTag('admin-keyword-input');
@@ -351,6 +399,64 @@ test('nickname and admin keyword fields use plain text inputs', () => {
   assert.doesNotMatch(adminKeywordTag, /class="[^"]*\bsecret-input\b/);
 
   assert.doesNotMatch(appHTML, /\.secret-input\b/);
+});
+
+test('top page footer uses the conference attribution block', () => {
+  assertFooterInfoMarkup(appHTML, './assets/go-conference-2026-logo.svg');
+});
+
+test('preview page footer uses the conference attribution block', () => {
+  assertFooterInfoMarkup(previewHTML, '../assets/go-conference-2026-logo.svg');
+});
+
+test('top page header uses the conference logo with CodeLab label', () => {
+  const headerMarkup = assertHeaderConferenceLogo(appHTML, './assets/go-conference-2026-logo.svg');
+  assert.match(headerMarkup, /Go の知識を試してみよう！/);
+});
+
+test('preview page header uses the conference logo with CodeLab label', () => {
+  assertHeaderConferenceLogo(previewHTML, '../assets/go-conference-2026-logo.svg');
+});
+
+test('preview page header does not render the right-side badge', () => {
+  const headerMarkup = assertHeaderConferenceLogo(previewHTML, '../assets/go-conference-2026-logo.svg');
+  assert.doesNotMatch(headerMarkup, /header-badge/);
+  assert.doesNotMatch(headerMarkup, /<span[^>]*>\s*問題一覧\s*<\/span>/);
+});
+
+test('progress is rendered as a reward-style subheader below the header', () => {
+  const headerMatch = appHTML.match(/<header class="header">([\s\S]*?)<\/header>/);
+  assert.ok(headerMatch, 'expected header markup');
+  assert.doesNotMatch(headerMatch[1], /id="progress"/);
+  assert.match(
+    appHTML,
+    /<div class="progress-subheader" id="progress-subheader">[\s\S]*?<div class="progress-reward" aria-live="polite">[\s\S]*?Answered[\s\S]*?id="progress-fill"[\s\S]*?id="progress-mascot-anchor"[\s\S]*?id="progress-mascot" src="\.\/assets\/progress-gopher\.png"[\s\S]*?<\/div>/,
+  );
+  assert.doesNotMatch(appHTML, /id="progress-star-/);
+});
+
+test('progress reward UI tracks answered questions in the current session', () => {
+  const app = createHarness();
+
+  app.clickStart();
+  assert.equal(app.elements.get('progress').textContent, '0 / 2');
+  assert.equal(app.elements.get('progress-fill').style.width, '0%');
+  assert.equal(app.elements.get('progress-meter').attributes['aria-valuenow'], '0');
+  assert.equal(app.elements.get('progress-mascot-anchor').style.left, '0%');
+
+  app.answerCurrentQuestionCorrectly();
+  assert.equal(app.elements.get('progress').textContent, '1 / 2');
+  assert.equal(app.elements.get('progress-fill').style.width, '50%');
+  assert.equal(app.elements.get('progress-meter').attributes['aria-valuenow'], '1');
+  assert.equal(app.elements.get('progress-meter').attributes['aria-valuemax'], '2');
+  assert.equal(app.elements.get('progress-mascot-anchor').style.left, '50%');
+
+  app.elements.get('next-btn').trigger('click');
+  app.answerCurrentQuestionCorrectly();
+  assert.equal(app.elements.get('progress').textContent, '2 / 2');
+  assert.equal(app.elements.get('progress-fill').style.width, '100%');
+  assert.equal(app.elements.get('progress-meter').attributes['aria-valuenow'], '2');
+  assert.equal(app.elements.get('progress-mascot-anchor').style.left, '100%');
 });
 
 test('hidden keyword unlock opens preview mode directly', () => {
@@ -395,6 +501,28 @@ test('normal mode excludes extra-only quizzes and keeps canonical telemetry afte
     sharedPayload.correct_answer,
   );
   assert.notEqual(app.elements.get('challenge-btn').style.display, 'none');
+});
+
+test('perfect score renders a fireworks-style celebration layer with more confetti', () => {
+  const app = createHarness();
+
+  app.clickStart();
+  app.runCurrentSessionCorrectly();
+
+  const celebrationLayer = app.elements.get('celebration-layer');
+  assert.equal(celebrationLayer.children.length, 29);
+  assert.ok(
+    celebrationLayer.children.some(child => child.className.includes('celebration-burst')),
+    'expected celebration bursts',
+  );
+  assert.ok(
+    celebrationLayer.children.some(child => child.className.includes('celebration-confetti')),
+    'expected celebration confetti',
+  );
+  assert.ok(
+    celebrationLayer.children.some(child => child.className.includes('celebration-ring')),
+    'expected celebration rings',
+  );
 });
 
 test('extra mode only serves extra quizzes and still shows the correct answer after a shuffled wrong click', () => {

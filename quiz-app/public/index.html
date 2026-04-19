@@ -49,6 +49,8 @@
 
       --font-base:   "Noto Sans JP", sans-serif;
       --font-accent: "Barlow", sans-serif;
+      --header-height: 81px;
+      --progress-subheader-height: 84px;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -67,40 +69,157 @@
       top: 0;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       padding: 4px 40px;
-      height: 81px;
+      height: var(--header-height);
       background: var(--surface-primary);
       box-shadow: 0 1px 0 var(--surface-disabled);
       z-index: 1000;
     }
     .header-logo {
       display: flex;
-      align-items: baseline;
-      gap: var(--space-xxs);
+      align-items: center;
+      gap: var(--space-xs);
+      min-width: 0;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      min-width: 0;
+    }
+    .header-conference-logo {
+      display: block;
+      width: min(136px, 42vw);
+      height: auto;
+      flex-shrink: 0;
+    }
+    .header-product-mark {
       font-family: var(--font-accent);
       font-size: 1.5rem;
       font-weight: 700;
       color: var(--primitive-navy);
-      text-decoration: none;
       letter-spacing: 0.02em;
+      white-space: nowrap;
     }
-    .header-logo .accent { color: var(--text-accent); }
     .header-tagline {
       font-family: var(--font-base);
       font-size: 0.8rem;
       font-weight: 400;
       color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    .progress-subheader {
+      position: fixed;
+      top: var(--header-height);
+      width: 100%;
+      height: var(--progress-subheader-height);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 40px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 1px 0 var(--surface-disabled);
+      z-index: 999;
+    }
+    .progress-reward {
+      width: min(560px, 100%);
+      padding: 8px 18px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 193, 229, 0.16);
+      background: linear-gradient(135deg, rgba(237, 252, 255, 0.98), rgba(238, 255, 253, 0.98));
+      box-shadow: 0 10px 24px rgba(16, 57, 114, 0.08);
+    }
+    .progress-reward-meta {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-xs);
+      margin-bottom: 8px;
+    }
+    .progress-caption {
+      color: var(--text-secondary);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .progress-summary {
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      gap: var(--space-xxs);
+      min-width: 0;
+      flex-wrap: wrap;
     }
     #progress {
       font-family: var(--font-accent);
-      font-size: 1.25rem;
+      font-size: 1.3rem;
       font-weight: 700;
       color: var(--primitive-navy);
       letter-spacing: 0.04em;
     }
+    .progress-summary-label {
+      color: var(--primitive-navy);
+      font-size: 0.86rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    #progress-meter {
+      position: relative;
+      height: 46px;
+      margin-top: 2px;
+    }
+    .progress-track {
+      position: absolute;
+      top: 30px;
+      left: 0;
+      right: 0;
+      height: 12px;
+      transform: translateY(-50%);
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(16, 57, 114, 0.14), rgba(85, 211, 194, 0.2));
+      overflow: hidden;
+    }
+    #progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--primitive-blue), var(--primitive-cyan));
+      transition: width 220ms ease;
+    }
+    .progress-mascot-anchor {
+      position: absolute;
+      top: 30px;
+      left: 0;
+      pointer-events: none;
+      transform: translate(-22%, -78%);
+      transition: left 220ms ease;
+    }
+    .progress-mascot-bob {
+      display: block;
+      animation: progress-mascot-float 1800ms ease-in-out infinite;
+    }
+    #progress-mascot {
+      display: block;
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      transform: scaleX(-1);
+      filter: drop-shadow(0 8px 14px rgba(16, 57, 114, 0.18));
+    }
+    @keyframes progress-mascot-float {
+      0%, 100% {
+        transform: translate3d(0, 0, 0);
+      }
+      50% {
+        transform: translate3d(0, -6px, 0);
+      }
+    }
 
-    .main-content { padding-top: 81px; }
+    .main-content { padding-top: calc(var(--header-height) + var(--progress-subheader-height)); }
     main {
       max-width: 760px;
       margin: 0 auto;
@@ -165,6 +284,27 @@
     #admin-keyword-input {
       flex: 1;
       min-width: 0;
+      min-height: 48px;
+      padding: 12px var(--space-xs);
+      border: 2px solid var(--surface-disabled);
+      border-radius: 14px;
+      background: var(--surface-primary);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 1rem;
+      line-height: 1.4;
+      appearance: none;
+      transition: border-color 160ms ease, box-shadow 160ms ease;
+    }
+    #nickname-input::placeholder,
+    #admin-keyword-input::placeholder {
+      color: var(--text-secondary);
+    }
+    #nickname-input:focus,
+    #admin-keyword-input:focus {
+      outline: none;
+      border-color: var(--text-accent);
+      box-shadow: 0 0 0 4px rgba(0, 193, 229, 0.12);
     }
     .helper-message {
       display: none;
@@ -333,7 +473,21 @@
 
     #score-card {
       display: none;
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
       text-align: center;
+    }
+    #score-card > * {
+      position: relative;
+      z-index: 1;
+    }
+    #celebration-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
     }
     #score-label {
       font-size: 0.95rem;
@@ -383,6 +537,97 @@
       border-radius: 999px;
       font-weight: 700;
     }
+    .celebration-particle,
+    .celebration-ring {
+      position: absolute;
+      opacity: 0;
+      will-change: transform, opacity;
+    }
+    .celebration-particle {
+      left: var(--origin-x, 50%);
+      top: var(--origin-y, 50%);
+      background: var(--piece-fill, linear-gradient(180deg, #8be9ff, #22c7ff));
+    }
+    .celebration-burst {
+      width: var(--piece-width, 8px);
+      height: var(--piece-height, 44px);
+      border-radius: 999px;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.28);
+      transform-origin: center;
+      animation: celebration-burst var(--duration, 980ms) cubic-bezier(0.18, 0.86, 0.42, 1) var(--delay, 0ms) forwards;
+    }
+    .celebration-confetti {
+      width: var(--piece-width, 10px);
+      height: var(--piece-height, 18px);
+      border-radius: var(--piece-radius, 4px);
+      box-shadow: 0 4px 10px rgba(16, 57, 114, 0.08);
+      animation: celebration-confetti var(--duration, 1520ms) cubic-bezier(0.2, 0.84, 0.32, 1) var(--delay, 0ms) forwards;
+    }
+    .celebration-ring {
+      left: var(--origin-x, 50%);
+      top: var(--origin-y, 50%);
+      width: var(--ring-size, 32px);
+      height: var(--ring-size, 32px);
+      border-radius: 50%;
+      border: 3px solid var(--ring-color, rgba(34, 199, 255, 0.7));
+      box-shadow: 0 0 0 8px var(--ring-glow, rgba(34, 199, 255, 0.08));
+      animation: celebration-ring var(--duration, 1120ms) ease-out var(--delay, 0ms) forwards;
+    }
+    @keyframes celebration-burst {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0) rotate(var(--rotate-start, 0deg)) scale(0.36);
+      }
+      14% {
+        opacity: 1;
+      }
+      58% {
+        opacity: 1;
+        transform: translate3d(var(--mid-x, 0px), var(--mid-y, -90px), 0) rotate(var(--rotate-mid, 120deg)) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate3d(var(--travel-x, 0px), var(--travel-y, -180px), 0) rotate(var(--rotate-end, 220deg)) scale(1.08);
+      }
+    }
+    @keyframes celebration-confetti {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, -10px, 0) rotate(var(--rotate-start, 0deg)) scale(0.72);
+      }
+      10% {
+        opacity: 1;
+      }
+      52% {
+        opacity: 1;
+        transform: translate3d(var(--mid-x, 0px), var(--mid-y, 96px), 0) rotate(var(--rotate-mid, 180deg)) scale(0.96);
+      }
+      100% {
+        opacity: 0;
+        transform: translate3d(var(--travel-x, 0px), var(--travel-y, 228px), 0) rotate(var(--rotate-end, 420deg)) scale(1.04);
+      }
+    }
+    @keyframes celebration-ring {
+      0% {
+        opacity: 0;
+        transform: translate3d(-50%, -50%, 0) scale(0.16);
+      }
+      18% {
+        opacity: 0.92;
+      }
+      100% {
+        opacity: 0;
+        transform: translate3d(-50%, -50%, 0) scale(var(--ring-scale, 4.2));
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .progress-mascot-bob {
+        animation: none;
+      }
+      #celebration-layer {
+        display: none;
+      }
+    }
 
     #error-msg {
       display: none;
@@ -402,14 +647,42 @@
     footer {
       background: var(--surface-secondary);
       padding: var(--space-s) var(--space-m);
-      display: flex;
-      align-items: center;
-      justify-content: center;
       border-top: 1px solid var(--surface-disabled);
     }
-    .footer-copyright {
+    .footer-info {
+      width: min(760px, 100%);
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      color: var(--primitive-navy);
+      font-family: var(--font-accent);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .footer-logo {
+      display: block;
+      width: min(196px, 100%);
+      height: auto;
+    }
+    .copyright {
       font-size: 0.875rem;
       color: var(--text-secondary);
+    }
+    .copyright a {
+      color: var(--primitive-blue);
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .copyright a:hover {
+      text-decoration: underline;
     }
     .admin-keyword-overlay {
       display: none;
@@ -448,16 +721,62 @@
     }
 
     @media (max-width: 768px) {
-      .header { padding: 4px var(--space-s); height: 56px; }
+      :root {
+        --header-height: 56px;
+        --progress-subheader-height: 80px;
+      }
+      .header { padding: 4px var(--space-s); }
+      .header-conference-logo {
+        width: 112px;
+      }
+      .header-product-mark {
+        font-size: 1.25rem;
+      }
       .header-tagline { display: none; }
-      .main-content { padding-top: 56px; }
+      .progress-subheader {
+        padding: 0 var(--space-xs);
+      }
+      .progress-reward {
+        padding: 8px 14px 10px;
+      }
+      .progress-caption {
+        font-size: 0.68rem;
+      }
+      #progress {
+        font-size: 1.16rem;
+      }
+      .progress-summary-label {
+        font-size: 0.8rem;
+      }
+      .progress-mascot-anchor {
+        top: 30px;
+        transform: translate(-18%, -80%);
+      }
+      #progress-mascot {
+        width: 56px;
+        height: 56px;
+      }
       main { padding: var(--space-s) var(--space-xs); }
       .home-title { font-size: 1.6rem; }
+      #nickname-input,
+      #admin-keyword-input {
+        min-height: 52px;
+        padding-top: 14px;
+        padding-bottom: 14px;
+      }
       .secret-row {
         flex-direction: column;
       }
       .c-button[data-compact="true"] {
         width: 100%;
+      }
+      footer {
+        padding: var(--space-s) var(--space-xs);
+      }
+      .footer-info,
+      .logo-container {
+        align-items: center;
+        text-align: center;
       }
     }
   </style>
@@ -465,11 +784,41 @@
 <body>
   <header class="header">
     <div class="header-logo">
-      <span class="accent">Go</span> Conference 2026 CodeLab
+      <div class="header-brand">
+        <img class="header-conference-logo" src="./assets/go-conference-2026-logo.svg" alt="Go Conference 2026">
+        <span class="header-product-mark">CodeLab</span>
+      </div>
       <span class="header-tagline">Go の知識を試してみよう！</span>
     </div>
-    <span id="progress"></span>
   </header>
+  <div class="progress-subheader" id="progress-subheader">
+    <div class="progress-reward" aria-live="polite">
+      <div class="progress-reward-meta">
+        <span class="progress-caption">Answered</span>
+        <div class="progress-summary">
+          <span id="progress">0 / 5</span>
+          <span class="progress-summary-label">回答済み</span>
+        </div>
+      </div>
+      <div
+        id="progress-meter"
+        role="progressbar"
+        aria-label="回答済みの問題数"
+        aria-valuemin="0"
+        aria-valuemax="5"
+        aria-valuenow="0"
+      >
+        <div class="progress-track">
+          <div id="progress-fill"></div>
+        </div>
+        <div class="progress-mascot-anchor" id="progress-mascot-anchor" aria-hidden="true">
+          <span class="progress-mascot-bob">
+            <img id="progress-mascot" src="./assets/progress-gopher.png" alt="">
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="main-content">
     <main>
@@ -513,6 +862,7 @@
       <button class="c-button" id="next-btn" type="button" style="display:none">次の問題へ</button>
 
       <div class="card" id="score-card">
+        <div id="celebration-layer" aria-hidden="true"></div>
         <div id="score-label">クイズ終了！ あなたのスコア</div>
         <div id="score-value"></div>
         <div id="challenge-complete-section">
@@ -535,8 +885,13 @@
             <input
               id="nickname-input"
               type="text"
-              autocomplete="nickname"
+              autocomplete="off"
               inputmode="text"
+              spellcheck="false"
+              data-1p-ignore="true"
+              data-lpignore="true"
+              data-bwignore="true"
+              data-form-type="other"
               maxlength="40"
               placeholder="ニックネームを入力"
             >
@@ -554,8 +909,17 @@
   </div>
 
   <div class="footer-gradient"></div>
-  <footer>
-    <p class="footer-copyright" id="footer-copyright">© 2026 Go Conference Organizing Team</p>
+  <footer id="footer-copyright">
+    <div class="footer-info">
+      <div class="logo-container">
+        <img class="footer-logo" src="./assets/go-conference-2026-logo.svg" alt="Go Conference 2026">
+        <span>Go Conference 2026</span>
+      </div>
+      <p class="copyright">
+        The Go gopher was designed by <a href="https://reneefrench.blogspot.com/">Renée French</a>. Illustrations by
+        <a href="https://x.com/avocadoneko">avocadoneko</a>.
+      </p>
+    </div>
   </footer>
 
   <div class="admin-keyword-overlay" id="admin-keyword-overlay">
@@ -601,6 +965,9 @@
     const answerCodeBlock = document.getElementById('answer-code-block');
     const playLink = document.getElementById('play-link');
     const nextBtn = document.getElementById('next-btn');
+    const progressMeter = document.getElementById('progress-meter');
+    const progressFill = document.getElementById('progress-fill');
+    const progressMascotAnchor = document.getElementById('progress-mascot-anchor');
     const scoreValue = document.getElementById('score-value');
     const specialLinkSection = document.getElementById('special-link-section');
     const challengeCompleteSection = document.getElementById('challenge-complete-section');
@@ -613,6 +980,7 @@
     const challengeBtn = document.getElementById('challenge-btn');
     const restartBtn = document.getElementById('restart-btn');
     const scorePreviewBtn = document.getElementById('score-preview-btn');
+    const celebrationLayer = document.getElementById('celebration-layer');
     const startBtn = document.getElementById('start-btn');
     const previewBtn = document.getElementById('preview-btn');
     const previewEntry = document.getElementById('preview-entry');
@@ -626,6 +994,47 @@
     const totalPerSession = 5;
     const previewURL = './preview/';
     const adminTapThreshold = 10;
+    const celebrationToneStyles = {
+      gold: 'linear-gradient(180deg, #ffe082, #ffb300)',
+      cyan: 'linear-gradient(180deg, #8be9ff, #22c7ff)',
+      pink: 'linear-gradient(180deg, #ffb4d8, #ff5fa2)',
+      blue: 'linear-gradient(180deg, #9cc4ff, #4d8dff)',
+    };
+    const celebrationBurstConfigs = [
+      { tone: 'gold', originX: '18%', originY: '72%', midX: '18px', midY: '-96px', travelX: '46px', travelY: '-176px', rotateStart: '-20deg', rotateMid: '92deg', rotateEnd: '174deg', duration: '960ms' },
+      { tone: 'cyan', originX: '18%', originY: '72%', midX: '6px', midY: '-124px', travelX: '18px', travelY: '-214px', rotateStart: '-8deg', rotateMid: '102deg', rotateEnd: '188deg', duration: '1040ms', delay: '40ms' },
+      { tone: 'pink', originX: '18%', originY: '72%', midX: '30px', midY: '-82px', travelX: '68px', travelY: '-148px', rotateStart: '-18deg', rotateMid: '82deg', rotateEnd: '160deg', duration: '920ms', delay: '20ms', width: '7px', height: '36px' },
+      { tone: 'blue', originX: '18%', originY: '72%', midX: '12px', midY: '-72px', travelX: '32px', travelY: '-122px', rotateStart: '-4deg', rotateMid: '76deg', rotateEnd: '132deg', duration: '880ms', delay: '60ms', width: '6px', height: '32px' },
+      { tone: 'pink', originX: '50%', originY: '48%', midX: '-34px', midY: '-84px', travelX: '-72px', travelY: '-156px', rotateStart: '-10deg', rotateMid: '74deg', rotateEnd: '136deg', duration: '980ms', delay: '40ms' },
+      { tone: 'cyan', originX: '50%', originY: '48%', midX: '-12px', midY: '-124px', travelX: '-18px', travelY: '-204px', rotateStart: '-4deg', rotateMid: '88deg', rotateEnd: '170deg', duration: '1060ms' },
+      { tone: 'gold', originX: '50%', originY: '48%', midX: '14px', midY: '-128px', travelX: '20px', travelY: '-208px', rotateStart: '6deg', rotateMid: '92deg', rotateEnd: '176deg', duration: '1060ms', delay: '30ms' },
+      { tone: 'blue', originX: '50%', originY: '48%', midX: '36px', midY: '-86px', travelX: '76px', travelY: '-160px', rotateStart: '12deg', rotateMid: '96deg', rotateEnd: '162deg', duration: '980ms', delay: '50ms' },
+      { tone: 'gold', originX: '82%', originY: '72%', midX: '-18px', midY: '-96px', travelX: '-46px', travelY: '-176px', rotateStart: '20deg', rotateMid: '-92deg', rotateEnd: '-174deg', duration: '960ms' },
+      { tone: 'cyan', originX: '82%', originY: '72%', midX: '-6px', midY: '-124px', travelX: '-18px', travelY: '-214px', rotateStart: '8deg', rotateMid: '-102deg', rotateEnd: '-188deg', duration: '1040ms', delay: '40ms' },
+      { tone: 'pink', originX: '82%', originY: '72%', midX: '-30px', midY: '-82px', travelX: '-68px', travelY: '-148px', rotateStart: '18deg', rotateMid: '-82deg', rotateEnd: '-160deg', duration: '920ms', delay: '20ms', width: '7px', height: '36px' },
+      { tone: 'blue', originX: '82%', originY: '72%', midX: '-12px', midY: '-72px', travelX: '-32px', travelY: '-122px', rotateStart: '4deg', rotateMid: '-76deg', rotateEnd: '-132deg', duration: '880ms', delay: '60ms', width: '6px', height: '32px' },
+    ];
+    const celebrationConfettiConfigs = [
+      { tone: 'gold', originX: '12%', originY: '18%', midX: '-12px', midY: '84px', travelX: '-28px', travelY: '228px', rotateStart: '8deg', rotateMid: '180deg', rotateEnd: '420deg', duration: '1480ms', delay: '20ms', width: '9px', height: '18px' },
+      { tone: 'cyan', originX: '18%', originY: '14%', midX: '12px', midY: '98px', travelX: '22px', travelY: '248px', rotateStart: '-12deg', rotateMid: '152deg', rotateEnd: '384deg', duration: '1560ms', delay: '80ms', width: '8px', height: '16px' },
+      { tone: 'pink', originX: '26%', originY: '20%', midX: '-22px', midY: '90px', travelX: '-34px', travelY: '218px', rotateStart: '0deg', rotateMid: '210deg', rotateEnd: '448deg', duration: '1420ms', delay: '60ms', width: '10px', height: '20px', radius: '999px' },
+      { tone: 'blue', originX: '34%', originY: '12%', midX: '20px', midY: '108px', travelX: '34px', travelY: '238px', rotateStart: '16deg', rotateMid: '196deg', rotateEnd: '436deg', duration: '1500ms', delay: '120ms', width: '10px', height: '16px' },
+      { tone: 'gold', originX: '42%', originY: '10%', midX: '-16px', midY: '84px', travelX: '-24px', travelY: '222px', rotateStart: '-10deg', rotateMid: '174deg', rotateEnd: '408deg', duration: '1440ms', delay: '40ms', width: '12px', height: '14px', radius: '999px' },
+      { tone: 'cyan', originX: '50%', originY: '8%', midX: '0px', midY: '112px', travelX: '4px', travelY: '252px', rotateStart: '6deg', rotateMid: '182deg', rotateEnd: '420deg', duration: '1620ms', delay: '140ms', width: '8px', height: '20px' },
+      { tone: 'pink', originX: '58%', originY: '12%', midX: '18px', midY: '88px', travelX: '28px', travelY: '226px', rotateStart: '-14deg', rotateMid: '184deg', rotateEnd: '432deg', duration: '1460ms', delay: '100ms', width: '10px', height: '18px' },
+      { tone: 'blue', originX: '66%', originY: '16%', midX: '-12px', midY: '104px', travelX: '-18px', travelY: '236px', rotateStart: '10deg', rotateMid: '210deg', rotateEnd: '448deg', duration: '1540ms', delay: '180ms', width: '8px', height: '16px' },
+      { tone: 'gold', originX: '74%', originY: '18%', midX: '22px', midY: '90px', travelX: '34px', travelY: '228px', rotateStart: '12deg', rotateMid: '188deg', rotateEnd: '428deg', duration: '1480ms', delay: '200ms', width: '9px', height: '18px' },
+      { tone: 'cyan', originX: '82%', originY: '14%', midX: '-14px', midY: '98px', travelX: '-24px', travelY: '246px', rotateStart: '-8deg', rotateMid: '170deg', rotateEnd: '398deg', duration: '1580ms', delay: '220ms', width: '8px', height: '16px', radius: '999px' },
+      { tone: 'pink', originX: '88%', originY: '20%', midX: '12px', midY: '82px', travelX: '20px', travelY: '216px', rotateStart: '4deg', rotateMid: '176deg', rotateEnd: '404deg', duration: '1380ms', delay: '260ms', width: '10px', height: '16px' },
+      { tone: 'blue', originX: '24%', originY: '24%', midX: '-6px', midY: '74px', travelX: '-12px', travelY: '198px', rotateStart: '14deg', rotateMid: '166deg', rotateEnd: '388deg', duration: '1340ms', delay: '120ms', width: '8px', height: '14px' },
+      { tone: 'gold', originX: '40%', originY: '22%', midX: '-28px', midY: '82px', travelX: '-42px', travelY: '208px', rotateStart: '-16deg', rotateMid: '164deg', rotateEnd: '392deg', duration: '1400ms', delay: '160ms', width: '9px', height: '16px' },
+      { tone: 'cyan', originX: '60%', originY: '24%', midX: '28px', midY: '82px', travelX: '42px', travelY: '208px', rotateStart: '18deg', rotateMid: '194deg', rotateEnd: '418deg', duration: '1400ms', delay: '180ms', width: '9px', height: '16px' },
+    ];
+    const celebrationRingConfigs = [
+      { originX: '22%', originY: '20%', size: '32px', ringColor: 'rgba(34, 199, 255, 0.72)', ringGlow: 'rgba(34, 199, 255, 0.1)', ringScale: '4.4', duration: '1140ms' },
+      { originX: '50%', originY: '14%', size: '26px', ringColor: 'rgba(255, 95, 162, 0.6)', ringGlow: 'rgba(255, 95, 162, 0.08)', ringScale: '3.8', duration: '980ms', delay: '70ms' },
+      { originX: '78%', originY: '20%', size: '32px', ringColor: 'rgba(255, 179, 0, 0.72)', ringGlow: 'rgba(255, 179, 0, 0.1)', ringScale: '4.4', duration: '1140ms', delay: '100ms' },
+    ];
 
     let session = [];
     let currentIndex = 0;
@@ -767,17 +1176,24 @@
       return quizzes.reduce((count, quiz) => count + (quizSupportsMode(quiz, mode) ? 1 : 0), 0);
     }
 
-    function updateProgress() {
-      if (session.length === 0 || scoreCard.style.display === 'block' || homeCard.style.display === 'block') {
-        progressEl.textContent = '';
+    function renderProgressReward(answeredCount, totalCount) {
+      const safeTotal = totalCount > 0 ? totalCount : totalPerSession;
+      const safeAnswered = Math.max(0, Math.min(answeredCount, safeTotal));
+      const ratio = safeTotal > 0 ? safeAnswered / safeTotal : 0;
+
+      progressEl.textContent = `${safeAnswered} / ${safeTotal}`;
+      progressMeter.setAttribute('aria-valuemax', String(safeTotal));
+      progressMeter.setAttribute('aria-valuenow', String(safeAnswered));
+      progressFill.style.width = `${ratio * 100}%`;
+      progressMascotAnchor.style.left = `${ratio * 100}%`;
+    }
+
+    function updateProgress(answeredCount = currentIndex) {
+      if (session.length === 0) {
+        renderProgressReward(0, totalPerSession);
         return;
       }
-      if (isChallenge) {
-        const base = getSeenCount('extra');
-        progressEl.textContent = `${base + currentIndex + 1} / ${base + session.length}`;
-      } else {
-        progressEl.textContent = `${currentIndex + 1} / ${session.length}`;
-      }
+      renderProgressReward(answeredCount, session.length);
     }
 
     function shuffle(items) {
@@ -851,6 +1267,81 @@
       return `${seconds} 秒`;
     }
 
+    function clearPerfectScoreCelebration() {
+      celebrationLayer.innerHTML = '';
+    }
+
+    function prefersReducedMotion() {
+      try {
+        return Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function applyCelebrationStyles(piece, styles) {
+      Object.entries(styles).forEach(([name, value]) => {
+        if (value === undefined || value === null || value === '') {
+          return;
+        }
+        if (piece.style && typeof piece.style.setProperty === 'function') {
+          piece.style.setProperty(name, value);
+          return;
+        }
+        piece.style[name] = value;
+      });
+    }
+
+    function appendCelebrationParticle(kind, config) {
+      const piece = document.createElement('span');
+      piece.className = `celebration-particle ${kind}`;
+      applyCelebrationStyles(piece, {
+        '--origin-x': config.originX,
+        '--origin-y': config.originY,
+        '--mid-x': config.midX,
+        '--mid-y': config.midY,
+        '--travel-x': config.travelX,
+        '--travel-y': config.travelY,
+        '--rotate-start': config.rotateStart,
+        '--rotate-mid': config.rotateMid,
+        '--rotate-end': config.rotateEnd,
+        '--duration': config.duration,
+        '--delay': config.delay,
+        '--piece-width': config.width,
+        '--piece-height': config.height,
+        '--piece-radius': config.radius,
+        '--piece-fill': celebrationToneStyles[config.tone],
+      });
+      celebrationLayer.appendChild(piece);
+    }
+
+    function appendCelebrationRing(config) {
+      const ring = document.createElement('span');
+      ring.className = 'celebration-ring';
+      applyCelebrationStyles(ring, {
+        '--origin-x': config.originX,
+        '--origin-y': config.originY,
+        '--ring-size': config.size,
+        '--ring-color': config.ringColor,
+        '--ring-glow': config.ringGlow,
+        '--ring-scale': config.ringScale,
+        '--duration': config.duration,
+        '--delay': config.delay,
+      });
+      celebrationLayer.appendChild(ring);
+    }
+
+    function runPerfectScoreCelebration() {
+      clearPerfectScoreCelebration();
+      if (prefersReducedMotion()) {
+        return;
+      }
+
+      celebrationBurstConfigs.forEach(config => appendCelebrationParticle('celebration-burst', config));
+      celebrationConfettiConfigs.forEach(config => appendCelebrationParticle('celebration-confetti', config));
+      celebrationRingConfigs.forEach(config => appendCelebrationRing(config));
+    }
+
     function getTelemetryMode() {
       return isChallenge ? 'extra' : 'normal';
     }
@@ -867,6 +1358,7 @@
       submitPerfectScoreBtn.disabled = false;
       submitPerfectScoreBtn.textContent = '記録を送信';
       setPerfectScoreMessage('', '');
+      clearPerfectScoreCelebration();
     }
 
     function openPreviewPage() {
@@ -980,12 +1472,12 @@
       nextBtn.style.display = 'none';
       scoreCard.style.display = 'none';
       perfectScoreSection.style.display = 'none';
-      progressEl.textContent = '';
       sessionSize = 0;
       attemptID = '';
       currentQuestionStartedAt = null;
       closeAdminKeywordPopup();
       resetPerfectScoreState();
+      updateProgress(0);
       updatePreviewButtons();
     }
 
@@ -1120,6 +1612,7 @@
       resultEl.style.display = 'block';
       nextBtn.textContent = currentIndex === session.length - 1 ? '結果を見る' : '次の問題へ';
       nextBtn.style.display = 'block';
+      updateProgress(currentIndex + 1);
     }
 
     function showScore() {
@@ -1128,7 +1621,6 @@
       questionCard.style.display = 'none';
       resultEl.style.display = 'none';
       nextBtn.style.display = 'none';
-      progressEl.textContent = '';
 
       const extraPoolSize = getQuizPool('extra').length;
       const totalAnswered = isChallenge ? getSeenCount('extra') : session.length;
@@ -1156,6 +1648,10 @@
       }
       challengeBtn.style.display = canChallengeMore && ((!isChallenge && allCorrect) || (isChallenge && !allCorrect)) ? '' : 'none';
       scoreCard.style.display = 'block';
+      updateProgress(session.length);
+      if (allCorrect) {
+        runPerfectScoreCelebration();
+      }
       updatePreviewButtons();
     }
 
