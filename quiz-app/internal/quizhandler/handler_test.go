@@ -89,7 +89,7 @@ func TestParseQuizzes_InvalidModeReturnsError(t *testing.T) {
 func loadRealQuizzes(t *testing.T) []quizhandler.Quiz {
 	t.Helper()
 
-	data, err := os.ReadFile("../../functions/api/quizes.yaml")
+	data, err := os.ReadFile("../../quizzes/quizes.yaml")
 	if err != nil {
 		t.Fatalf("quizes.yaml を読み込めません: %v", err)
 	}
@@ -157,7 +157,7 @@ func TestQuizesYAML_CodeRefsExist(t *testing.T) {
 			if ref.path == "" {
 				continue
 			}
-			if _, err := os.Stat(filepath.Join("../../functions/api", ref.path)); err != nil {
+			if _, err := os.Stat(filepath.Join("../../quizzes", ref.path)); err != nil {
 				t.Errorf("quiz %q: %s=%q の参照先が存在しません: %v", q.ID, ref.name, ref.path, err)
 			}
 		}

@@ -11,7 +11,7 @@ import (
 
 func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
-	basePath := flag.String("base", "functions/api", "quiz data base directory")
+	basePath := flag.String("base", "quizzes", "quiz data base directory")
 	outPath := flag.String("out", "", "output path")
 	flag.Parse()
 

@@ -17,7 +17,7 @@ func fail(logger *slog.Logger, msg string, err error) {
 }
 
 func main() {
-	const quizDataBase = "functions/api"
+	const quizDataBase = "quizzes"
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
 
 	quizzes, codeFiles, err := quizdata.LoadFromBase(quizDataBase)

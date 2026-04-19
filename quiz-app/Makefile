@@ -2,7 +2,7 @@
 
 GO := go
 
-CODE_FILES  := $(wildcard functions/api/code/*.go)
+CODE_FILES  := $(wildcard quizzes/code/*.go)
 PAGES_DIST  = gh-pages-dist
 
 build-pages:

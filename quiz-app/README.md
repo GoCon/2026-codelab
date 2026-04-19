@@ -35,10 +35,9 @@ quiz-app/
 ├── cmd/
 │   ├── generatequizdata/   # quizes.yaml から quiz-data.js を生成
 │   └── local/              # ローカル開発用サーバー
-├── functions/
-│   └── api/
-│       ├── quizes.yaml     # 問題データ
-│       └── code/           # 問題・解答コード
+├── quizzes/
+│   ├── quizes.yaml         # 問題データ
+│   └── code/               # 問題・解答コード
 ├── gas/
 │   └── telemetry.gs        # Apps Script の集計エンドポイント
 ├── internal/
@@ -82,7 +81,7 @@ gh-pages-dist/
 └── quiz-data.js
 ```
 
-`quiz-data.js` は `functions/api/quizes.yaml` と `functions/api/code/*` から生成されます。
+`quiz-data.js` は `quizzes/quizes.yaml` と `quizzes/code/*` から生成されます。
 
 ## Google Apps Script + スプレッドシート設定
 
@@ -184,7 +183,7 @@ make test-browser
 
 ### 1. コードファイルを配置
 
-`functions/api/code/` に Go ファイルを追加します。
+`quizzes/code/` に Go ファイルを追加します。
 
 ```go
 //go:build ignore
