@@ -289,6 +289,127 @@
     公式仕様 (Keywords): https://go.dev/ref/spec#Keywords
     公式仕様 (Predeclared identifiers): https://go.dev/ref/spec#Predeclared_identifiers
 
+# tomtwinkle Q12
+- id: "tomtwinkle_q12"
+  title: "time.Format layout"
+  mode: "both"
+  text: |
+    Go の time.Format で時刻レイアウトを指定する方法として正しいのはどれ？
+  choices:
+    - "1970-01-02"
+    - "0001-02-03"
+    - "2006-01-02"
+    - "1999-12-31"
+  answer: 2
+  explanation: |
+    Go の time.Format / time.Parse は、独自のフォーマット記号ではなく基準時刻
+    "Mon Jan 2 15:04:05 MST 2006" を並べたレイアウト文字列で指定します。
+    たとえば "2006-01-02" は年-月-日、"15:04:05" は時:分:秒を表します。
+
+    pkg.go.dev (time): https://pkg.go.dev/time
+
+# tomtwinkle Q13
+- id: "tomtwinkle_q13"
+  title: "Go founding member"
+  mode: "both"
+  text: |
+    Go 言語は Google のエンジニアによって作られましたが、初期メンバーの中には
+    IT の歴史を作った「生きる伝説」とも呼べる偉大なプログラマが含まれています。
+    それは誰でしょう？
+  choices:
+    - "Linus Torvalds"
+    - "Ken Thompson"
+    - "Guido van Rossum"
+    - "James Gosling"
+  answer: 1
+  explanation: |
+    正解は Ken Thompson です。Go の作者としては Robert Griesemer、Rob Pike、
+    Ken Thompson の 3 名が知られています。
+    Ken Thompson は Bell Labs で Unix を共同開発したことで特に有名で、
+    その流れの中で C 言語のもとになった B 言語の設計や Plan 9 の開発にも関わった、
+    計算機史に残るプログラマです。
+    システムソフトウェアの設計に深く関わってきた人物が、Go の初期設計メンバーにも入っています。
+
+    Go FAQ: https://go.dev/doc/faq#history
+
+# tomtwinkle Q14
+- id: "tomtwinkle_q14"
+  title: "goroutine initial stack"
+  mode: "both"
+  text: |
+    ゴルーチンは 1 つ起動するのに、初期状態でどれくらいのメモリを消費すると考えるのが近いでしょうか？
+  choices:
+    - "数 KB 程度（約 2KB）"
+    - "約 64KB"
+    - "約 1MB"
+    - "OS スレッドと同じ数 MB"
+  answer: 0
+  explanation: |
+    goroutine は軽量で、初期スタックはごく小さく、現行ランタイムでは約 2KB から始まります。
+    必要に応じてスタックが伸縮するため、大量の goroutine を比較的低コストで扱えます。
+
+    Go FAQ (Goroutines): https://go.dev/doc/faq#goroutines
+
+# tomtwinkle Q15
+- id: "tomtwinkle_q15"
+  title: "pointer arithmetic"
+  mode: "both"
+  text: |
+    Go 言語には C 言語でおなじみの「ポインタ」がありますが、
+    C 言語では当たり前にできて、Go 言語では安全のために意図的にできなくしているポインタ操作はどれでしょう？
+  choices:
+    - "ポインタに整数を足し引きして任意のアドレスへ進める"
+    - "変数のアドレスを取得する"
+    - "ポインタ経由で値を書き換える"
+    - "nil と比較する"
+  answer: 0
+  explanation: |
+    Go では安全性を保つため、通常のコードでポインタ演算はできません。
+    変数のアドレス取得、参照先の読み書き、nil との比較はできますが、
+    C 言語のようなポインタの加減算は `unsafe` を使わない限り行えません。
+
+    Go FAQ (Why is there no pointer arithmetic?): https://go.dev/doc/faq#no_pointer_arithmetic
+    pkg.go.dev (unsafe): https://pkg.go.dev/unsafe
+
+# tomtwinkle Q16
+- id: "tomtwinkle_q16"
+  title: "compiler warnings"
+  mode: "both"
+  text: |
+    他のコンパイル言語と比較した場合の Go 言語のコンパイラの特徴として正しいのはどれ？
+  choices:
+    - "コンパイラがワーニングを出さない"
+    - "fmt.Printf の書式指定ミスのような問題は、コンパイラが error にする"
+    - "実行時にだけ型チェックを行う"
+    - "コンパイル時に自動でメモリリークを検出する"
+  answer: 0
+  explanation: |
+    Go のコンパイラは「警告を出して通す」のではなく、問題があればエラーとして止める方針です。
+    たとえば未使用の変数や import は warning ではなく compile error になります。
+    fmt.Printf の書式指定ミスのような、より高度な静的解析は `go vet` の役割です。
+
+    Go FAQ (Can I stop these complaints about my unused variable/import?): https://go.dev/doc/faq#unused_variables_and_imports
+    pkg.go.dev (go vet): https://pkg.go.dev/cmd/vet
+
+# tomtwinkle Q17
+- id: "tomtwinkle_q17"
+  title: "Gopher designer"
+  mode: "both"
+  text: |
+    愛らしいマスコット「Gopher」君ですが、このキャラクターをデザインしたのは誰でしょう？
+  choices:
+    - "Renée French"
+    - "Rob Pike"
+    - "Ken Thompson"
+    - "Russ Cox"
+  answer: 0
+  explanation: |
+    Go のマスコットである Gopher をデザインしたのは Renée French です。
+    Renée French は Rob Pike の妻でもあります。
+    Gopher は Go コミュニティを象徴するキャラクターとして広く親しまれています。
+
+    The Go Gopher: https://go.dev/blog/gopher
+
 # wancom Q1
 - id: "wancom_q1"
   title: "select の実行順序"
