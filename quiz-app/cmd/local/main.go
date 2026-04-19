@@ -1,25 +1,15 @@
 // local はローカル開発用の HTTP サーバー。
-// TinyGo・wrangler 不要で quiz-app の動作確認ができる。
-// ログは起動中のみ保持するオンメモリストアを使用する。
+// quiz-data.js を起動時に生成して public/ と一緒に配信する。
 // 使用方法: make local (quiz-app/ ディレクトリから実行)
 package main
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
 	"os"
 
 	"github.com/GoCon/2026-codelab/quiz-app/internal/quizdata"
-	"github.com/GoCon/2026-codelab/quiz-app/internal/quizhandler"
 )
-
-// inMemoryStore はローカル開発用の簡易 LogStore 実装。
-type inMemoryStore struct{}
-
-func (s *inMemoryStore) InsertLog(_ context.Context, questionID string, isCorrect bool) error {
-	return nil
-}
 
 func fail(logger *slog.Logger, msg string, err error) {
 	logger.Error(msg, "error", err)
@@ -27,10 +17,10 @@ func fail(logger *slog.Logger, msg string, err error) {
 }
 
 func main() {
-	const apiBase = "functions/api"
+	const quizDataBase = "functions/api"
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
 
-	quizzes, codeFiles, err := quizdata.LoadFromBase(apiBase)
+	quizzes, codeFiles, err := quizdata.LoadFromBase(quizDataBase)
 	if err != nil {
 		fail(logger, "failed to load quiz data", err)
 	}
@@ -40,37 +30,7 @@ func main() {
 		fail(logger, "failed to marshal quiz data", err)
 	}
 
-	store := &inMemoryStore{}
-	newQuizHandler := func() *quizhandler.QuizHandler {
-		return &quizhandler.QuizHandler{
-			Quizzes:   quizzes,
-			CodeFiles: codeFiles,
-			DB:        store,
-		}
-	}
-
 	mux := http.NewServeMux()
-	mux.HandleFunc("OPTIONS /api/quiz/session", func(w http.ResponseWriter, r *http.Request) {
-		quizhandler.HandlePublicAPIPreflight(w, r)
-	})
-	mux.HandleFunc("GET /api/quiz/session", func(w http.ResponseWriter, r *http.Request) {
-		quizhandler.SetPublicAPIHeaders(w)
-		newQuizHandler().GetSession(w, r)
-	})
-	mux.HandleFunc("OPTIONS /api/quiz", func(w http.ResponseWriter, r *http.Request) {
-		quizhandler.HandlePublicAPIPreflight(w, r)
-	})
-	mux.HandleFunc("GET /api/quiz", func(w http.ResponseWriter, r *http.Request) {
-		quizhandler.SetPublicAPIHeaders(w)
-		newQuizHandler().GetQuiz(w, r)
-	})
-	mux.HandleFunc("OPTIONS /api/quiz/answer", func(w http.ResponseWriter, r *http.Request) {
-		quizhandler.HandlePublicAPIPreflight(w, r)
-	})
-	mux.HandleFunc("POST /api/quiz/answer", func(w http.ResponseWriter, r *http.Request) {
-		quizhandler.SetPublicAPIHeaders(w)
-		newQuizHandler().PostAnswer(w, r)
-	})
 	mux.HandleFunc("GET /quiz-data.js", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/javascript; charset=utf-8")
 		w.Write(quizDataJS)

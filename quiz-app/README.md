@@ -27,7 +27,6 @@ Go Conference 2026 のコードラボ向け Go クイズアプリです。
 | ホスティング | GitHub Pages |
 | 集計 | Google Apps Script + Google スプレッドシート |
 | ローカル開発 | 標準 Go HTTP サーバー |
-| 互換用ビルド | Go + TinyGo + Cloudflare Pages Functions |
 
 ## ディレクトリ構成
 
@@ -39,13 +38,12 @@ quiz-app/
 ├── functions/
 │   └── api/
 │       ├── quizes.yaml     # 問題データ
-│       ├── code/           # 問題・解答コード
-│       ├── quiz.go         # 互換用 quiz API (Cloudflare Pages Functions)
+│       └── code/           # 問題・解答コード
 ├── gas/
 │   └── telemetry.gs        # Apps Script の集計エンドポイント
 ├── internal/
 │   ├── quizdata/           # 静的クイズデータ生成の共通処理
-│   └── quizhandler/        # 互換用サーバーロジック
+│   └── quizhandler/        # quizes.yaml の型・mode 正規化
 ├── public/
 │   ├── index.html          # 公開クイズ画面
 │   ├── preview/index.html  # 解放後の問題プレビューモード
@@ -173,17 +171,6 @@ workflow では次の Variables を使います。
 workflow の build job は `public/quiz-config.js` の既定値を読み込み、Actions Variables が設定されている項目だけ `gh-pages-dist/quiz-config.js` へ上書きします。
 
 公開を再開する場合は、リポジトリ設定で GitHub Pages を **GitHub Actions** ソースとして有効化したうえで、deploy job の guard を外してください。
-
-## 旧 Cloudflare Functions ビルド
-
-互換確認用に、従来の Cloudflare Pages Functions 向けビルドも残しています。
-
-```bash
-cd quiz-app
-make build GO=/usr/lib/go-1.22/bin/go
-```
-
-> TinyGo 0.40.1 は Go 1.26 を直接サポートしないため、環境によっては `GO=/usr/lib/go-1.22/bin/go` のように指定してください。
 
 ## テスト
 
