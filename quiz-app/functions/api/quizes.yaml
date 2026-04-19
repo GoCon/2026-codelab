@@ -1,6 +1,7 @@
 # sivchari Q1
 - id: "sivchari_q1"
   title: "配列リテラルのインデックス指定"
+  mode: "both"
   text: "このコードの出力は何？"
   question_code_ref: "code/sivchari_q1_question.go"
   choices:
@@ -29,6 +30,7 @@
 # sivchari Q2
 - id: "sivchari_q2"
   title: "iota の継続と式の引き継ぎ"
+  mode: "both"
   text: "このコードの出力は何？"
   question_code_ref: "code/sivchari_q2_question.go"
   choices:
@@ -55,6 +57,7 @@
 # tomtwinkle Q1
 - id: "tomtwinkle_q1"
   title: "go test キャッシュ"
+  mode: "both"
   text: |
     go test は、同じコードに対して2回目を実行すると「(cached)」と表示され一瞬で終わります。
     このキャッシュを無視して強制的に再テストするフラグはどれ？
@@ -75,6 +78,7 @@
 # tomtwinkle Q2
 - id: "tomtwinkle_q2"
   title: "型無し定数の精度"
+  mode: "both"
   text: |
     変数を使わず、定数で64ビットの限界を超える巨大な数値を定義するとどうなる？
   question_code_ref: "code/tomtwinkle_q2_question.go"
@@ -96,6 +100,7 @@
 # tomtwinkle Q4
 - id: "tomtwinkle_q4"
   title: "defer in loop"
+  mode: "both"
   text: |
     以下のコードの問題点は？
   question_code_ref: "code/tomtwinkle_q4_question.go"
@@ -118,6 +123,7 @@
 # tomtwinkle Q5
 - id: "tomtwinkle_q5"
   title: "clear() on slice"
+  mode: "both"
   text: |
     以下のコードの実行結果は？
   question_code_ref: "code/tomtwinkle_q5_question.go"
@@ -140,6 +146,7 @@
 # tomtwinkle Q6
 - id: "tomtwinkle_q6"
   title: "named return + defer"
+  mode: "both"
   text: |
     以下の関数を呼び出したとき、呼び出し元が受け取る値は？
   question_code_ref: "code/tomtwinkle_q6_question.go"
@@ -162,6 +169,7 @@
 # tomtwinkle Q7
 - id: "tomtwinkle_q7"
   title: "range over string"
+  mode: "both"
   text: |
     以下のコードの出力はどれ？
   question_code_ref: "code/tomtwinkle_q7_question.go"
@@ -184,6 +192,7 @@
 # tomtwinkle Q8
 - id: "tomtwinkle_q8"
   title: "t.Fatal in goroutine"
+  mode: "both"
   text: |
     テスト goroutine ではない「別途起動した goroutine」の中で t.Fatal() を呼ぶとどうなる？
   question_code_ref: "code/tomtwinkle_q8_question.go"
@@ -206,6 +215,7 @@
 # tomtwinkle Q9
 - id: "tomtwinkle_q9"
   title: "GOMAXPROCS in containers"
+  mode: "both"
   text: |
     Docker や Kubernetes 上で Go アプリを動かす際、CPU のコア数を認識させて GOMAXPROCS を最適化するために、
     最新の Go バージョンにおいて推奨されるコードはどれ？
@@ -227,6 +237,7 @@
 # tomtwinkle Q10
 - id: "tomtwinkle_q10"
   title: "synctest isolation"
+  mode: "both"
   text: |
     synctest.Run ブロックの「外側」で起動した goroutine と、「内側」で起動した goroutine 同士が
     channel で同期通信しようとするとどうなる？
@@ -247,6 +258,7 @@
 # wancom Q1
 - id: "wancom_q1"
   title: "select の実行順序"
+  mode: "both"
   text: "このコードの出力は何？"
   question_code_ref: "code/wancom_q1_question.go"
   choices:
@@ -263,6 +275,7 @@
 # wancom Q2
 - id: "wancom_q2"
   title: "標準パッケージの対応フォーマット"
+  mode: "both"
   text: "標準パッケージでサポートされていないデータフォーマットは？"
   choices:
     - "gzip"
@@ -280,6 +293,7 @@
 # wancom Q3
 - id: "wancom_q3"
   title: "pprof の提供データ"
+  mode: "both"
   text: "net/http/pprofとruntime/pprof両方で提供しているプロファイリングデータは？"
   choices:
     - "cmdline"
@@ -295,6 +309,7 @@
 # sat0ken Q1
 - id: "sat0ken_q1"
   title: "TinyGo 対応マイコン"
+  mode: "both"
   text: "TinyGoでサポートされているマイコンは？"
   choices:
     - "Arduino Uno"
@@ -309,6 +324,7 @@
 # sat0ken Q2
 - id: "sat0ken_q2"
   title: "machine.PinMode"
+  mode: "both"
   text: |
     TinyGoでLEDを光らせるには、machineパッケージでピンの入出力を指定する必要があります。
     machine.PinModeで指定するタイプは次のうちどれですか？
@@ -325,6 +341,7 @@
 # sat0ken Q3
 - id: "sat0ken_q3"
   title: "Gopher Badge の色指定"
+  mode: "both"
   text: |
     Gopher Badgeの画面の色を黒から赤に変えてみましょう。
     color.RGBAでどのように指定すればよいでしょうか？
@@ -344,6 +361,7 @@
 # ryokotmng Q1
 - id: "ryokotmng_q1"
   title: "append と共有配列"
+  mode: "both"
   text: "このコードの出力は何？"
   question_code_ref: "code/ryokotmng_q1.go"
   choices:
@@ -357,6 +375,7 @@
 # hasegawa_itsuki Q1
 - id: "hasegawa_itsuki_q1"
   title: "Go のループ構文"
+  mode: "both"
   text: "Goにおいて、繰り返し処理を実現するために用意されているものは次のうちどれですか？"
   choices:
     - "foreach と for"
@@ -369,6 +388,7 @@
 # hasegawa_itsuki Q2
 - id: "hasegawa_itsuki_q2"
   title: "Gopher のモチーフ"
+  mode: "both"
   text: "Goのマスコットキャラクター「Gopher」は何の生き物をモチーフにしている？"
   choices:
     - "ビーバー"
@@ -381,6 +401,7 @@
 # hasegawa_itsuki Q3
 - id: "hasegawa_itsuki_q3"
   title: "ポインタ渡しの更新"
+  mode: "both"
   text: "以下の A〜D のうち、関数を呼んだ後に msg の値が \"Original\" から\"Changed\" に変わるのはどれ？"
   question_code_ref: "code/hasegawa_itsuki_q3_question.go"
   choices:
@@ -394,6 +415,7 @@
 # Rtosshy Q1
 - id: "Rtosshy_q1"
   title: "typed nil の罠"
+  mode: "both"
   text: "このコードの出力は何？"
   question_code_ref: "code/Rtosshy_q1_question.go"
   choices:
@@ -408,6 +430,7 @@
 # Rtosshy Q2
 - id: "Rtosshy_q2"
   title: "clear 組み込み関数"
+  mode: "both"
   text: "Goで存在する組み込み関数は？"
   choices:
     - "erase"
@@ -420,6 +443,7 @@
 # Rtosshy Q3
 - id: "Rtosshy_q3"
   title: "make 後の append"
+  mode: "both"
   text: "このコードの出力は何？"
   question_code_ref: "code/Rtosshy_q3_question.go"
   choices:
@@ -433,6 +457,7 @@
 # tesso57 Q1
 - id: "tesso57_q1"
   title: "Stringer の無限再帰"
+  mode: "both"
   text: "このコードの挙動はどれ？"
   question_code_ref: "code/tesso57_q1_question.go"
   choices:
@@ -451,6 +476,7 @@
 # tesso57 Q2
 - id: "tesso57_q2"
   title: "fmt verb 逆引き"
+  mode: "both"
   text: |
     fmt.Printf("????", u) の出力が main.User{Name:"Gopher", Age:10} になるとき、
     ???? に入るのはどれ？
@@ -471,6 +497,7 @@
 # tesso57 Q3
 - id: "tesso57_q3"
   title: "nil map の読み書き非対称"
+  mode: "both"
   text: "このコードの挙動はどれ？"
   question_code_ref: "code/tesso57_q3_question.go"
   choices:
@@ -490,6 +517,7 @@
 # tesso57 Q4
 - id: "tesso57_q4"
   title: "map のキーにできる型"
+  mode: "both"
   text: "Go の map のキーとして使えない型はどれ？"
   choices:
     - "string"
@@ -507,6 +535,7 @@
 # tesso57 Q5
 - id: "tesso57_q5"
   title: "map 要素は直接更新できない"
+  mode: "both"
   text: "このコードの挙動はどれ？"
   question_code_ref: "code/tesso57_q5_question.go"
   choices:
