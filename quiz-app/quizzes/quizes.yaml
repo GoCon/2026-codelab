@@ -270,6 +270,25 @@
     Go Blog (synctest): https://go.dev/blog/synctest
     Go 1.24 リリースノート: https://go.dev/doc/go1.24
 
+# tomtwinkle Q11
+- id: "tomtwinkle_q11"
+  title: "Go keyword"
+  mode: "both"
+  text: |
+    この中から Go の keyword を選択してください。
+  choices:
+    - "new"
+    - "goto"
+    - "nil"
+    - "error"
+  answer: 1
+  explanation: |
+    goto だけが Go の keyword です。
+    new は組み込み関数、nil は事前宣言済み識別子、error は事前宣言済みのインターフェース型で、いずれも keyword ではありません。
+
+    公式仕様 (Keywords): https://go.dev/ref/spec#Keywords
+    公式仕様 (Predeclared identifiers): https://go.dev/ref/spec#Predeclared_identifiers
+
 # wancom Q1
 - id: "wancom_q1"
   title: "select の実行順序"
