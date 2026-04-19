@@ -1,0 +1,37 @@
+# クイズのタイトル
+title: "Quiz Title"
+# 作成者の GitHub ユーザーネーム (setup.sh で自動設定されます)
+author: makki_d
+
+questions:
+  # 予約語 or 事前定義識別子
+  - text: "Goの予約語ではないものはどれ？"
+    choices:
+      - "go"
+      - "nil"
+      - "goto"
+      - "fallthrough"
+    answer: 1
+    explanation: |
+      Goの予約語は次の25個のみです:
+      break case chan const continue default defer else
+      fallthrough for func go goto if import interface map
+      package range return select struct switch type var
+
+      nilの他、trueやfalseのような定数、stringやerrorのような型名は、予約語ではなく「事前定義識別子（Predecleated identifer）」で、変数名などに使うことができます（当然推奨されません）。
+
+  # errors.Joinの扱い
+  - text: "非nilとなるerrorはどれ？"
+    question_code_ref: "code/q2_question.go"
+    choices:
+      - "すべてnil"
+      - "err1のみnil"
+      - "err3のみ非nil"
+      - "すべて非nil"
+    answer: 2
+    explanation: |
+      複数の error をまとめる標準パッケージの関数 errors.Join は、引数に非nilなerrorが一つもないときはnilを返します。
+      この問題では、f2()の戻り値は*MyErr型のtyped nilであるため、非nilです。
+    answer_code_ref: "code/q2_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/g-_VO1PYt6b"
+
