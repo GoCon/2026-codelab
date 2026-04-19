@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GoCon 2026 Quiz</title>
+  <title>Go Conference 2026 CodeLab</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -145,11 +145,6 @@
       gap: var(--space-xxs);
       margin-top: var(--space-s);
     }
-    .secret-block {
-      margin-top: var(--space-s);
-      padding-top: var(--space-s);
-      border-top: 1px solid var(--surface-disabled);
-    }
     .secret-title {
       font-size: 0.9rem;
       font-weight: 700;
@@ -166,19 +161,10 @@
       gap: var(--space-xxs);
       align-items: stretch;
     }
-    .secret-input {
+    #nickname-input,
+    #admin-keyword-input {
       flex: 1;
       min-width: 0;
-      border: 2px solid var(--surface-disabled);
-      border-radius: 12px;
-      padding: 14px var(--space-xs);
-      font: inherit;
-      color: var(--text-primary);
-      background: var(--surface-primary);
-    }
-    .secret-input:focus {
-      outline: none;
-      border-color: var(--text-accent);
     }
     .helper-message {
       display: none;
@@ -425,6 +411,41 @@
       font-size: 0.875rem;
       color: var(--text-secondary);
     }
+    .admin-keyword-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 2500;
+      align-items: center;
+      justify-content: center;
+      background: rgba(16, 57, 114, 0.45);
+      padding: var(--space-xs);
+    }
+    .admin-keyword-modal {
+      position: relative;
+      width: min(480px, 100%);
+      background: var(--surface-primary);
+      border-radius: var(--radius-objects);
+      box-shadow: 0 12px 48px rgba(16, 57, 114, 0.18);
+      padding: var(--space-s);
+    }
+    .admin-keyword-close {
+      position: absolute;
+      top: var(--space-xs);
+      right: var(--space-xs);
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 1.25rem;
+      line-height: 1;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .admin-keyword-close:hover {
+      background: var(--surface-secondary);
+    }
 
     @media (max-width: 768px) {
       .header { padding: 4px var(--space-s); height: 56px; }
@@ -444,7 +465,7 @@
 <body>
   <header class="header">
     <div class="header-logo">
-      <span class="accent">Go</span>Con 2026 Quiz
+      <span class="accent">Go</span> Conference 2026 CodeLab
       <span class="header-tagline">Go の知識を試してみよう！</span>
     </div>
     <span id="progress"></span>
@@ -456,7 +477,7 @@
 
       <div class="card" id="home-card">
         <div class="chip">WELCOME</div>
-        <h1 class="home-title">GoCon 2026 Quiz</h1>
+        <h1 class="home-title">Go Conference 2026 CodeLab</h1>
         <p class="home-lead">
           ランダムに選ばれた 5 問に答える Go クイズです。<br>
           全問正解でスペシャルページ、エクストラモード全問正解で問題一覧モードへの扉が開きます。
@@ -466,23 +487,6 @@
           <button class="c-button" id="start-btn" type="button">クイズを始める</button>
         </div>
 
-        <div class="secret-block" id="secret-block">
-          <div class="secret-title">秘密のコードで問題一覧を開く</div>
-          <p class="secret-note">コードが分かる場合は、ここから問題一覧モードに進めます。</p>
-          <div class="secret-row">
-            <input
-              class="secret-input"
-              id="secret-code-input"
-              type="password"
-              autocomplete="off"
-              inputmode="text"
-              placeholder="秘密のコードを入力"
-            >
-            <button class="c-button" data-compact="true" id="unlock-btn" type="button">開く</button>
-          </div>
-          <p class="helper-message" id="secret-message"></p>
-        </div>
-
         <div id="preview-entry">
           <button class="c-button" data-variant="tertiary" id="preview-btn" type="button">問題一覧を見る</button>
           <p class="unlock-note">このブラウザでは問題一覧モードが解放されています。</p>
@@ -490,7 +494,6 @@
       </div>
 
       <div class="card" id="question-card" style="display:none">
-        <div class="chip" id="question-title"></div>
         <div id="question-text"></div>
         <pre id="code-block" style="display:none"><code class="language-go"></code></pre>
         <div id="choices"></div>
@@ -530,7 +533,6 @@
           <p class="secret-note" id="perfect-score-note">全問正解の記録を残せます。ニックネームを入力して送信してください。</p>
           <div class="secret-row">
             <input
-              class="secret-input"
               id="nickname-input"
               type="text"
               autocomplete="nickname"
@@ -544,7 +546,7 @@
         </div>
         <div id="score-actions">
           <button class="c-button" id="restart-btn" type="button">もう一度チャレンジ</button>
-          <button class="c-button" data-variant="tertiary" id="challenge-btn" type="button">全問異なる問題に挑戦</button>
+          <button class="c-button" data-variant="tertiary" id="challenge-btn" type="button">エクストラモードに挑戦</button>
           <button class="c-button" data-variant="tertiary" id="score-preview-btn" type="button" style="display:none">問題一覧を見る</button>
         </div>
       </div>
@@ -553,15 +555,36 @@
 
   <div class="footer-gradient"></div>
   <footer>
-    <p class="footer-copyright">© 2026 Go Conference Organizing Team</p>
+    <p class="footer-copyright" id="footer-copyright">© 2026 Go Conference Organizing Team</p>
   </footer>
+
+  <div class="admin-keyword-overlay" id="admin-keyword-overlay">
+    <div class="admin-keyword-modal" role="dialog" aria-modal="true" aria-labelledby="admin-keyword-title">
+      <button class="admin-keyword-close" id="admin-keyword-close-btn" type="button" aria-label="閉じる">✕</button>
+      <div class="secret-title" id="admin-keyword-title">秘密のKeywordを入力</div>
+      <p class="secret-note">正しいKeywordを入力すると admin ページを開きます。</p>
+      <div class="secret-row">
+        <input
+          id="admin-keyword-input"
+          type="text"
+          autocomplete="off"
+          inputmode="text"
+          placeholder="Keywordを入力"
+        >
+        <button class="c-button" data-compact="true" id="open-admin-btn" type="button">開く</button>
+      </div>
+      <p class="helper-message" id="admin-keyword-message"></p>
+    </div>
+  </div>
 
   <script>
     const appConfig = window.__QUIZ_APP_CONFIG__ || {};
-    const allQuizzes = Array.isArray(window.__QUIZ_DATA__) ? window.__QUIZ_DATA__ : [];
+    const allQuizzes = Array.isArray(window.__QUIZ_DATA__) ? window.__QUIZ_DATA__.map(normalizeQuizData) : [];
     const telemetryEndpoint = typeof appConfig.telemetryEndpoint === 'string' ? appConfig.telemetryEndpoint.trim() : '';
     const previewUnlockCode = typeof appConfig.previewUnlockCode === 'string' ? appConfig.previewUnlockCode : '';
+    const telemetrySessionStorageKey = 'quiz-telemetry-session-id';
     const previewStorageKey = 'quiz-preview-unlocked';
+    const adminAccessStorageKey = 'quiz-admin-unlocked';
 
     const progressEl = document.getElementById('progress');
     const errorMsg = document.getElementById('error-msg');
@@ -569,7 +592,6 @@
     const questionCard = document.getElementById('question-card');
     const resultEl = document.getElementById('result');
     const scoreCard = document.getElementById('score-card');
-    const questionTitle = document.getElementById('question-title');
     const questionText = document.getElementById('question-text');
     const codeBlock = document.getElementById('code-block');
     const choicesEl = document.getElementById('choices');
@@ -595,13 +617,17 @@
     const startBtn = document.getElementById('start-btn');
     const previewBtn = document.getElementById('preview-btn');
     const previewEntry = document.getElementById('preview-entry');
-    const secretBlock = document.getElementById('secret-block');
-    const secretCodeInput = document.getElementById('secret-code-input');
-    const secretMessage = document.getElementById('secret-message');
-    const unlockBtn = document.getElementById('unlock-btn');
+    const footerCopyright = document.getElementById('footer-copyright');
+    const adminKeywordOverlay = document.getElementById('admin-keyword-overlay');
+    const adminKeywordInput = document.getElementById('admin-keyword-input');
+    const adminKeywordMessage = document.getElementById('admin-keyword-message');
+    const adminKeywordCloseBtn = document.getElementById('admin-keyword-close-btn');
+    const openAdminBtn = document.getElementById('open-admin-btn');
 
     const totalPerSession = 5;
     const previewURL = './preview/';
+    const adminURL = './admin/';
+    const adminTapThreshold = 10;
 
     let session = [];
     let currentIndex = 0;
@@ -610,12 +636,17 @@
     let seenIds = new Set();
     let isChallenge = false;
     let previewUnlocked = loadPreviewUnlocked();
-    let sessionID = createSessionID();
+    let adminUnlocked = loadAdminUnlocked();
+    let sessionID = loadOrCreateSessionID();
+    let attemptID = '';
+    let sessionSize = 0;
     let sessionStartedAt = null;
+    let currentQuestionStartedAt = null;
     let latestAnswerElapsedSeconds = 0;
     let perfectCompletionElapsedSeconds = null;
     let perfectCompletionAt = '';
     let perfectScoreSubmitted = false;
+    let footerTapCount = 0;
 
     function createSessionID() {
       if (window.crypto && typeof window.crypto.randomUUID === 'function') {
@@ -624,9 +655,31 @@
       return `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     }
 
+    function loadOrCreateSessionID() {
+      try {
+        const existing = window.sessionStorage.getItem(telemetrySessionStorageKey);
+        if (existing) {
+          return existing;
+        }
+        const generated = createSessionID();
+        window.sessionStorage.setItem(telemetrySessionStorageKey, generated);
+        return generated;
+      } catch (_) {
+        return createSessionID();
+      }
+    }
+
     function loadPreviewUnlocked() {
       try {
         return window.sessionStorage.getItem(previewStorageKey) === '1';
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function loadAdminUnlocked() {
+      try {
+        return window.sessionStorage.getItem(adminAccessStorageKey) === '1';
       } catch (_) {
         return false;
       }
@@ -644,10 +697,20 @@
       updatePreviewButtons();
     }
 
+    function setAdminUnlocked(value) {
+      adminUnlocked = value;
+      try {
+        if (value) {
+          window.sessionStorage.setItem(adminAccessStorageKey, '1');
+        } else {
+          window.sessionStorage.removeItem(adminAccessStorageKey);
+        }
+      } catch (_) {}
+    }
+
     function updatePreviewButtons() {
       previewEntry.style.display = previewUnlocked ? 'block' : 'none';
       scorePreviewBtn.style.display = previewUnlocked ? '' : 'none';
-      secretBlock.style.display = previewUnlockCode ? 'block' : 'none';
     }
 
     function showError(message) {
@@ -658,18 +721,6 @@
     function hideError() {
       errorMsg.style.display = 'none';
       errorMsg.textContent = '';
-    }
-
-    function setSecretMessage(message, type) {
-      if (!message) {
-        secretMessage.style.display = 'none';
-        secretMessage.textContent = '';
-        secretMessage.className = 'helper-message';
-        return;
-      }
-      secretMessage.textContent = message;
-      secretMessage.className = `helper-message ${type}`;
-      secretMessage.style.display = 'block';
     }
 
     function setPerfectScoreMessage(message, type) {
@@ -684,6 +735,18 @@
       perfectScoreMessage.style.display = 'block';
     }
 
+    function setAdminKeywordMessage(message, type) {
+      if (!message) {
+        adminKeywordMessage.style.display = 'none';
+        adminKeywordMessage.textContent = '';
+        adminKeywordMessage.className = 'helper-message';
+        return;
+      }
+      adminKeywordMessage.textContent = message;
+      adminKeywordMessage.className = type ? `helper-message ${type}` : 'helper-message';
+      adminKeywordMessage.style.display = 'block';
+    }
+
     function escapeHTML(str) {
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
@@ -695,13 +758,44 @@
       );
     }
 
+    function normalizeQuizMode(value) {
+      if (value === 'normal' || value === 'extra') {
+        return value;
+      }
+      return 'both';
+    }
+
+    function normalizeQuizData(quiz) {
+      return {
+        ...quiz,
+        mode: normalizeQuizMode(quiz && quiz.mode),
+      };
+    }
+
+    function quizSupportsMode(quiz, mode) {
+      const quizMode = normalizeQuizMode(quiz && quiz.mode);
+      return quizMode === 'both' || quizMode === mode;
+    }
+
+    function getQuizPool(mode) {
+      return allQuizzes.filter(quiz => quizSupportsMode(quiz, mode));
+    }
+
+    function getSeenCount(mode) {
+      return getQuizPool(mode).reduce((count, quiz) => count + (seenIds.has(quiz.id) ? 1 : 0), 0);
+    }
+
+    function countQuizzesForMode(quizzes, mode) {
+      return quizzes.reduce((count, quiz) => count + (quizSupportsMode(quiz, mode) ? 1 : 0), 0);
+    }
+
     function updateProgress() {
       if (session.length === 0 || scoreCard.style.display === 'block' || homeCard.style.display === 'block') {
         progressEl.textContent = '';
         return;
       }
       if (isChallenge) {
-        const base = seenIds.size;
+        const base = getSeenCount('extra');
         progressEl.textContent = `${base + currentIndex + 1} / ${base + session.length}`;
       } else {
         progressEl.textContent = `${currentIndex + 1} / ${session.length}`;
@@ -717,13 +811,48 @@
       return copy;
     }
 
-    function pickSession(excludeIds) {
-      const excludeSet = new Set(excludeIds);
-      let candidates = allQuizzes.filter(quiz => !excludeSet.has(quiz.id));
-      if (candidates.length === 0) {
-        candidates = allQuizzes.slice();
+    function createSessionQuiz(quiz) {
+      const originalChoices = Array.isArray(quiz.choices) ? quiz.choices.slice() : [];
+      const choiceOrder = shuffle(originalChoices.map((_, index) => index));
+      const correctDisplayIndex = choiceOrder.indexOf(quiz.answer);
+
+      return {
+        ...quiz,
+        original_answer: quiz.answer,
+        original_choices: originalChoices,
+        choice_order: choiceOrder,
+        choices: choiceOrder.map(index => originalChoices[index]),
+        answer: correctDisplayIndex >= 0 ? correctDisplayIndex : quiz.answer,
+      };
+    }
+
+    function getOriginalChoiceIndex(quiz, displayedIndex) {
+      if (!Array.isArray(quiz.choice_order)) {
+        return displayedIndex;
       }
-      return shuffle(candidates).slice(0, Math.min(totalPerSession, candidates.length));
+      const originalIndex = quiz.choice_order[displayedIndex];
+      return Number.isInteger(originalIndex) ? originalIndex : displayedIndex;
+    }
+
+    function getOriginalCorrectAnswerIndex(quiz) {
+      return Number.isInteger(quiz.original_answer) ? quiz.original_answer : quiz.answer;
+    }
+
+    function getOriginalChoiceText(quiz, originalIndex) {
+      const sourceChoices = Array.isArray(quiz.original_choices) ? quiz.original_choices : quiz.choices;
+      return typeof sourceChoices[originalIndex] === 'string' ? sourceChoices[originalIndex] : '';
+    }
+
+    function pickSession(excludeIds, mode) {
+      const excludeSet = new Set(excludeIds);
+      const pool = getQuizPool(mode);
+      let candidates = pool.filter(quiz => !excludeSet.has(quiz.id));
+      if (candidates.length === 0) {
+        candidates = pool.slice();
+      }
+      return shuffle(candidates)
+        .slice(0, Math.min(totalPerSession, candidates.length))
+        .map(createSessionQuiz);
     }
 
     function highlightCodeBlock(codeElement, codeText) {
@@ -762,6 +891,51 @@
       setPerfectScoreMessage('', '');
     }
 
+    function openAdminPage() {
+      window.location.href = adminURL;
+    }
+
+    function openAdminKeywordPopup() {
+      footerTapCount = 0;
+      adminKeywordOverlay.style.display = 'flex';
+      adminKeywordInput.value = '';
+      setAdminKeywordMessage('', '');
+      if (typeof window.setTimeout === 'function') {
+        window.setTimeout(() => adminKeywordInput.focus(), 0);
+      } else {
+        adminKeywordInput.focus();
+      }
+    }
+
+    function closeAdminKeywordPopup() {
+      adminKeywordOverlay.style.display = 'none';
+      adminKeywordInput.value = '';
+      setAdminKeywordMessage('', '');
+    }
+
+    function submitAdminKeyword() {
+      const enteredKeyword = adminKeywordInput.value.trim();
+      if (!previewUnlockCode) {
+        setAdminKeywordMessage('Keyword は設定されていません。', 'error');
+        return;
+      }
+      if (!enteredKeyword) {
+        setAdminKeywordMessage('Keyword を入力してください。', 'error');
+        adminKeywordInput.focus();
+        return;
+      }
+      if (enteredKeyword !== previewUnlockCode) {
+        setAdminKeywordMessage('Keyword が違います。', 'error');
+        adminKeywordInput.focus();
+        return;
+      }
+
+      setAdminUnlocked(true);
+      setPreviewUnlocked(true);
+      closeAdminKeywordPopup();
+      openAdminPage();
+    }
+
     function postTelemetry(payload) {
       if (!telemetryEndpoint) {
         return Promise.reject(new Error('telemetry endpoint is not configured'));
@@ -790,23 +964,34 @@
       }).then(() => {});
     }
 
-    function sendAnswerTelemetry(quiz, selectedAnswer, isCorrect, answeredAt, elapsedSeconds) {
+    function sendAnswerTelemetry(quiz, selectedAnswer, isCorrect, answeredAt, elapsedSeconds, questionElapsedSeconds) {
       if (!telemetryEndpoint) {
         return;
       }
+
+      const selectedOriginalAnswer = getOriginalChoiceIndex(quiz, selectedAnswer);
+      const correctOriginalAnswer = getOriginalCorrectAnswerIndex(quiz);
 
       postTelemetry({
         event_type: 'answer',
         question_id: quiz.id,
         question_title: quiz.title,
-        selected_answer: selectedAnswer,
-        correct_answer: quiz.answer,
+        selected_answer: selectedOriginalAnswer,
+        correct_answer: correctOriginalAnswer,
         is_correct: isCorrect,
         mode: getTelemetryMode(),
         answered_at: answeredAt,
         session_id: sessionID,
+        attempt_id: attemptID,
         question_index: currentIndex + 1,
+        session_size: sessionSize,
         elapsed_seconds: elapsedSeconds,
+        question_elapsed_seconds: questionElapsedSeconds,
+        selected_display_index: selectedAnswer,
+        correct_display_index: quiz.answer,
+        selected_choice_text: typeof quiz.choices[selectedAnswer] === 'string' ? quiz.choices[selectedAnswer] : '',
+        correct_choice_text: getOriginalChoiceText(quiz, correctOriginalAnswer),
+        choice_order: Array.isArray(quiz.choice_order) ? quiz.choice_order.slice() : [],
       }).catch(() => {});
     }
 
@@ -819,7 +1004,10 @@
       scoreCard.style.display = 'none';
       perfectScoreSection.style.display = 'none';
       progressEl.textContent = '';
-      setSecretMessage('', '');
+      sessionSize = 0;
+      attemptID = '';
+      currentQuestionStartedAt = null;
+      closeAdminKeywordPopup();
       resetPerfectScoreState();
       updatePreviewButtons();
     }
@@ -837,9 +1025,16 @@
         seenIds.clear();
       }
 
-      sessionID = createSessionID();
+      sessionID = sessionID || loadOrCreateSessionID();
+      attemptID = createSessionID();
       sessionStartedAt = Date.now();
-      session = pickSession(excludeIds);
+      session = pickSession(excludeIds, getTelemetryMode());
+      sessionSize = session.length;
+      if (sessionSize === 0) {
+        renderHome();
+        showError(isChallenge ? 'エクストラモード用の問題がありません' : '表示できる問題がありません');
+        return;
+      }
       currentIndex = 0;
       correctCount = 0;
       resetPerfectScoreState();
@@ -868,7 +1063,6 @@
       answerCodeSection.style.display = 'none';
       nextBtn.style.display = 'none';
 
-      questionTitle.textContent = quiz.title;
       questionText.textContent = quiz.text;
 
       if (quiz.question_code) {
@@ -887,6 +1081,7 @@
         choicesEl.appendChild(button);
       });
 
+      currentQuestionStartedAt = Date.now();
       updateProgress();
     }
 
@@ -897,8 +1092,13 @@
       correctAnswerText.textContent = '';
 
       const isCorrect = answerIndex === quiz.answer;
-      const answeredAt = new Date().toISOString();
-      const elapsedSeconds = getElapsedSeconds();
+      const answeredAtTime = Date.now();
+      const answeredAt = new Date(answeredAtTime).toISOString();
+      const elapsedSeconds = getElapsedSeconds(answeredAtTime);
+      const questionElapsedSeconds = currentQuestionStartedAt
+        ? Math.max(0, Math.floor((answeredAtTime - currentQuestionStartedAt) / 1000))
+        : '';
+      currentQuestionStartedAt = null;
       latestAnswerElapsedSeconds = elapsedSeconds;
       if (isCorrect) {
         correctCount++;
@@ -907,7 +1107,7 @@
         perfectCompletionElapsedSeconds = elapsedSeconds;
         perfectCompletionAt = answeredAt;
       }
-      sendAnswerTelemetry(quiz, answerIndex, isCorrect, answeredAt, elapsedSeconds);
+      sendAnswerTelemetry(quiz, answerIndex, isCorrect, answeredAt, elapsedSeconds, questionElapsedSeconds);
 
       clickedButton.classList.add(isCorrect ? 'correct' : 'incorrect');
       if (!isCorrect && buttons[quiz.answer]) {
@@ -953,11 +1153,12 @@
       nextBtn.style.display = 'none';
       progressEl.textContent = '';
 
-      const totalAnswered = isChallenge ? seenIds.size : session.length;
+      const extraPoolSize = getQuizPool('extra').length;
+      const totalAnswered = isChallenge ? getSeenCount('extra') : session.length;
       const totalCorrect = isChallenge ? pastCorrect + correctCount : correctCount;
       const allCorrect = correctCount === session.length;
       const challengePerfect = isChallenge && allCorrect;
-      const canChallengeMore = seenIds.size < allQuizzes.length;
+      const canChallengeMore = getSeenCount('extra') < extraPoolSize;
 
       if (challengePerfect) {
         setPreviewUnlocked(true);
@@ -1015,6 +1216,7 @@
           completed_at: perfectCompletionAt,
           mode: getTelemetryMode(),
           session_id: sessionID,
+          attempt_id: attemptID,
         });
         perfectScoreSubmitted = true;
         perfectScoreNote.textContent = '記録を送信しました。別の記録を残すには、もう一度クイズに挑戦してください。';
@@ -1025,10 +1227,6 @@
         submitPerfectScoreBtn.disabled = false;
         setPerfectScoreMessage('記録の送信に失敗しました。通信環境を確認して、もう一度お試しください。', 'error');
       }
-    }
-
-    function openPreviewPage() {
-      window.location.href = previewURL;
     }
 
     startBtn.addEventListener('click', () => startSession());
@@ -1042,36 +1240,39 @@
     });
     restartBtn.addEventListener('click', () => startSession());
     challengeBtn.addEventListener('click', () => {
-      pastCorrect += correctCount;
+      pastCorrect = isChallenge ? pastCorrect + correctCount : countQuizzesForMode(session, 'extra');
       startSession([...seenIds]);
     });
     submitPerfectScoreBtn.addEventListener('click', submitPerfectScore);
-    previewBtn.addEventListener('click', openPreviewPage);
-    scorePreviewBtn.addEventListener('click', openPreviewPage);
-    unlockBtn.addEventListener('click', () => {
-      const enteredCode = secretCodeInput.value.trim();
-      if (!previewUnlockCode) {
-        setSecretMessage('秘密のコードは設定されていません。', 'error');
-        return;
-      }
-      if (enteredCode !== previewUnlockCode) {
-        setSecretMessage('秘密のコードが違います。', 'error');
-        return;
-      }
-      setPreviewUnlocked(true);
-      setSecretMessage('問題一覧モードを開きます。', 'success');
-      openPreviewPage();
+    previewBtn.addEventListener('click', () => {
+      window.location.href = previewURL;
     });
-    secretCodeInput.addEventListener('keydown', event => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        unlockBtn.click();
-      }
+    scorePreviewBtn.addEventListener('click', () => {
+      window.location.href = previewURL;
     });
     nicknameInput.addEventListener('keydown', event => {
       if (event.key === 'Enter') {
         event.preventDefault();
         submitPerfectScore();
+      }
+    });
+    adminKeywordInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        submitAdminKeyword();
+      }
+    });
+    footerCopyright.addEventListener('click', () => {
+      footerTapCount++;
+      if (footerTapCount >= adminTapThreshold) {
+        openAdminKeywordPopup();
+      }
+    });
+    adminKeywordCloseBtn.addEventListener('click', closeAdminKeywordPopup);
+    openAdminBtn.addEventListener('click', submitAdminKeyword);
+    adminKeywordOverlay.addEventListener('click', event => {
+      if (event.target === adminKeywordOverlay) {
+        closeAdminKeywordPopup();
       }
     });
 

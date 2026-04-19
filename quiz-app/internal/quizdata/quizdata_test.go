@@ -22,6 +22,7 @@ func TestBuildStaticQuizzes(t *testing.T) {
 		ID:                "q1",
 		Title:             "title",
 		Text:              "text",
+		Mode:              quizhandler.QuizModeExtra,
 		Choices:           []string{"a", "b"},
 		Answer:            1,
 		Explanation:       "exp",
@@ -43,6 +44,9 @@ func TestBuildStaticQuizzes(t *testing.T) {
 	}
 	if got[0].AnswerCode != codeFiles["code/q1_answer.go"] {
 		t.Fatalf("answer code mismatch")
+	}
+	if got[0].Mode != quizhandler.QuizModeExtra {
+		t.Fatalf("mode = %q, want %q", got[0].Mode, quizhandler.QuizModeExtra)
 	}
 	if got[0].AnswerCodePlayRef == "" {
 		t.Fatalf("answer code play ref should be preserved")
@@ -79,6 +83,9 @@ func TestLoadFromBase(t *testing.T) {
 	}
 	if len(quizzes) != 1 {
 		t.Fatalf("quizzes len = %d, want 1", len(quizzes))
+	}
+	if quizzes[0].Mode != quizhandler.QuizModeBoth {
+		t.Fatalf("mode = %q, want %q", quizzes[0].Mode, quizhandler.QuizModeBoth)
 	}
 	if got := codeFiles["code/q1_question.go"]; strings.HasPrefix(got, "//go:build ignore") {
 		t.Fatalf("question code should strip build tag")

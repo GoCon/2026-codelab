@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GoCon 2026 Quiz - 問題一覧</title>
+  <title>Go Conference 2026 CodeLab - 問題一覧</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -367,7 +367,7 @@
 <body>
   <header class="header">
     <div class="header-logo">
-      <span class="accent">Go</span>Con 2026 Quiz
+      <span class="accent">Go</span> Conference 2026 CodeLab
     </div>
     <span class="header-badge">問題一覧</span>
   </header>
@@ -387,7 +387,6 @@
             <thead>
               <tr>
                 <th>問題ID</th>
-                <th>タイトル</th>
               </tr>
             </thead>
             <tbody id="quiz-list-body"></tbody>
@@ -494,7 +493,7 @@
       quizListBody.innerHTML = '';
 
       if (allQuizzes.length === 0) {
-        quizListBody.innerHTML = '<tr><td colspan="2" class="empty-msg">表示できるクイズがありません</td></tr>';
+        quizListBody.innerHTML = '<tr><td colspan="1" class="empty-msg">表示できるクイズがありません</td></tr>';
         return;
       }
 
@@ -502,7 +501,6 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${escapeHtml(quiz.id)}</td>
-          <td>${escapeHtml(quiz.title)}</td>
         `;
         tr.addEventListener('click', () => openPanel(quiz));
         quizListBody.appendChild(tr);
@@ -516,10 +514,10 @@
 
       const hasAnswered = Number.isInteger(selectedAnswerIndex);
 
-      modalTitle.textContent = selectedQuiz.title;
+      modalTitle.textContent = selectedQuiz.id;
       panelSelectedMeta.textContent = hasAnswered
-        ? `${selectedQuiz.id} • ${selectedAnswerIndex === selectedQuiz.answer ? '正解' : '不正解'}`
-        : `${selectedQuiz.id} • 選択肢を選ぶと解答と解説を表示します`;
+        ? `${selectedAnswerIndex === selectedQuiz.answer ? '正解' : '不正解'}`
+        : '選択肢を選ぶと解答と解説を表示します';
       modalText.textContent = selectedQuiz.text;
 
       if (selectedQuiz.question_code) {

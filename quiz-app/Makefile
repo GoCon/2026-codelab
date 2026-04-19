@@ -1,4 +1,4 @@
-.PHONY: build build-pages clean local
+.PHONY: build build-pages clean local test-browser
 
 # TinyGo 0.40.1 は Go 1.25 までをサポート。システムの Go が 1.26 以上の場合は
 # GO 変数で Go 1.25 系のバイナリを指定する:
@@ -35,3 +35,6 @@ clean:
 
 local:
 	go run ./cmd/local/
+
+test-browser:
+	node --test test/browser-ui.test.js

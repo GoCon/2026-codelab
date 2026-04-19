@@ -93,26 +93,6 @@
   answer_code_ref: "code/tomtwinkle_q2_answer.go"
   answer_code_play_ref: "https://go.dev/play/p/vb4924cUKsl"
 
-# tomtwinkle Q3
-- id: "tomtwinkle_q3"
-  title: "スライスの append と backing array"
-  text: |
-    以下のコードを実行したとき、b の値はどうなる？
-  question_code_ref: "code/tomtwinkle_q3_question.go"
-  choices:
-    - "[1] のまま"
-    - "[2] になる"
-    - "[1, 2] になる"
-    - "panic が発生する"
-  answer: 1
-  explanation: |
-    a にはまだ容量（cap）に余裕があるため、append しても新しい配列は作られず、裏側の同じ配列が使われます。
-    そのため c への操作によって、b が参照しているメモリ領域も 2 に上書きされてしまいます。
-
-    Go Blog (スライスの内部構造): https://go.dev/blog/slices-intro
-  answer_code_ref: "code/tomtwinkle_q3_answer.go"
-  answer_code_play_ref: "https://go.dev/play/p/Sk6S3nWW0eh"
-
 # tomtwinkle Q4
 - id: "tomtwinkle_q4"
   title: "defer in loop"

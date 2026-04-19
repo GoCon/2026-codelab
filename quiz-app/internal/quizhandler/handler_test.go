@@ -15,8 +15,6 @@ import (
 	"sync"
 	"testing"
 
-	"gopkg.in/yaml.v3"
-
 	"github.com/GoCon/2026-codelab/quiz-app/internal/quizhandler"
 )
 
@@ -165,6 +163,41 @@ func decodeJSON[T any](t *testing.T, w *httptest.ResponseRecorder) T {
 		t.Fatalf("decode JSON: %v\nbody: %s", err, w.Body.String())
 	}
 	return v
+}
+
+func TestParseQuizzes_DefaultModeIsBoth(t *testing.T) {
+	quizzes, err := quizhandler.ParseQuizzes([]byte(`
+- id: "q1"
+  title: "Q1"
+  text: "text"
+  choices: ["A", "B"]
+  answer: 0
+  explanation: "exp"
+`))
+	if err != nil {
+		t.Fatalf("ParseQuizzes: %v", err)
+	}
+	if len(quizzes) != 1 {
+		t.Fatalf("len = %d, want 1", len(quizzes))
+	}
+	if quizzes[0].Mode != quizhandler.QuizModeBoth {
+		t.Fatalf("mode = %q, want %q", quizzes[0].Mode, quizhandler.QuizModeBoth)
+	}
+}
+
+func TestParseQuizzes_InvalidModeReturnsError(t *testing.T) {
+	_, err := quizhandler.ParseQuizzes([]byte(`
+- id: "q1"
+  title: "Q1"
+  text: "text"
+  mode: "surprise"
+  choices: ["A", "B"]
+  answer: 0
+  explanation: "exp"
+`))
+	if err == nil {
+		t.Fatal("expected invalid mode error")
+	}
 }
 
 func TestSetPublicAPIHeaders(t *testing.T) {
@@ -815,8 +848,8 @@ func loadRealQuizzes(t *testing.T) []quizhandler.Quiz {
 	if err != nil {
 		t.Fatalf("quizes.yaml を読み込めません: %v", err)
 	}
-	var quizzes []quizhandler.Quiz
-	if err := yaml.Unmarshal(data, &quizzes); err != nil {
+	quizzes, err := quizhandler.ParseQuizzes(data)
+	if err != nil {
 		t.Fatalf("quizes.yaml のパースに失敗しました: %v", err)
 	}
 	return quizzes

@@ -15,6 +15,7 @@ type StaticQuiz struct {
 	ID                string   `json:"id"`
 	Title             string   `json:"title"`
 	Text              string   `json:"text"`
+	Mode              string   `json:"mode,omitempty"`
 	Choices           []string `json:"choices"`
 	Answer            int      `json:"answer"`
 	Explanation       string   `json:"explanation"`
@@ -62,10 +63,15 @@ func LoadCodeFiles(quizzes []quizhandler.Quiz, basePath string) (map[string]stri
 func BuildStaticQuizzes(quizzes []quizhandler.Quiz, codeFiles map[string]string) []StaticQuiz {
 	staticQuizzes := make([]StaticQuiz, 0, len(quizzes))
 	for _, q := range quizzes {
+		mode := q.Mode
+		if mode == quizhandler.QuizModeBoth {
+			mode = ""
+		}
 		staticQuiz := StaticQuiz{
 			ID:                q.ID,
 			Title:             q.Title,
 			Text:              q.Text,
+			Mode:              mode,
 			Choices:           append([]string(nil), q.Choices...),
 			Answer:            q.Answer,
 			Explanation:       q.Explanation,
