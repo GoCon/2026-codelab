@@ -267,6 +267,7 @@ function createHarness(quizzes = sampleQuizzes) {
   const beacons = [];
   const storage = new Map();
   const localStorage = new Map();
+  const scrollCalls = [];
   const randomValues = [0.81, 0.14, 0.66, 0.29, 0.73, 0.42, 0.57, 0.33, 0.91, 0.18];
   let randomIndex = 0;
   const math = Object.create(Math);
@@ -361,6 +362,9 @@ function createHarness(quizzes = sampleQuizzes) {
         this.href = value;
       },
     },
+    scrollTo(...args) {
+      scrollCalls.push(args);
+    },
     setTimeout(fn) {
       fn();
       return 0;
@@ -432,6 +436,7 @@ function createHarness(quizzes = sampleQuizzes) {
       elements,
       location: context.window.location,
       localStorage,
+      scrollCalls,
       currentQuiz,
       choiceButtons,
       parseBeaconPayloads,
@@ -624,6 +629,29 @@ test('progress reward UI tracks answered questions in the current session', () =
   assert.equal(app.elements.get('progress-fill').style.width, '100%');
   assert.equal(app.elements.get('progress-meter').attributes['aria-valuenow'], '2');
   assert.equal(app.elements.get('progress-mascot-anchor').style.left, '100%');
+});
+
+test('next button scrolls to the top when navigating questions and score view', () => {
+  const app = createHarness();
+
+  app.clickStart();
+  app.answerCurrentQuestionCorrectly();
+  assert.equal(app.scrollCalls.length, 0);
+
+  app.elements.get('next-btn').trigger('click');
+  assert.equal(app.scrollCalls.length, 1);
+  assert.equal(app.scrollCalls[0].length, 1);
+  assert.equal(app.scrollCalls[0][0].top, 0);
+  assert.equal(app.scrollCalls[0][0].left, 0);
+  assert.equal(app.scrollCalls[0][0].behavior, 'auto');
+
+  app.answerCurrentQuestionCorrectly();
+  app.elements.get('next-btn').trigger('click');
+  assert.equal(app.scrollCalls.length, 2);
+  assert.equal(app.scrollCalls[1].length, 1);
+  assert.equal(app.scrollCalls[1][0].top, 0);
+  assert.equal(app.scrollCalls[1][0].left, 0);
+  assert.equal(app.scrollCalls[1][0].behavior, 'auto');
 });
 
 test('multiline choices preserve line breaks in quiz data and choice button styling', () => {
