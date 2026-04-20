@@ -584,18 +584,18 @@
     text_en: Roughly how much memory does a newly started goroutine use at 
       first?
     choices:
-      - "数 KB 程度（約 2KB）"
+      - "約 2 KB"
       - "約 64KB"
       - "約 1MB"
       - "OS スレッドと同じ数 MB"
     choices_en:
-      - A few KB (about 2 KB)
+      - About 2 KB
       - About 64 KB
       - About 1 MB
       - Several MB, like an OS thread
     answer: 0
     explanation: |
-      goroutine は軽量で、初期スタックはごく小さく、現行ランタイムでは約 2KB から始まります。
+      goroutine は軽量で、初期スタックはごく小さく、現行ランタイムでは約 2 KB から始まります。
       必要に応じてスタックが伸縮するため、大量の goroutine を比較的低コストで扱えます。
 
       Go FAQ (Goroutines): https://go.dev/doc/faq#goroutines

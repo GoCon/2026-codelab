@@ -252,13 +252,13 @@ questions:
   - text: |
       ゴルーチンは 1 つ起動するのに、初期状態でどれくらいのメモリを消費すると考えるのが近いでしょうか？
     choices:
-      - "数 KB 程度（約 2KB）"
+      - "約 2 KB"
       - "約 64KB"
       - "約 1MB"
       - "OS スレッドと同じ数 MB"
     answer: 0
     explanation: |
-      goroutine は軽量で、初期スタックはごく小さく、現行ランタイムでは約 2KB から始まります。
+      goroutine は軽量で、初期スタックはごく小さく、現行ランタイムでは約 2 KB から始まります。
       必要に応じてスタックが伸縮するため、大量の goroutine を比較的低コストで扱えます。
 
       Go FAQ (Goroutines): https://go.dev/doc/faq#goroutines
