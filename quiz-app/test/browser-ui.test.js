@@ -53,6 +53,9 @@ function assertHeaderConferenceLogo(html, imagePath) {
   assert.match(headerMatch[1], new RegExp(`class="header-conference-logo" src="${imagePath.replace(/\./g, '\\.').replace(/\//g, '\\/')}" alt="Go Conference 2026"`));
   assert.match(headerMatch[1], /class="header-product-mark">CodeLab<\/span>/);
   assert.match(headerMatch[1], /id="language-switch"/);
+  assert.match(headerMatch[1], /id="language-toggle-btn"/);
+  assert.match(headerMatch[1], /class="language-toggle-icon"/);
+  assert.match(headerMatch[1], /id="language-menu"/);
   assert.match(headerMatch[1], /id="lang-ja-btn"/);
   assert.match(headerMatch[1], /id="lang-en-btn"/);
   assert.doesNotMatch(headerMatch[1], /<span class="accent">Go<\/span> Conference 2026 CodeLab/);
@@ -68,6 +71,9 @@ const elementIDs = [
   'progress-mascot',
   'header-tagline',
   'language-switch',
+  'language-toggle-btn',
+  'language-toggle-label',
+  'language-menu',
   'lang-ja-btn',
   'lang-en-btn',
   'progress-caption',
@@ -496,6 +502,18 @@ test('preview page inline script parses successfully', () => {
   assert.doesNotThrow(() => new vm.Script(previewScript));
 });
 
+test('language menu toggles from the globe button', () => {
+  const app = createHarness();
+
+  assert.equal(app.elements.get('language-toggle-btn').attributes['aria-expanded'], 'false');
+
+  app.elements.get('language-toggle-btn').trigger('click');
+  assert.equal(app.elements.get('language-toggle-btn').attributes['aria-expanded'], 'true');
+
+  app.elements.get('language-toggle-btn').trigger('click');
+  assert.equal(app.elements.get('language-toggle-btn').attributes['aria-expanded'], 'false');
+});
+
 test('language switch localizes the app UI and active quiz content', () => {
   const app = createHarness([
     {
@@ -514,7 +532,10 @@ test('language switch localizes the app UI and active quiz content', () => {
 
   assert.equal(app.elements.get('start-btn').textContent, 'クイズを始める');
 
+  app.elements.get('language-toggle-btn').trigger('click');
+  assert.equal(app.elements.get('language-toggle-btn').attributes['aria-expanded'], 'true');
   app.elements.get('lang-en-btn').trigger('click');
+  assert.equal(app.elements.get('language-toggle-btn').attributes['aria-expanded'], 'false');
   assert.equal(app.elements.get('header-tagline').textContent, 'Test your Go knowledge!');
   assert.equal(app.elements.get('start-btn').textContent, 'Start quiz');
   assert.equal(app.localStorage.get('quiz-language'), 'en');
