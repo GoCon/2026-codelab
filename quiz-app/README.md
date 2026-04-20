@@ -6,6 +6,8 @@ Go Conference 2026 のコードラボ向け Go クイズアプリです。
 ## 機能
 
 - ランダムに選ばれた 5 問を出題
+- ヘッダー右上のスイッチで日本語 / English を切り替え可能
+- 問題文・選択肢・解説・タイトルも選択言語に合わせて切り替え
 - 問題ごとに `normal` / `extra` / `both` の出題プールを持てる
 - 問題・選択肢・Go コードのシンタックスハイライト表示
 - 選択肢順は出題ごとにランダムシャッフル
@@ -204,7 +206,9 @@ func main() {
 ```yaml
 - id: "author_q1"
   title: "問題のタイトル"
+  title_en: "Question title"
   text: "問題文"
+  text_en: "Question text"
   mode: "extra"
   question_code_ref: "code/author_q1_question.go"
   choices:
@@ -212,11 +216,19 @@ func main() {
     - "選択肢 B"
     - "選択肢 C"
     - "選択肢 D"
+  choices_en:
+    - "Choice A"
+    - "Choice B"
+    - "Choice C"
+    - "Choice D"
   answer: 2
   explanation: "解説文"
+  explanation_en: "Explanation"
   answer_code_ref: "code/author_q1_answer.go"
   answer_code_play_ref: "https://go.dev/play/p/..."
 ```
+
+`*_en` フィールドを省略した場合は日本語の値がそのまま英語表示にも使われます。公開用の問題は日本語・英語の両方を埋める前提です。
 
 `mode` は省略可能です。値は次の 3 つです。
 

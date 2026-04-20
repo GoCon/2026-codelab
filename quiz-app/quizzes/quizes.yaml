@@ -1,188 +1,309 @@
-# sivchari Q1
-- id: "sivchari_q1"
-  title: "配列リテラルのインデックス指定"
-  mode: "both"
-  text: "このコードの出力は何？"
-  question_code_ref: "code/sivchari_q1_question.go"
-  choices:
-    - "5 [0 1 0 3 4]"
-    - "4 [0 3 4 1]"
-    - "6 [0 1 0 3 4 0]"
-    - "コンパイルエラー"
-  answer: 0
-  explanation: |
-    Go の配列リテラルでは、要素にインデックスを指定して初期化できます。
-    インデックス指定がない要素は、直前のインデックス + 1 の位置に配置されます。
+  # sivchari Q1
+  - id: "sivchari_q1"
+    title: "配列リテラルのインデックス指定"
+    title_en: Indexed elements in array literals
+    mode: "both"
+    text: "このコードの出力は何？"
+    text_en: What does this code print?
+    question_code_ref: "code/sivchari_q1_question.go"
+    choices:
+      - "5 [0 1 0 3 4]"
+      - "4 [0 3 4 1]"
+      - "6 [0 1 0 3 4 0]"
+      - "コンパイルエラー"
+    choices_en:
+      - 5 [0 1 0 3 4]
+      - 4 [0 3 4 1]
+      - 6 [0 1 0 3 4 0]
+      - Compilation error
+    answer: 0
+    explanation: |
+      Go の配列リテラルでは、要素にインデックスを指定して初期化できます。
+      インデックス指定がない要素は、直前のインデックス + 1 の位置に配置されます。
 
-    この問題では:
-    - 0 → index 0
-    - 3:3 → index 3
-    - 4 → index 4 (直前の index 3 + 1)
-    - 1:1 → index 1
+      この問題では:
+      - 0 → index 0
+      - 3:3 → index 3
+      - 4 → index 4 (直前の index 3 + 1)
+      - 1:1 → index 1
 
-    [...]T{} の長さは仕様で "The notation ... specifies an array length equal to the maximum element index plus one." と定められているため、max index 4 + 1 = 5 になります。
-    明示的に指定されなかった index 2 にはゼロ値が入ります。
+      [...]T{} の長さは仕様で "The notation ... specifies an array length equal to the maximum element index plus one." と定められているため、max index 4 + 1 = 5 になります。
+      明示的に指定されなかった index 2 にはゼロ値が入ります。
 
-    公式仕様 (Array types): https://go.dev/ref/spec#Array_types
-    公式仕様 (Composite literals): https://go.dev/ref/spec#Composite_literals
-  answer_code_ref: "code/sivchari_q1_answer.go"
+      公式仕様 (Array types): https://go.dev/ref/spec#Array_types
+      公式仕様 (Composite literals): https://go.dev/ref/spec#Composite_literals
+    explanation_en: |-
+      In a Go array literal, you can initialize elements with explicit indexes.
+      Elements without an explicit index are placed at the previous index + 1.
 
-# sivchari Q2
-- id: "sivchari_q2"
-  title: "iota の継続と式の引き継ぎ"
-  mode: "both"
-  text: "このコードの出力は何？"
-  question_code_ref: "code/sivchari_q2_question.go"
-  choices:
-    - "0 2 0 1"
-    - "0 2 2 3"
-    - "0 2 0 3"
-    - "コンパイルエラー"
-  answer: 1
-  explanation: |
-    iota は const ブロック内で 0 から始まり、各行ごとに 1 ずつ増加します。
-    途中で `c = iota` と書き直しても iota はリセットされず、その行の位置 (2) がそのまま値になります。
+      In this quiz:
+      - 0 -> index 0
+      - 3:3 -> index 3
+      - 4 -> index 4 (previous index 3 + 1)
+      - 1:1 -> index 1
 
-    - a = iota * 2: iota=0 → 0
-    - b: 式 iota*2 を引き継ぐ → iota=1 → 2
-    - c = iota: 新しい式。iota=2 → 2
-    - d: 式 iota を引き継ぐ → iota=3 → 3
+      The spec says, "The notation ... specifies an array length equal to the maximum element index plus one.",
+      so the length is max index 4 + 1 = 5.
+      Index 2, which is not specified explicitly, gets the zero value.
 
-    b と c が同じ値 2 になるのがポイントです。
-    iota がリセットされるのは新しい const ブロックが始まったときだけです。
+      Go spec (Array types): https://go.dev/ref/spec#Array_types
+      Go spec (Composite literals): https://go.dev/ref/spec#Composite_literals
+    answer_code_ref: "code/sivchari_q1_answer.go"
 
-    公式仕様 (Iota): https://go.dev/ref/spec#Iota
-  answer_code_ref: "code/sivchari_q2_answer.go"
+  # sivchari Q2
+  - id: "sivchari_q2"
+    title: "iota の継続と式の引き継ぎ"
+    title_en: How iota continues across lines
+    mode: "both"
+    text: "このコードの出力は何？"
+    text_en: What does this code print?
+    question_code_ref: "code/sivchari_q2_question.go"
+    choices:
+      - "0 2 0 1"
+      - "0 2 2 3"
+      - "0 2 0 3"
+      - "コンパイルエラー"
+    choices_en:
+      - 0 2 0 1
+      - 0 2 2 3
+      - 0 2 0 3
+      - Compilation error
+    answer: 1
+    explanation: |
+      iota は const ブロック内で 0 から始まり、各行ごとに 1 ずつ増加します。
+      途中で `c = iota` と書き直しても iota はリセットされず、その行の位置 (2) がそのまま値になります。
 
-# tomtwinkle Q1
-- id: "tomtwinkle_q1"
-  title: "go test キャッシュ"
-  mode: "both"
-  text: |
-    go test は、同じコードに対して2回目を実行すると「(cached)」と表示され一瞬で終わります。
-    このキャッシュを無視して強制的に再テストするフラグはどれ？
-  choices:
-    - "go test -nocache"
-    - "go test -force"
-    - "go test -count=1"
-    - "go test -clear"
-  answer: 2
-  explanation: |
-    キャッシュを無効化する専用のフラグはなく、「このテストを1回実行する」という意味の -count=1 を指定するのが、キャッシュ回避の公式イディオムです。
-    go clean -testcache でキャッシュ全消去も可能です。
+      - a = iota * 2: iota=0 → 0
+      - b: 式 iota*2 を引き継ぐ → iota=1 → 2
+      - c = iota: 新しい式。iota=2 → 2
+      - d: 式 iota を引き継ぐ → iota=3 → 3
 
-    公式ドキュメント: https://pkg.go.dev/cmd/go#hdr-Testing_flags
-  answer_code_ref: "code/tomtwinkle_q1_answer.go"
-  answer_code_play_ref: "https://go.dev/play/p/q3esYHlP6lG"
+      b と c が同じ値 2 になるのがポイントです。
+      iota がリセットされるのは新しい const ブロックが始まったときだけです。
 
-# tomtwinkle Q2
-- id: "tomtwinkle_q2"
-  title: "型無し定数の精度"
-  mode: "both"
-  text: |
-    変数を使わず、定数で64ビットの限界を超える巨大な数値を定義するとどうなる？
-  question_code_ref: "code/tomtwinkle_q2_question.go"
-  choices:
-    - "オーバーフローでコンパイルエラー"
-    - "0 になる"
-    - "負の最大値にラップアラウンドする"
-    - "コンパイルは通る"
-  answer: 3
-  explanation: |
-    Goの「型無し定数」は、コンパイル時には少なくとも256ビットの精度を持ちます。
-    変数に代入する段階になって初めて型の限界値のチェックが行われるため、定数同士の計算中であればオーバーフローしません。
+      公式仕様 (Iota): https://go.dev/ref/spec#Iota
+    explanation_en: |-
+      `iota` starts at 0 inside a const block and increases by 1 on each line.
+      Even if you rewrite a line as `c = iota`, `iota` is not reset; it simply becomes the line index, 2.
 
-    公式仕様: https://go.dev/ref/spec#Constants
-    Go Blog: https://go.dev/blog/constants
-  answer_code_ref: "code/tomtwinkle_q2_answer.go"
-  answer_code_play_ref: "https://go.dev/play/p/vb4924cUKsl"
+      - a = iota * 2: iota=0 -> 0
+      - b: inherits the expression iota*2 -> iota=1 -> 2
+      - c = iota: a new expression. iota=2 -> 2
+      - d: inherits the expression iota -> iota=3 -> 3
 
-# tomtwinkle Q4
-- id: "tomtwinkle_q4"
-  title: "defer in loop"
-  mode: "both"
-  text: |
-    以下のコードの問題点は？
-  question_code_ref: "code/tomtwinkle_q4_question.go"
-  choices:
-    - "ループごとにファイルが上書きされる"
-    - "defer は関数の終了時に実行されるため、ファイルディスクリプタが枯渇する"
-    - "os.Open は defer で閉じることができない"
-    - "コンパイルエラーになる"
-  answer: 1
-  explanation: |
-    defer のスコープは「ブロック」ではなく「関数」です。
-    ループの中で defer を大量に呼ぶと、関数が終わるまで一切クローズされず、OSのリソース制限に引っかかってパニックになることがあります。
-    解決策はループ本体を別関数に切り出すことです。
+      The key point is that `b` and `c` both become 2.
+      `iota` is reset only when a new const block begins.
 
-    Go Blog (defer の仕様): https://go.dev/blog/defer-panic-and-recover
-    公式仕様: https://go.dev/ref/spec#Defer_statements
-  answer_code_ref: "code/tomtwinkle_q4_answer.go"
-  answer_code_play_ref: "https://go.dev/play/p/hM0PTI0iko7"
+      Go spec (Iota): https://go.dev/ref/spec#Iota
+    answer_code_ref: "code/sivchari_q2_answer.go"
 
-# tomtwinkle Q5
-- id: "tomtwinkle_q5"
-  title: "clear() on slice"
-  mode: "both"
-  text: |
-    以下のコードの実行結果は？
-  question_code_ref: "code/tomtwinkle_q5_question.go"
-  choices:
-    - "0"
-    - "3"
-    - "nil"
-    - "コンパイルエラー"
-  answer: 1
-  explanation: |
-    Go 1.21 で追加された組み込み関数 clear()。
-    マップに使うと要素を空（len=0）にしますが、スライスに使うと長さ（len）と容量（cap）はそのままに、全要素を「ゼロ値」に上書きします。
-    要素自体が消えるわけではありません。
+  # tomtwinkle Q1
+  - id: "tomtwinkle_q1"
+    title: "go test キャッシュ"
+    title_en: go test cache
+    mode: "both"
+    text: |
+      go test は、同じコードに対して2回目を実行すると「(cached)」と表示され一瞬で終わります。
+      このキャッシュを無視して強制的に再テストするフラグはどれ？
+    text_en: |-
+      When you run `go test` twice against the same code, the second run may finish instantly with `(cached)`.
+      Which flag forces the tests to run again instead of using the cache?
+    choices:
+      - "go test -nocache"
+      - "go test -force"
+      - "go test -count=1"
+      - "go test -clear"
+    choices_en:
+      - go test -nocache
+      - go test -force
+      - go test -count=1
+      - go test -clear
+    answer: 2
+    explanation: |
+      キャッシュを無効化する専用のフラグはなく、「このテストを1回実行する」という意味の -count=1 を指定するのが、キャッシュ回避の公式イディオムです。
+      go clean -testcache でキャッシュ全消去も可能です。
 
-    公式仕様 (clear): https://go.dev/ref/spec#Clear
-    pkg.go.dev: https://pkg.go.dev/builtin#clear
-  answer_code_ref: "code/tomtwinkle_q5_answer.go"
-  answer_code_play_ref: "https://go.dev/play/p/NkAkv-tUNKr"
+      公式ドキュメント: https://pkg.go.dev/cmd/go#hdr-Testing_flags
+    explanation_en: |-
+      There is no dedicated flag to disable the cache.
+      The official idiom is to pass `-count=1`, which means "run this test once" and bypasses the cache.
+      You can also clear the entire test cache with `go clean -testcache`.
 
-# tomtwinkle Q6
-- id: "tomtwinkle_q6"
-  title: "named return + defer"
-  mode: "both"
-  text: |
-    以下の関数を呼び出したとき、呼び出し元が受け取る値は？
-  question_code_ref: "code/tomtwinkle_q6_question.go"
-  choices:
-    - "0"
-    - "1"
-    - "2"
-    - "コンパイルエラー"
-  answer: 2
-  explanation: |
-    名前付き戻り値の罠です。
-    return 1 が実行されると、まず変数 n に 1 が代入され、その後に defer が実行されて n が 2 になり、それが返されます。
-    実行順序: return 1 → n=1 代入 → defer で n++ → n=2 が返る
+      Official docs: https://pkg.go.dev/cmd/go#hdr-Testing_flags
+    answer_code_ref: "code/tomtwinkle_q1_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/q3esYHlP6lG"
 
-    Go Blog (defer の仕様): https://go.dev/blog/defer-panic-and-recover
-    公式仕様: https://go.dev/ref/spec#Return_statements
-  answer_code_ref: "code/tomtwinkle_q6_answer.go"
-  answer_code_play_ref: "https://go.dev/play/p/973xesVL17U"
+  # tomtwinkle Q2
+  - id: "tomtwinkle_q2"
+    title: "型無し定数の精度"
+    title_en: Precision of untyped constants
+    mode: "both"
+    text: |
+      変数を使わず、定数で64ビットの限界を超える巨大な数値を定義するとどうなる？
+    text_en: What happens if you define a huge constant, without using a 
+      variable, that exceeds the 64-bit limit?
+    question_code_ref: "code/tomtwinkle_q2_question.go"
+    choices:
+      - "オーバーフローでコンパイルエラー"
+      - "0 になる"
+      - "負の最大値にラップアラウンドする"
+      - "コンパイルは通る"
+    choices_en:
+      - Compilation error because of overflow
+      - Becomes 0
+      - Wraps around to the largest negative value
+      - Still compiles
+    answer: 3
+    explanation: |
+      Goの「型無し定数」は、コンパイル時には少なくとも256ビットの精度を持ちます。
+      変数に代入する段階になって初めて型の限界値のチェックが行われるため、定数同士の計算中であればオーバーフローしません。
 
-# tomtwinkle Q7
-- id: "tomtwinkle_q7"
-  title: "range over string"
-  mode: "both"
-  text: |
-    以下のコードの出力はどれ？
-  question_code_ref: "code/tomtwinkle_q7_question.go"
-  choices:
-    - |-
+      公式仕様: https://go.dev/ref/spec#Constants
+      Go Blog: https://go.dev/blog/constants
+    explanation_en: |-
+      Go's untyped constants keep at least 256 bits of precision during compilation.
+      Overflow is checked only when the value is assigned to a typed variable,
+      so calculations on constants alone do not overflow.
+
+      Go spec: https://go.dev/ref/spec#Constants
+      Go Blog: https://go.dev/blog/constants
+    answer_code_ref: "code/tomtwinkle_q2_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/vb4924cUKsl"
+
+  # tomtwinkle Q4
+  - id: "tomtwinkle_q4"
+    title: "defer in loop"
+    title_en: defer inside a loop
+    mode: "both"
+    text: |
+      以下のコードの問題点は？
+    text_en: What is the problem with this code?
+    question_code_ref: "code/tomtwinkle_q4_question.go"
+    choices:
+      - "ループごとにファイルが上書きされる"
+      - "defer は関数の終了時に実行されるため、ファイルディスクリプタが枯渇する"
+      - "os.Open は defer で閉じることができない"
+      - "コンパイルエラーになる"
+    choices_en:
+      - The file is overwritten on each loop iteration
+      - Because defer runs when the function returns, file descriptors are 
+        exhausted
+      - '`os.Open` cannot be closed with defer'
+      - It fails to compile
+    answer: 1
+    explanation: |
+      defer のスコープは「ブロック」ではなく「関数」です。
+      ループの中で defer を大量に呼ぶと、関数が終わるまで一切クローズされず、OSのリソース制限に引っかかってパニックになることがあります。
+      解決策はループ本体を別関数に切り出すことです。
+
+      Go Blog (defer の仕様): https://go.dev/blog/defer-panic-and-recover
+      公式仕様: https://go.dev/ref/spec#Defer_statements
+    explanation_en: |-
+      The scope of `defer` is the function, not the block.
+      If you call `defer` many times inside a loop, nothing is closed until the function returns,
+      so you can hit the OS resource limit and panic.
+      The fix is to move the loop body into a separate function.
+
+      Go Blog (how defer works): https://go.dev/blog/defer-panic-and-recover
+      Go spec: https://go.dev/ref/spec#Defer_statements
+    answer_code_ref: "code/tomtwinkle_q4_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/hM0PTI0iko7"
+
+  # tomtwinkle Q5
+  - id: "tomtwinkle_q5"
+    title: "clear() on slice"
+    title_en: clear() on a slice
+    mode: "both"
+    text: |
+      以下のコードの実行結果は？
+    text_en: What is the result of running this code?
+    question_code_ref: "code/tomtwinkle_q5_question.go"
+    choices:
+      - "0"
+      - "3"
+      - "nil"
+      - "コンパイルエラー"
+    choices_en:
+      - '0'
+      - '3'
+      - nil
+      - Compilation error
+    answer: 1
+    explanation: |
+      Go 1.21 で追加された組み込み関数 clear()。
+      マップに使うと要素を空（len=0）にしますが、スライスに使うと長さ（len）と容量（cap）はそのままに、全要素を「ゼロ値」に上書きします。
+      要素自体が消えるわけではありません。
+
+      公式仕様 (clear): https://go.dev/ref/spec#Clear
+      pkg.go.dev: https://pkg.go.dev/builtin#clear
+    explanation_en: |-
+      `clear()` was added in Go 1.21.
+      When you use it on a map, it removes all elements (`len=0`).
+      When you use it on a slice, it keeps the same length and capacity and simply overwrites every element with the zero value.
+      The elements themselves are not removed.
+
+      Go spec (`clear`): https://go.dev/ref/spec#Clear
+      pkg.go.dev: https://pkg.go.dev/builtin#clear
+    answer_code_ref: "code/tomtwinkle_q5_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/NkAkv-tUNKr"
+
+  # tomtwinkle Q6
+  - id: "tomtwinkle_q6"
+    title: "named return + defer"
+    title_en: Named returns and defer
+    mode: "both"
+    text: |
+      以下の関数を呼び出したとき、呼び出し元が受け取る値は？
+    text_en: When this function is called, what value does the caller receive?
+    question_code_ref: "code/tomtwinkle_q6_question.go"
+    choices:
+      - "0"
+      - "1"
+      - "2"
+      - "コンパイルエラー"
+    choices_en:
+      - '0'
+      - '1'
+      - '2'
+      - Compilation error
+    answer: 2
+    explanation: |
+      名前付き戻り値の罠です。
+      return 1 が実行されると、まず変数 n に 1 が代入され、その後に defer が実行されて n が 2 になり、それが返されます。
+      実行順序: return 1 → n=1 代入 → defer で n++ → n=2 が返る
+
+      Go Blog (defer の仕様): https://go.dev/blog/defer-panic-and-recover
+      公式仕様: https://go.dev/ref/spec#Return_statements
+    explanation_en: |-
+      This is the classic named return trap.
+      When `return 1` runs, Go first assigns 1 to the named return variable `n`,
+      then the deferred function runs and changes `n` to 2, and that value is returned.
+      Execution order: `return 1` -> assign n=1 -> `defer` runs and increments n -> n=2 is returned
+
+      Go Blog (how defer works): https://go.dev/blog/defer-panic-and-recover
+      Go spec: https://go.dev/ref/spec#Return_statements
+    answer_code_ref: "code/tomtwinkle_q6_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/973xesVL17U"
+
+  # tomtwinkle Q7
+  - id: "tomtwinkle_q7"
+    title: "range over string"
+    title_en: range over a string
+    mode: "both"
+    text: |
+      以下のコードの出力はどれ？
+    text_en: Which output does this code produce?
+    question_code_ref: "code/tomtwinkle_q7_question.go"
+    choices:
+      - |-
         i=0 v=日
         i=1 v=本
         i=2 v=語
-    - |-
+      - |-
         i=0 v=26085
         i=3 v=26412
         i=6 v=35486
-    - |-
+      - |-
         i=0 v=230
         i=1 v=151
         i=2 v=165
@@ -192,517 +313,899 @@
         i=6 v=232
         i=7 v=170
         i=8 v=158
-    - "コンパイルエラー"
-  answer: 1
-  explanation: |
-    Go の string range は UTF-8 デコードを行い、インデックスはバイト位置、値は rune（Unicode コードポイント）です。
-    「日」(U+65E5=26085) は index=0、「本」(U+672C=26412) は index=3、「語」(U+8A9E=35486) は index=6 から始まります。
-    各漢字は UTF-8 で 3 バイトです。
+      - "コンパイルエラー"
+    choices_en:
+      - |-
+        i=0 v=日
+        i=1 v=本
+        i=2 v=語
+      - |-
+        i=0 v=26085
+        i=3 v=26412
+        i=6 v=35486
+      - |-
+        i=0 v=230
+        i=1 v=151
+        i=2 v=165
+        i=3 v=230
+        i=4 v=156
+        i=5 v=172
+        i=6 v=232
+        i=7 v=170
+        i=8 v=158
+      - Compilation error
+    answer: 1
+    explanation: |
+      Go の string range は UTF-8 デコードを行い、インデックスはバイト位置、値は rune（Unicode コードポイント）です。
+      「日」(U+65E5=26085) は index=0、「本」(U+672C=26412) は index=3、「語」(U+8A9E=35486) は index=6 から始まります。
+      各漢字は UTF-8 で 3 バイトです。
 
-    Go Blog (文字列と rune): https://go.dev/blog/strings
-    公式仕様 (range): https://go.dev/ref/spec#For_range
-  answer_code_ref: "code/tomtwinkle_q7_answer.go"
-  answer_code_play_ref: "https://go.dev/play/p/BVyqOwrA1tg"
+      Go Blog (文字列と rune): https://go.dev/blog/strings
+      公式仕様 (range): https://go.dev/ref/spec#For_range
+    explanation_en: |-
+      Ranging over a Go string decodes UTF-8.
+      The index is the byte position, and the value is a rune (Unicode code point).
+      `日` (U+65E5 = 26085) starts at index 0, `本` (U+672C = 26412) at index 3, and `語` (U+8A9E = 35486) at index 6.
+      Each kanji uses 3 bytes in UTF-8.
 
-# tomtwinkle Q8
-- id: "tomtwinkle_q8"
-  title: "t.Fatal in goroutine"
-  mode: "both"
-  text: |
-    テスト goroutine ではない「別途起動した goroutine」の中で t.Fatal() を呼ぶとどうなる？
-  question_code_ref: "code/tomtwinkle_q8_question.go"
-  choices:
-    - "テストが正しく終了し、失敗としてマークされる"
-    - "テストがタイムアウトするまで止まらなくなる"
-    - "panic になりプロセスがクラッシュする"
-    - "何も起こらずテストは成功扱いになる"
-  answer: 1
-  explanation: |
-    t.Fatal は runtime.Goexit() を呼ぶため、別 goroutine で呼ぶとその goroutine だけが静かに終了し、テスト自体は止まりません。
-    Go 1.24 からは go vet で検出されるようになりました。
-    正しいアプローチ: goroutine 内では t.Error を使い channel で完了を通知するか、errgroup などを活用します。
+      Go Blog (strings and runes): https://go.dev/blog/strings
+      Go spec (`range`): https://go.dev/ref/spec#For_range
+    answer_code_ref: "code/tomtwinkle_q7_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/BVyqOwrA1tg"
 
-    pkg.go.dev (testing.T.Fatal): https://pkg.go.dev/testing#T.Fatal
-    Go 1.24 リリースノート: https://go.dev/doc/go1.24
-  answer_code_ref: "code/tomtwinkle_q8_answer.go"
-  answer_code_play_ref: "https://go.dev/play/p/uP543Km7JNK"
+  # tomtwinkle Q8
+  - id: "tomtwinkle_q8"
+    title: "t.Fatal in goroutine"
+    title_en: t.Fatal inside a goroutine
+    mode: "both"
+    text: |
+      テスト goroutine ではない「別途起動した goroutine」の中で t.Fatal() を呼ぶとどうなる？
+    text_en: What happens if you call `t.Fatal()` inside a goroutine that is not
+      the test goroutine itself?
+    question_code_ref: "code/tomtwinkle_q8_question.go"
+    choices:
+      - "テストが正しく終了し、失敗としてマークされる"
+      - "テストがタイムアウトするまで止まらなくなる"
+      - "panic になりプロセスがクラッシュする"
+      - "何も起こらずテストは成功扱いになる"
+    choices_en:
+      - The test ends correctly and is marked failed
+      - The test keeps running until it times out
+      - It panics and crashes the process
+      - Nothing happens and the test is reported as success
+    answer: 1
+    explanation: |
+      t.Fatal は runtime.Goexit() を呼ぶため、別 goroutine で呼ぶとその goroutine だけが静かに終了し、テスト自体は止まりません。
+      Go 1.24 からは go vet で検出されるようになりました。
+      正しいアプローチ: goroutine 内では t.Error を使い channel で完了を通知するか、errgroup などを活用します。
 
-# tomtwinkle Q9
-- id: "tomtwinkle_q9"
-  title: "GOMAXPROCS in containers"
-  mode: "both"
-  text: |
-    Docker や Kubernetes 上で Go アプリを動かす際、CPU のコア数を認識させて GOMAXPROCS を最適化するために、
-    最新の Go バージョンにおいて推奨されるコードはどれ？
-  choices:
-    - 'import _ "go.uber.org/automaxprocs" を入れる'
-    - "環境変数 GOMAXPROCS をシェルで計算して渡す"
-    - "runtime.GOMAXPROCS(runtime.NumCPU()) を呼ぶ"
-    - "何もしなくてよい"
-  answer: 3
-  explanation: |
-    長年 Uber の automaxprocs を入れるのが Kubernetes 時代の定石でしたが、
-    Go 1.25 からランタイムがコンテナの CPU 制限（cgroup CPU quota）を自動検知するようになったため、完全に不要になりました。
+      pkg.go.dev (testing.T.Fatal): https://pkg.go.dev/testing#T.Fatal
+      Go 1.24 リリースノート: https://go.dev/doc/go1.24
+    explanation_en: |-
+      `t.Fatal` calls `runtime.Goexit()`.
+      If you call it in another goroutine, only that goroutine exits quietly, and the test itself keeps running.
+      Since Go 1.24, `go vet` can detect this.
+      Correct approaches include using `t.Error` inside the goroutine and signaling completion through a channel, or using `errgroup`.
 
-    Go 1.25 リリースノート: https://go.dev/doc/go1.25
-    pkg.go.dev (runtime.GOMAXPROCS): https://pkg.go.dev/runtime#GOMAXPROCS
-  answer_code_ref: "code/tomtwinkle_q9_answer.go"
-  answer_code_play_ref: "https://go.dev/play/p/3Az4nyarOeI"
+      pkg.go.dev (`testing.T.Fatal`): https://pkg.go.dev/testing#T.Fatal
+      Go 1.24 release notes: https://go.dev/doc/go1.24
+    answer_code_ref: "code/tomtwinkle_q8_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/uP543Km7JNK"
 
-# tomtwinkle Q10
-- id: "tomtwinkle_q10"
-  title: "synctest isolation"
-  mode: "both"
-  text: |
-    synctest.Run ブロックの「外側」で起動した goroutine と、「内側」で起動した goroutine 同士が
-    channel で同期通信しようとするとどうなる？
-  question_code_ref: "code/tomtwinkle_q10_question.go"
-  choices:
-    - "正常に通信できる"
-    - "外側の goroutine が強制終了させられる"
-    - "deadlock を検知して panic する"
-    - "常に非同期通信（buffered channel）に変換される"
-  answer: 2
-  explanation: |
-    synctest は独自の仮想時計とスケジューラ内で隔離されて動くため、リアルタイムで動く通常の goroutine や本物のネットワーク I/O と直接的な同期通信を行おうとすると、テストの決定性が壊れるためエラーとなります。
+  # tomtwinkle Q9
+  - id: "tomtwinkle_q9"
+    title: "GOMAXPROCS in containers"
+    title_en: GOMAXPROCS in containers
+    mode: "both"
+    text: |
+      Docker や Kubernetes 上で Go アプリを動かす際、CPU のコア数を認識させて GOMAXPROCS を最適化するために、
+      最新の Go バージョンにおいて推奨されるコードはどれ？
+    text_en: |-
+      When running a Go application on Docker or Kubernetes,
+      which code is recommended in modern Go to let GOMAXPROCS respect CPU limits?
+    choices:
+      - 'import _ "go.uber.org/automaxprocs" を入れる'
+      - "環境変数 GOMAXPROCS をシェルで計算して渡す"
+      - "runtime.GOMAXPROCS(runtime.NumCPU()) を呼ぶ"
+      - "何もしなくてよい"
+    choices_en:
+      - Add `import _ "go.uber.org/automaxprocs"`
+      - Compute `GOMAXPROCS` in the shell and pass it as an environment variable
+      - Call `runtime.GOMAXPROCS(runtime.NumCPU())`
+      - Do nothing
+    answer: 3
+    explanation: |
+      長年 Uber の automaxprocs を入れるのが Kubernetes 時代の定石でしたが、
+      Go 1.25 からランタイムがコンテナの CPU 制限（cgroup CPU quota）を自動検知するようになったため、完全に不要になりました。
 
-    pkg.go.dev (testing/synctest): https://pkg.go.dev/testing/synctest
-    Go Blog (synctest): https://go.dev/blog/synctest
-    Go 1.24 リリースノート: https://go.dev/doc/go1.24
+      Go 1.25 リリースノート: https://go.dev/doc/go1.25
+      pkg.go.dev (runtime.GOMAXPROCS): https://pkg.go.dev/runtime#GOMAXPROCS
+    explanation_en: |-
+      For a long time, adding Uber's `automaxprocs` was the common approach in Kubernetes.
+      But since Go 1.25, the runtime automatically detects container CPU limits (cgroup CPU quota),
+      so you no longer need it.
 
-# tomtwinkle Q11
-- id: "tomtwinkle_q11"
-  title: "Go keyword"
-  mode: "both"
-  text: |
-    この中から Go の keyword を選択してください。
-  choices:
-    - "new"
-    - "goto"
-    - "nil"
-    - "error"
-  answer: 1
-  explanation: |
-    goto だけが Go の keyword です。
-    new は組み込み関数、nil は事前宣言済み識別子、error は事前宣言済みのインターフェース型で、いずれも keyword ではありません。
+      Go 1.25 release notes: https://go.dev/doc/go1.25
+      pkg.go.dev (`runtime.GOMAXPROCS`): https://pkg.go.dev/runtime#GOMAXPROCS
+    answer_code_ref: "code/tomtwinkle_q9_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/3Az4nyarOeI"
 
-    公式仕様 (Keywords): https://go.dev/ref/spec#Keywords
-    公式仕様 (Predeclared identifiers): https://go.dev/ref/spec#Predeclared_identifiers
+  # tomtwinkle Q10
+  - id: "tomtwinkle_q10"
+    title: "synctest isolation"
+    title_en: synctest isolation
+    mode: "both"
+    text: |
+      synctest.Run ブロックの「外側」で起動した goroutine と、「内側」で起動した goroutine 同士が
+      channel で同期通信しようとするとどうなる？
+    text_en: |-
+      What happens if a goroutine started outside a `synctest.Run` block and a goroutine started inside it
+      try to synchronize over a channel?
+    question_code_ref: "code/tomtwinkle_q10_question.go"
+    choices:
+      - "正常に通信できる"
+      - "外側の goroutine が強制終了させられる"
+      - "deadlock を検知して panic する"
+      - "常に非同期通信（buffered channel）に変換される"
+    choices_en:
+      - They communicate normally
+      - The outer goroutine is forcefully terminated
+      - It detects a deadlock and panics
+      - It is always converted to asynchronous communication (a buffered 
+        channel)
+    answer: 2
+    explanation: |
+      synctest は独自の仮想時計とスケジューラ内で隔離されて動くため、リアルタイムで動く通常の goroutine や本物のネットワーク I/O と直接的な同期通信を行おうとすると、テストの決定性が壊れるためエラーとなります。
 
-# tomtwinkle Q12
-- id: "tomtwinkle_q12"
-  title: "time.Format layout"
-  mode: "both"
-  text: |
-    Go の time.Format で時刻レイアウトを指定する方法として正しいのはどれ？
-  choices:
-    - "1970-01-02"
-    - "0001-02-03"
-    - "2006-01-02"
-    - "1999-12-31"
-  answer: 2
-  explanation: |
-    Go の time.Format / time.Parse は、独自のフォーマット記号ではなく基準時刻
-    "Mon Jan 2 15:04:05 MST 2006" を並べたレイアウト文字列で指定します。
-    たとえば "2006-01-02" は年-月-日、"15:04:05" は時:分:秒を表します。
+      pkg.go.dev (testing/synctest): https://pkg.go.dev/testing/synctest
+      Go Blog (synctest): https://go.dev/blog/synctest
+      Go 1.24 リリースノート: https://go.dev/doc/go1.24
 
-    pkg.go.dev (time): https://pkg.go.dev/time
+    explanation_en: |-
+      `synctest` runs inside its own isolated virtual clock and scheduler.
+      If it tries to synchronize directly with ordinary goroutines running in real time, or with real network I/O,
+      the test would lose determinism, so Go reports it as an error.
 
-# tomtwinkle Q13
-- id: "tomtwinkle_q13"
-  title: "Go founding member"
-  mode: "both"
-  text: |
-    Go 言語は Google のエンジニアによって作られましたが、初期メンバーの中には
-    IT の歴史を作った「生きる伝説」とも呼べる偉大なプログラマが含まれています。
-    それは誰でしょう？
-  choices:
-    - "Linus Torvalds"
-    - "Ken Thompson"
-    - "Guido van Rossum"
-    - "James Gosling"
-  answer: 1
-  explanation: |
-    正解は Ken Thompson です。Go の作者としては Robert Griesemer、Rob Pike、
-    Ken Thompson の 3 名が知られています。
-    Ken Thompson は Bell Labs で Unix を共同開発したことで特に有名で、
-    その流れの中で C 言語のもとになった B 言語の設計や Plan 9 の開発にも関わった、
-    計算機史に残るプログラマです。
-    システムソフトウェアの設計に深く関わってきた人物が、Go の初期設計メンバーにも入っています。
+      pkg.go.dev (`testing/synctest`): https://pkg.go.dev/testing/synctest
+      Go Blog (`synctest`): https://go.dev/blog/synctest
+      Go 1.24 release notes: https://go.dev/doc/go1.24
+  # tomtwinkle Q11
+  - id: "tomtwinkle_q11"
+    title: "Go keyword"
+    title_en: Go keyword
+    mode: "both"
+    text: |
+      この中から Go の keyword を選択してください。
+    text_en: Which of these is a Go keyword?
+    choices:
+      - "new"
+      - "goto"
+      - "nil"
+      - "error"
+    choices_en:
+      - new
+      - goto
+      - nil
+      - error
+    answer: 1
+    explanation: |
+      goto だけが Go の keyword です。
+      new は組み込み関数、nil は事前宣言済み識別子、error は事前宣言済みのインターフェース型で、いずれも keyword ではありません。
 
-    Go FAQ: https://go.dev/doc/faq#history
+      公式仕様 (Keywords): https://go.dev/ref/spec#Keywords
+      公式仕様 (Predeclared identifiers): https://go.dev/ref/spec#Predeclared_identifiers
 
-# tomtwinkle Q14
-- id: "tomtwinkle_q14"
-  title: "goroutine initial stack"
-  mode: "both"
-  text: |
-    ゴルーチンは 1 つ起動するのに、初期状態でどれくらいのメモリを消費すると考えるのが近いでしょうか？
-  choices:
-    - "数 KB 程度（約 2KB）"
-    - "約 64KB"
-    - "約 1MB"
-    - "OS スレッドと同じ数 MB"
-  answer: 0
-  explanation: |
-    goroutine は軽量で、初期スタックはごく小さく、現行ランタイムでは約 2KB から始まります。
-    必要に応じてスタックが伸縮するため、大量の goroutine を比較的低コストで扱えます。
+    explanation_en: |-
+      Only `goto` is a Go keyword.
+      `new` is a built-in function, `nil` is a predeclared identifier, and `error` is a predeclared interface type.
+      None of those are keywords.
 
-    Go FAQ (Goroutines): https://go.dev/doc/faq#goroutines
+      Go spec (Keywords): https://go.dev/ref/spec#Keywords
+      Go spec (Predeclared identifiers): https://go.dev/ref/spec#Predeclared_identifiers
+  # tomtwinkle Q12
+  - id: "tomtwinkle_q12"
+    title: "time.Format layout"
+    title_en: time.Format layout
+    mode: "both"
+    text: |
+      Go の time.Format で時刻レイアウトを指定する方法として正しいのはどれ？
+    text_en: Which one is the correct way to specify a time layout in Go's 
+      `time.Format`?
+    choices:
+      - "1970-01-02"
+      - "0001-02-03"
+      - "2006-01-02"
+      - "1999-12-31"
+    choices_en:
+      - '1970-01-02'
+      - '0001-02-03'
+      - '2006-01-02'
+      - '1999-12-31'
+    answer: 2
+    explanation: |
+      Go の time.Format / time.Parse は、独自のフォーマット記号ではなく基準時刻
+      "Mon Jan 2 15:04:05 MST 2006" を並べたレイアウト文字列で指定します。
+      たとえば "2006-01-02" は年-月-日、"15:04:05" は時:分:秒を表します。
 
-# tomtwinkle Q15
-- id: "tomtwinkle_q15"
-  title: "pointer arithmetic"
-  mode: "both"
-  text: |
-    Go 言語には C 言語でおなじみの「ポインタ」がありますが、
-    C 言語では当たり前にできて、Go 言語では安全のために意図的にできなくしているポインタ操作はどれでしょう？
-  choices:
-    - "ポインタに整数を足し引きして任意のアドレスへ進める"
-    - "変数のアドレスを取得する"
-    - "ポインタ経由で値を書き換える"
-    - "nil と比較する"
-  answer: 0
-  explanation: |
-    Go では安全性を保つため、通常のコードでポインタ演算はできません。
-    変数のアドレス取得、参照先の読み書き、nil との比較はできますが、
-    C 言語のようなポインタの加減算は `unsafe` を使わない限り行えません。
+      pkg.go.dev (time): https://pkg.go.dev/time
 
-    Go FAQ (Why is there no pointer arithmetic?): https://go.dev/doc/faq#no_pointer_arithmetic
-    pkg.go.dev (unsafe): https://pkg.go.dev/unsafe
+    explanation_en: |-
+      `time.Format` and `time.Parse` use a layout string built from the reference time
+      `Mon Jan 2 15:04:05 MST 2006`, not symbolic format tokens.
+      For example, `2006-01-02` means year-month-day, and `15:04:05` means hour:minute:second.
 
-# tomtwinkle Q16
-- id: "tomtwinkle_q16"
-  title: "compiler warnings"
-  mode: "both"
-  text: |
-    他のコンパイル言語と比較した場合の Go 言語のコンパイラの特徴として正しいのはどれ？
-  choices:
-    - "コンパイラがワーニングを出さない"
-    - "fmt.Printf の書式指定ミスのような問題は、コンパイラが error にする"
-    - "実行時にだけ型チェックを行う"
-    - "コンパイル時に自動でメモリリークを検出する"
-  answer: 0
-  explanation: |
-    Go のコンパイラは「警告を出して通す」のではなく、問題があればエラーとして止める方針です。
-    たとえば未使用の変数や import は warning ではなく compile error になります。
-    fmt.Printf の書式指定ミスのような、より高度な静的解析は `go vet` の役割です。
+      pkg.go.dev (`time`): https://pkg.go.dev/time
+  # tomtwinkle Q13
+  - id: "tomtwinkle_q13"
+    title: "Go founding member"
+    title_en: A legendary Go founder
+    mode: "both"
+    text: |
+      Go 言語は Google のエンジニアによって作られましたが、初期メンバーの中には
+      IT の歴史を作った「生きる伝説」とも呼べる偉大なプログラマが含まれています。
+      それは誰でしょう？
+    text_en: |-
+      Go was created by Google engineers, but one of the original members was a legendary programmer
+      who helped shape computing history. Who was it?
+    choices:
+      - "Linus Torvalds"
+      - "Ken Thompson"
+      - "Guido van Rossum"
+      - "James Gosling"
+    choices_en:
+      - Linus Torvalds
+      - Ken Thompson
+      - Guido van Rossum
+      - James Gosling
+    answer: 1
+    explanation: |
+      正解は Ken Thompson です。Go の作者としては Robert Griesemer、Rob Pike、
+      Ken Thompson の 3 名が知られています。
+      Ken Thompson は Bell Labs で Unix を共同開発したことで特に有名で、
+      その流れの中で C 言語のもとになった B 言語の設計や Plan 9 の開発にも関わった、
+      計算機史に残るプログラマです。
+      システムソフトウェアの設計に深く関わってきた人物が、Go の初期設計メンバーにも入っています。
 
-    Go FAQ (Can I stop these complaints about my unused variable/import?): https://go.dev/doc/faq#unused_variables_and_imports
-    pkg.go.dev (go vet): https://pkg.go.dev/cmd/vet
+      Go FAQ: https://go.dev/doc/faq#history
 
-# tomtwinkle Q17
-- id: "tomtwinkle_q17"
-  title: "Gopher designer"
-  mode: "both"
-  text: |
-    愛らしいマスコット「Gopher」君ですが、このキャラクターをデザインしたのは誰でしょう？
-  choices:
-    - "Renée French"
-    - "Rob Pike"
-    - "Ken Thompson"
-    - "Russ Cox"
-  answer: 0
-  explanation: |
-    Go のマスコットである Gopher をデザインしたのは Renée French です。
-    Renée French は Rob Pike の妻でもあります。
-    Gopher は Go コミュニティを象徴するキャラクターとして広く親しまれています。
+    explanation_en: |-
+      The correct answer is Ken Thompson.
+      The three Go creators usually cited are Robert Griesemer, Rob Pike, and Ken Thompson.
+      Ken Thompson is especially famous for co-creating Unix at Bell Labs, and he also worked on the B language that led to C and on Plan 9.
+      A programmer with deep roots in system software design was part of Go's original design team.
 
-    The Go Gopher: https://go.dev/blog/gopher
+      Go FAQ: https://go.dev/doc/faq#history
+  # tomtwinkle Q14
+  - id: "tomtwinkle_q14"
+    title: "goroutine initial stack"
+    title_en: Initial goroutine stack size
+    mode: "both"
+    text: |
+      ゴルーチンは 1 つ起動するのに、初期状態でどれくらいのメモリを消費すると考えるのが近いでしょうか？
+    text_en: Roughly how much memory does a newly started goroutine use at 
+      first?
+    choices:
+      - "数 KB 程度（約 2KB）"
+      - "約 64KB"
+      - "約 1MB"
+      - "OS スレッドと同じ数 MB"
+    choices_en:
+      - A few KB (about 2 KB)
+      - About 64 KB
+      - About 1 MB
+      - Several MB, like an OS thread
+    answer: 0
+    explanation: |
+      goroutine は軽量で、初期スタックはごく小さく、現行ランタイムでは約 2KB から始まります。
+      必要に応じてスタックが伸縮するため、大量の goroutine を比較的低コストで扱えます。
 
-# wancom Q1
-- id: "wancom_q1"
-  title: "select の実行順序"
-  mode: "both"
-  text: "このコードの出力は何？"
-  question_code_ref: "code/wancom_q1_question.go"
-  choices:
-    - "Message from chA: msgA"
-    - "Message from chB: msgB-1"
-    - "Message from chC: msgC"
-    - "上記のどれか（どれが出るかはわからない）"
-  answer: 3
-  explanation: |
-    select はどの Channel から処理するかの順序を保証しません。
-    必要に応じて二重 select などを使用します。
-  answer_code_ref: "code/wancom_q1_answer.go"
+      Go FAQ (Goroutines): https://go.dev/doc/faq#goroutines
 
-# wancom Q2
-- id: "wancom_q2"
-  title: "標準パッケージの対応フォーマット"
-  mode: "both"
-  text: "標準パッケージでサポートされていないデータフォーマットは？"
-  choices:
-    - "gzip"
-    - "png"
-    - "mp3"
-    - "pem"
-  answer: 2
-  explanation: |
-    それぞれ、compress/gzip、image/png、encoding/pem が存在します。
-    mp3 だけ標準パッケージでは提供されていません。
-    ・ compress/gzip: https://pkg.go.dev/compress/gzip@go1.26.2
-    ・ image/png: https://pkg.go.dev/image/png@go1.26.2
-    ・ encoding/pem: https://pkg.go.dev/encoding/pem@go1.26.2
+    explanation_en: |-
+      Goroutines are lightweight.
+      Their initial stack is very small, starting at around 2 KB in the current runtime.
+      The stack grows and shrinks as needed, so you can handle many goroutines at relatively low cost.
 
-# wancom Q3
-- id: "wancom_q3"
-  title: "pprof の提供データ"
-  mode: "both"
-  text: "net/http/pprofとruntime/pprof両方で提供しているプロファイリングデータは？"
-  choices:
-    - "cmdline"
-    - "goroutine"
-    - "profile"
-    - "symbol"
-  answer: 1
-  explanation: |
-    goroutine は runtime/pprof から提供されるデータです。
-    cmdline、profile、symbol は net/http/pprof で独自に提供しているデータです。
-  answer_code_ref: "code/wancom_q3_answer.go"
+      Go FAQ (Goroutines): https://go.dev/doc/faq#goroutines
+  # tomtwinkle Q15
+  - id: "tomtwinkle_q15"
+    title: "pointer arithmetic"
+    title_en: Pointer arithmetic
+    mode: "both"
+    text: |
+      Go 言語には C 言語でおなじみの「ポインタ」がありますが、
+      C 言語では当たり前にできて、Go 言語では安全のために意図的にできなくしているポインタ操作はどれでしょう？
+    text_en: |-
+      Go has pointers like C, but which pointer operation is intentionally disallowed in Go for safety
+      even though it is commonplace in C?
+    choices:
+      - "ポインタに整数を足し引きして任意のアドレスへ進める"
+      - "変数のアドレスを取得する"
+      - "ポインタ経由で値を書き換える"
+      - "nil と比較する"
+    choices_en:
+      - Add or subtract integers from a pointer to move to an arbitrary address
+      - Take the address of a variable
+      - Modify a value through a pointer
+      - Compare with nil
+    answer: 0
+    explanation: |
+      Go では安全性を保つため、通常のコードでポインタ演算はできません。
+      変数のアドレス取得、参照先の読み書き、nil との比較はできますが、
+      C 言語のようなポインタの加減算は `unsafe` を使わない限り行えません。
 
-# sat0ken Q1
-- id: "sat0ken_q1"
-  title: "TinyGo 対応マイコン"
-  mode: "both"
-  text: "TinyGoでサポートされているマイコンは？"
-  choices:
-    - "Arduino Uno"
-    - "Raspberry Pi Pico"
-    - "ESP32"
-    - "全て"
-  answer: 3
-  explanation: |
-    1~3番目の全てのマイコンがサポートされています。
-    公式ドキュメント: https://tinygo.org/docs/reference/microcontrollers/
+      Go FAQ (Why is there no pointer arithmetic?): https://go.dev/doc/faq#no_pointer_arithmetic
+      pkg.go.dev (unsafe): https://pkg.go.dev/unsafe
 
-# sat0ken Q2
-- id: "sat0ken_q2"
-  title: "machine.PinMode"
-  mode: "both"
-  text: |
-    TinyGoでLEDを光らせるには、machineパッケージでピンの入出力を指定する必要があります。
-    machine.PinModeで指定するタイプは次のうちどれですか？
-  choices:
-    - "machine.PinInput"
-    - "machine.PinOutput"
-    - "machine.PinAnalog"
-    - "machine.PinDigital"
-  answer: 1
-  explanation: |
-    LEDを光らせるには、ピンを出力モードである machine.PinOutput に設定する必要があります。
-    公式ドキュメント: https://pkg.go.dev/github.com/tinygo-org/tinygo/src/machine#PinMode
+    explanation_en: |-
+      To preserve safety, Go does not allow pointer arithmetic in ordinary code.
+      You can take an address, read and write through a pointer, and compare it with `nil`,
+      but you cannot do C-style pointer addition or subtraction unless you step into `unsafe`.
 
-# sat0ken Q3
-- id: "sat0ken_q3"
-  title: "Gopher Badge の色指定"
-  mode: "both"
-  text: |
-    Gopher Badgeの画面の色を黒から赤に変えてみましょう。
-    color.RGBAでどのように指定すればよいでしょうか？
+      Go FAQ (Why is there no pointer arithmetic?): https://go.dev/doc/faq#no_pointer_arithmetic
+      pkg.go.dev (`unsafe`): https://pkg.go.dev/unsafe
+  # tomtwinkle Q16
+  - id: "tomtwinkle_q16"
+    title: "compiler warnings"
+    title_en: Compiler warnings
+    mode: "both"
+    text: |
+      他のコンパイル言語と比較した場合の Go 言語のコンパイラの特徴として正しいのはどれ？
+    text_en: Which statement correctly describes the Go compiler compared with 
+      many other compiled languages?
+    choices:
+      - "コンパイラがワーニングを出さない"
+      - "fmt.Printf の書式指定ミスのような問題は、コンパイラが error にする"
+      - "実行時にだけ型チェックを行う"
+      - "コンパイル時に自動でメモリリークを検出する"
+    choices_en:
+      - The compiler does not emit warnings
+      - The compiler turns issues like `fmt.Printf` format mistakes into errors
+      - Type checking happens only at runtime
+      - It automatically detects memory leaks at compile time
+    answer: 0
+    explanation: |
+      Go のコンパイラは「警告を出して通す」のではなく、問題があればエラーとして止める方針です。
+      たとえば未使用の変数や import は warning ではなく compile error になります。
+      fmt.Printf の書式指定ミスのような、より高度な静的解析は `go vet` の役割です。
 
-    https://play.tinygo.org/
-  question_code_ref: "code/sat0ken_q3_question.go"
-  choices:
-    - "color.RGBA{0, 0, 0, 0}"
-    - "color.RGBA{255, 0, 0, 0}"
-    - "color.RGBA{255, 255, 0, 0}"
-    - "color.RGBA{255, 255, 255, 255}"
-  answer: 1
-  explanation: |
-    TinyGoでもimage/colorパッケージの使い方はGoと同じように、RGBAを指定します。
-    255, 0, 0, 0 を指定することで Gopher Badge の画面の色が黒から赤に変わります。
+      Go FAQ (Can I stop these complaints about my unused variable/import?): https://go.dev/doc/faq#unused_variables_and_imports
+      pkg.go.dev (go vet): https://pkg.go.dev/cmd/vet
 
-# ryokotmng Q1
-- id: "ryokotmng_q1"
-  title: "append と共有配列"
-  mode: "both"
-  text: "このコードの出力は何？"
-  question_code_ref: "code/ryokotmng_q1.go"
-  choices:
-    - "[1 2 3]"
-    - "[1 2 99]"
-    - "[99 2 3]"
-    - "[1 2 3 99]"
-  answer: 1
-  explanation: "b := a[:2] はコピーではなく同じ配列を参照するスライス。append がキャパシティ内（cap=3）なので新しい配列を確保せず、a[2] を 99 で上書きしてしまう。"
+    explanation_en: |-
+      The Go compiler follows a "no warnings" policy: it stops with errors instead of emitting warnings and continuing.
+      For example, unused variables and imports are compile errors, not warnings.
+      More advanced static checks, such as `fmt.Printf` format issues, are the job of `go vet`.
 
-# hasegawa_itsuki Q1
-- id: "hasegawa_itsuki_q1"
-  title: "Go のループ構文"
-  mode: "both"
-  text: "Goにおいて、繰り返し処理を実現するために用意されているものは次のうちどれですか？"
-  choices:
-    - "foreach と for"
-    - "for のみ"
-    - "for と while"
-    - "for, while, do-while"
-  answer: 1
-  explanation: "for のみです。while や do-while, foreach に相当する構文も for を使って表現します。ループ構文を for に一本化することで、誰が書いても同じようなコードになり、可読性・一貫性が高まります。"
+      Go FAQ (Can I stop these complaints about my unused variable/import?): https://go.dev/doc/faq#unused_variables_and_imports
+      pkg.go.dev (`go vet`): https://pkg.go.dev/cmd/vet
+  # tomtwinkle Q17
+  - id: "tomtwinkle_q17"
+    title: "Gopher designer"
+    title_en: Who designed the Gopher?
+    mode: "both"
+    text: |
+      愛らしいマスコット「Gopher」君ですが、このキャラクターをデザインしたのは誰でしょう？
+    text_en: The adorable Go mascot is the Gopher. Who designed this character?
+    choices:
+      - "Renée French"
+      - "Rob Pike"
+      - "Ken Thompson"
+      - "Russ Cox"
+    choices_en:
+      - Renée French
+      - Rob Pike
+      - Ken Thompson
+      - Russ Cox
+    answer: 0
+    explanation: |
+      Go のマスコットである Gopher をデザインしたのは Renée French です。
+      Renée French は Rob Pike の妻でもあります。
+      Gopher は Go コミュニティを象徴するキャラクターとして広く親しまれています。
 
-# hasegawa_itsuki Q2
-- id: "hasegawa_itsuki_q2"
-  title: "Gopher のモチーフ"
-  mode: "both"
-  text: "Goのマスコットキャラクター「Gopher」は何の生き物をモチーフにしている？"
-  choices:
-    - "ビーバー"
-    - "プレーリードッグ"
-    - "ウォンバット"
-    - "ホリネズミ"
-  answer: 3
-  explanation: "Gopherは英語でホリネズミ（pocket gopher）を指します。Go のマスコットキャラクターはRenee French がデザインしたホリネズミがモチーフです。"
+      The Go Gopher: https://go.dev/blog/gopher
 
-# hasegawa_itsuki Q3
-- id: "hasegawa_itsuki_q3"
-  title: "ポインタ渡しの更新"
-  mode: "both"
-  text: "以下の A〜D のうち、関数を呼んだ後に msg の値が \"Original\" から\"Changed\" に変わるのはどれ？"
-  question_code_ref: "code/hasegawa_itsuki_q3_question.go"
-  choices:
-    - "A. updateA(msg)"
-    - "B. updateB(&msg)"
-    - "C. updateC(&msg)"
-    - "D. updateD(&ptr)"
-  answer: 2
-  explanation: "A は値渡しなので msg は変わりません。B は *string のコピーを差し替えるだけで msg に影響しません。C は *s = \"Changed\" でポインタの指す先を直接書き換えるため msg が Changed になります。D は ptr の向き先を変えるだけで msg は不変です。"
+    explanation_en: |-
+      The Go mascot was designed by Renée French.
+      She is also Rob Pike's wife.
+      The Gopher is widely loved as a symbol of the Go community.
 
-# Rtosshy Q1
-- id: "Rtosshy_q1"
-  title: "typed nil の罠"
-  mode: "both"
-  text: "このコードの出力は何？"
-  question_code_ref: "code/Rtosshy_q1_question.go"
-  choices:
-    - "true"
-    - "false"
-    - "コンパイルエラー"
-    - "実行時エラー"
-  answer: 1
-  explanation: "Interfaceの内部には型情報と値の情報の2種類のポインタがあります。値がnilであっても型情報がnilでなければ、Interface全体としてはnilではありません。参考:https://go.dev/src/internal/abi/iface.go"
-  answer_code_ref: "code/Rtosshy_q1_answer.go"
+      The Go Gopher: https://go.dev/blog/gopher
+  # wancom Q1
+  - id: "wancom_q1"
+    title: "select の実行順序"
+    title_en: Execution order of select
+    mode: "both"
+    text: "このコードの出力は何？"
+    text_en: What does this code print?
+    question_code_ref: "code/wancom_q1_question.go"
+    choices:
+      - "Message from chA: msgA"
+      - "Message from chB: msgB-1"
+      - "Message from chC: msgC"
+      - "上記のどれか（どれが出るかはわからない）"
+    choices_en:
+      - 'Message from chA: msgA'
+      - 'Message from chB: msgB-1'
+      - 'Message from chC: msgC'
+      - One of the above (you cannot know which one)
+    answer: 3
+    explanation: |
+      select はどの Channel から処理するかの順序を保証しません。
+      必要に応じて二重 select などを使用します。
+    explanation_en: |-
+      `select` does not guarantee the order in which ready channels are chosen.
+      Use techniques such as nested `select` statements if you need stricter control.
+    answer_code_ref: "code/wancom_q1_answer.go"
 
-# Rtosshy Q2
-- id: "Rtosshy_q2"
-  title: "clear 組み込み関数"
-  mode: "both"
-  text: "Goで存在する組み込み関数は？"
-  choices:
-    - "erase"
-    - "remove"
-    - "clear"
-    - "purge"
-  answer: 2
-  explanation: "clearはGo 1.21で追加された組み込み関数で、sliceの要素をゼロ値に、mapの要素をすべて削除します。"
+  # wancom Q2
+  - id: "wancom_q2"
+    title: "標準パッケージの対応フォーマット"
+    title_en: Formats supported by the standard library
+    mode: "both"
+    text: "標準パッケージでサポートされていないデータフォーマットは？"
+    text_en: Which data format is NOT supported by Go's standard library?
+    choices:
+      - "gzip"
+      - "png"
+      - "mp3"
+      - "pem"
+    choices_en:
+      - gzip
+      - png
+      - mp3
+      - pem
+    answer: 2
+    explanation: |
+      それぞれ、compress/gzip、image/png、encoding/pem が存在します。
+      mp3 だけ標準パッケージでは提供されていません。
+      ・ compress/gzip: https://pkg.go.dev/compress/gzip@go1.26.2
+      ・ image/png: https://pkg.go.dev/image/png@go1.26.2
+      ・ encoding/pem: https://pkg.go.dev/encoding/pem@go1.26.2
 
-# Rtosshy Q3
-- id: "Rtosshy_q3"
-  title: "make 後の append"
-  mode: "both"
-  text: "このコードの出力は何？"
-  question_code_ref: "code/Rtosshy_q3_question.go"
-  choices:
-    - "[0 1 2 3 4 5 6 7 8 9]"
-    - "[]"
-    - "コンパイルエラー"
-    - "[0 0 0 0 0 0 0 0 0 0 0 1 2 3 4 5 6 7 8 9]"
-  answer: 3
-  explanation: "make([]int, 10) は長さ10のスライスを作るため、ゼロ値で埋められた要素が10個入った状態になります。そこに append すると末尾に追加されるため、計20要素になります。空のスライスに append したい場合は make([]int, 0, 10) のように長さ0・容量10で初期化しましょう。"
+    explanation_en: |-
+      Go provides `compress/gzip`, `image/png`, and `encoding/pem` in the standard library.
+      Only mp3 is not provided there.
+      - `compress/gzip`: https://pkg.go.dev/compress/gzip@go1.26.2
+      - `image/png`: https://pkg.go.dev/image/png@go1.26.2
+      - `encoding/pem`: https://pkg.go.dev/encoding/pem@go1.26.2
+  # wancom Q3
+  - id: "wancom_q3"
+    title: "pprof の提供データ"
+    title_en: pprof data provided by both packages
+    mode: "both"
+    text: "net/http/pprofとruntime/pprof両方で提供しているプロファイリングデータは？"
+    text_en: Which profiling data is provided by both `net/http/pprof` and 
+      `runtime/pprof`?
+    choices:
+      - "cmdline"
+      - "goroutine"
+      - "profile"
+      - "symbol"
+    choices_en:
+      - cmdline
+      - goroutine
+      - profile
+      - symbol
+    answer: 1
+    explanation: |
+      goroutine は runtime/pprof から提供されるデータです。
+      cmdline、profile、symbol は net/http/pprof で独自に提供しているデータです。
+    explanation_en: |-
+      `goroutine` is a profile provided by `runtime/pprof`, and `net/http/pprof` also exposes it over HTTP.
+      `cmdline`, `profile`, and `symbol` are special endpoints that exist only in `net/http/pprof`.
+    answer_code_ref: "code/wancom_q3_answer.go"
 
-# tesso57 Q1
-- id: "tesso57_q1"
-  title: "Stringer の無限再帰"
-  mode: "both"
-  text: "このコードの挙動はどれ？"
-  question_code_ref: "code/tesso57_q1_question.go"
-  choices:
-    - "Name: Go"
-    - "Name: Name: Go"
-    - "スタックオーバーフローで runtime error"
-    - "コンパイルエラー"
-  answer: 2
-  explanation: |
-    %v は Stringer interface を実装している型に対して String() を呼びます。
-    String() の中で fmt.Sprintf("%v", n) を使うと、再び String() が呼ばれて無限再帰になります。
-    回避策は string(n) にキャストすることです。
-  answer_code_ref: "code/tesso57_q1_answer.go"
-  answer_code_play_ref: "https://go.dev/play/p/jmW7kd-T0UB"
+  # sat0ken Q1
+  - id: "sat0ken_q1"
+    title: "TinyGo 対応マイコン"
+    title_en: Microcontrollers supported by TinyGo
+    mode: "both"
+    text: "TinyGoでサポートされているマイコンは？"
+    text_en: Which microcontrollers are supported by TinyGo?
+    choices:
+      - "Arduino Uno"
+      - "Raspberry Pi Pico"
+      - "ESP32"
+      - "全て"
+    choices_en:
+      - Arduino Uno
+      - Raspberry Pi Pico
+      - ESP32
+      - All of the above
+    answer: 3
+    explanation: |
+      1~3番目の全てのマイコンがサポートされています。
+      公式ドキュメント: https://tinygo.org/docs/reference/microcontrollers/
 
-# tesso57 Q2
-- id: "tesso57_q2"
-  title: "fmt verb 逆引き"
-  mode: "both"
-  text: |
-    fmt.Printf("????", u) の出力が main.User{Name:"Gopher", Age:10} になるとき、
-    ???? に入るのはどれ？
-  question_code_ref: "code/tesso57_q2_question.go"
-  choices:
-    - "%v"
-    - "%+v"
-    - "%#v"
-    - "%s"
-  answer: 2
-  explanation: |
-    %v は {Gopher 10}、%+v はフィールド名付きの {Name:Gopher Age:10}、
-    %#v は Go の構文そのままの main.User{Name:"Gopher", Age:10} を出力します。
-    %#v はパッケージ名・型名・フィールド名・値の引用符まで含むので、デバッグ時に型情報まで確認したいときに便利です。
-  answer_code_ref: "code/tesso57_q2_answer.go"
-  answer_code_play_ref: "https://go.dev/play/p/8nztK-oSFWT"
+    explanation_en: |-
+      All of the first three microcontrollers are supported.
+      Official docs: https://tinygo.org/docs/reference/microcontrollers/
+  # sat0ken Q2
+  - id: "sat0ken_q2"
+    title: "machine.PinMode"
+    title_en: machine.PinMode
+    mode: "both"
+    text: |
+      TinyGoでLEDを光らせるには、machineパッケージでピンの入出力を指定する必要があります。
+      machine.PinModeで指定するタイプは次のうちどれですか？
+    text_en: |-
+      To light an LED in TinyGo, you need to set the pin direction in the `machine` package.
+      Which `machine.PinMode` value should you use?
+    choices:
+      - "machine.PinInput"
+      - "machine.PinOutput"
+      - "machine.PinAnalog"
+      - "machine.PinDigital"
+    choices_en:
+      - machine.PinInput
+      - machine.PinOutput
+      - machine.PinAnalog
+      - machine.PinDigital
+    answer: 1
+    explanation: |
+      LEDを光らせるには、ピンを出力モードである machine.PinOutput に設定する必要があります。
+      公式ドキュメント: https://pkg.go.dev/github.com/tinygo-org/tinygo/src/machine#PinMode
 
-# tesso57 Q3
-- id: "tesso57_q3"
-  title: "nil map の読み書き非対称"
-  mode: "both"
-  text: "このコードの挙動はどれ？"
-  question_code_ref: "code/tesso57_q3_question.go"
-  choices:
-    - "0 を出力した後、正常終了"
-    - "0 を出力した後、panic"
-    - "1行目の fmt.Println の時点で panic"
-    - "コンパイルエラー"
-  answer: 1
-  explanation: |
-    nil map は読み取り時にゼロ値を返しますが、書き込み時には panic します。
-    var m map[string]int は nil で初期化され、m["hello"] の読み取りは int のゼロ値 0 を返します。
-    しかし m["hello"] = 1 の書き込みで panic: assignment to entry in nil map が発生します。
-    make(map[string]int) で初期化することで回避できます。
-  answer_code_ref: "code/tesso57_q3_answer.go"
-  answer_code_play_ref: "https://go.dev/play/p/xL4MGI0wqHP"
+    explanation_en: |-
+      To light an LED, the pin must be configured as output using `machine.PinOutput`.
+      Official docs: https://pkg.go.dev/github.com/tinygo-org/tinygo/src/machine#PinMode
+  # sat0ken Q3
+  - id: "sat0ken_q3"
+    title: "Gopher Badge の色指定"
+    title_en: Color on the Gopher Badge
+    mode: "both"
+    text: |
+      Gopher Badgeの画面の色を黒から赤に変えてみましょう。
+      color.RGBAでどのように指定すればよいでしょうか？
 
-# tesso57 Q4
-- id: "tesso57_q4"
-  title: "map のキーにできる型"
-  mode: "both"
-  text: "Go の map のキーとして使えない型はどれ？"
-  choices:
-    - "string"
-    - "int"
-    - "[2]int"
-    - "[]int"
-  answer: 3
-  explanation: |
-    map のキーには == と != で比較できる comparable な型だけが使えます。
-    string、int、配列は比較可能ですが、slice は比較できないため map のキーにできません。
-    同じ理由で map や関数もキーにできません。
-  answer_code_ref: "code/tesso57_q4_answer.go"
-  answer_code_play_ref: "https://go.dev/play/p/s0DAFLy5Ebh"
+      https://play.tinygo.org/
+    text_en: |-
+      Let's change the Gopher Badge screen color from black to red.
+      How should you specify it with `color.RGBA`?
 
-# tesso57 Q5
-- id: "tesso57_q5"
-  title: "map 要素は直接更新できない"
-  mode: "both"
-  text: "このコードの挙動はどれ？"
-  question_code_ref: "code/tesso57_q5_question.go"
-  choices:
-    - "11 に更新される"
-    - "新しい要素が追加される"
-    - "panic が発生する"
-    - "コンパイルエラー"
-  answer: 3
-  explanation: |
-    map の要素はアドレス可能ではないため、m["gopher"].Age = 11 のように構造体フィールドを直接更新できません。
-    map の再配置で要素のアドレスが変わりうるためです。
-    一度ローカル変数に取り出して更新し、m["gopher"] = u のように代入し直す必要があります。
-    あるいは map[string]*User のようにポインタを持たせる設計にする方法もあります。
-  answer_code_ref: "code/tesso57_q5_answer.go"
-  answer_code_play_ref: "https://go.dev/play/p/ESlQsu20rXB"
+      https://play.tinygo.org/
+    question_code_ref: "code/sat0ken_q3_question.go"
+    choices:
+      - "color.RGBA{0, 0, 0, 0}"
+      - "color.RGBA{255, 0, 0, 0}"
+      - "color.RGBA{255, 255, 0, 0}"
+      - "color.RGBA{255, 255, 255, 255}"
+    choices_en:
+      - color.RGBA{0, 0, 0, 0}
+      - color.RGBA{255, 0, 0, 0}
+      - color.RGBA{255, 255, 0, 0}
+      - color.RGBA{255, 255, 255, 255}
+    answer: 1
+    explanation: |
+      TinyGoでもimage/colorパッケージの使い方はGoと同じように、RGBAを指定します。
+      255, 0, 0, 0 を指定することで Gopher Badge の画面の色が黒から赤に変わります。
+
+    explanation_en: |-
+      In TinyGo, you use the `image/color` package the same way as in Go and specify RGBA values.
+      Setting `255, 0, 0, 0` changes the Gopher Badge screen from black to red.
+  # ryokotmng Q1
+  - id: "ryokotmng_q1"
+    title: "append と共有配列"
+    title_en: append and shared arrays
+    mode: "both"
+    text: "このコードの出力は何？"
+    text_en: What does this code print?
+    question_code_ref: "code/ryokotmng_q1.go"
+    choices:
+      - "[1 2 3]"
+      - "[1 2 99]"
+      - "[99 2 3]"
+      - "[1 2 3 99]"
+    choices_en:
+      - '[1 2 3]'
+      - '[1 2 99]'
+      - '[99 2 3]'
+      - '[1 2 3 99]'
+    answer: 1
+    explanation: "b := a[:2] はコピーではなく同じ配列を参照するスライス。append がキャパシティ内（cap=3）なので新しい配列を確保せず、a[2]
+      を 99 で上書きしてしまう。"
+
+    explanation_en: '`b := a[:2]` is not a copy; it is a slice over the same underlying
+      array. Because `append` stays within the existing capacity (`cap=3`), no new
+      array is allocated, and `a[2]` gets overwritten with `99`.'
+  - id: "hasegawa_itsuki_q1"
+    title: "Go のループ構文"
+    title_en: Go loop syntax
+    mode: "both"
+    text: "Goにおいて、繰り返し処理を実現するために用意されているものは次のうちどれですか？"
+    text_en: In Go, which construct is provided for repeated processing?
+    choices:
+      - "foreach と for"
+      - "for のみ"
+      - "for と while"
+      - "for, while, do-while"
+    choices_en:
+      - foreach and for
+      - for only
+      - for and while
+      - for, while, do-while
+    answer: 1
+    explanation: "for のみです。while や do-while, foreach に相当する構文も for を使って表現します。ループ構文を
+      for に一本化することで、誰が書いても同じようなコードになり、可読性・一貫性が高まります。"
+
+    explanation_en: Only `for`. Even patterns equivalent to `while`, `do-while`,
+      and `foreach` are all expressed with `for` in Go. By unifying loops around
+      `for`, Go encourages consistent, readable code.
+  - id: "hasegawa_itsuki_q2"
+    title: "Gopher のモチーフ"
+    title_en: What animal is the Gopher?
+    mode: "both"
+    text: "Goのマスコットキャラクター「Gopher」は何の生き物をモチーフにしている？"
+    text_en: Go's mascot character, the Gopher, is based on which animal?
+    choices:
+      - "ビーバー"
+      - "プレーリードッグ"
+      - "ウォンバット"
+      - "ホリネズミ"
+    choices_en:
+      - Beaver
+      - Prairie dog
+      - Wombat
+      - Pocket gopher
+    answer: 3
+    explanation: "Gopherは英語でホリネズミ（pocket gopher）を指します。Go のマスコットキャラクターはRenee French
+      がデザインしたホリネズミがモチーフです。"
+
+    explanation_en: In English, "gopher" refers to a pocket gopher. The Go 
+      mascot is based on a pocket gopher designed by Renée French.
+  - id: "hasegawa_itsuki_q3"
+    title: "ポインタ渡しの更新"
+    title_en: Updating through a pointer
+    mode: "both"
+    text: "以下の A〜D のうち、関数を呼んだ後に msg の値が \"Original\" から\"Changed\" に変わるのはどれ？"
+    text_en: Among A-D below, which call changes `msg` from "Original" to 
+      "Changed" after the function returns?
+    question_code_ref: "code/hasegawa_itsuki_q3_question.go"
+    choices:
+      - "A. updateA(msg)"
+      - "B. updateB(&msg)"
+      - "C. updateC(&msg)"
+      - "D. updateD(&ptr)"
+    choices_en:
+      - A. updateA(msg)
+      - B. updateB(&msg)
+      - C. updateC(&msg)
+      - D. updateD(&ptr)
+    answer: 2
+    explanation: "A は値渡しなので msg は変わりません。B は *string のコピーを差し替えるだけで msg に影響しません。C は
+      *s = \"Changed\" でポインタの指す先を直接書き換えるため msg が Changed になります。D は ptr の向き先を変えるだけで
+      msg は不変です。"
+
+    explanation_en: A passes by value, so `msg` does not change. B only 
+      reassigns a copied `*string`, so it does not affect `msg`. C writes 
+      directly to the value pointed to by `s` with `*s = "Changed"`, so `msg` 
+      becomes `Changed`. D only changes what `ptr` points to, so `msg` stays the
+      same.
+  - id: "Rtosshy_q1"
+    title: "typed nil の罠"
+    title_en: The typed nil trap
+    mode: "both"
+    text: "このコードの出力は何？"
+    text_en: What does this code print?
+    question_code_ref: "code/Rtosshy_q1_question.go"
+    choices:
+      - "true"
+      - "false"
+      - "コンパイルエラー"
+      - "実行時エラー"
+    choices_en:
+      - 'true'
+      - 'false'
+      - Compilation error
+      - Runtime error
+    answer: 1
+    explanation: "Interfaceの内部には型情報と値の情報の2種類のポインタがあります。値がnilであっても型情報がnilでなければ、Interface全体としてはnilではありません。参考:https://go.dev/src/internal/abi/iface.go"
+    explanation_en: 'An interface stores two pointers internally: one for type information
+      and one for value data. Even if the value is nil, the interface itself is not
+      nil unless the type information is also nil. Reference: https://go.dev/src/internal/abi/iface.go'
+    answer_code_ref: "code/Rtosshy_q1_answer.go"
+
+  - id: "Rtosshy_q2"
+    title: "clear 組み込み関数"
+    title_en: The clear built-in
+    mode: "both"
+    text: "Goで存在する組み込み関数は？"
+    text_en: Which of the following is a real Go built-in function?
+    choices:
+      - "erase"
+      - "remove"
+      - "clear"
+      - "purge"
+    choices_en:
+      - erase
+      - remove
+      - clear
+      - purge
+    answer: 2
+    explanation: "clearはGo 1.21で追加された組み込み関数で、sliceの要素をゼロ値に、mapの要素をすべて削除します。"
+
+    explanation_en: '`clear` was added in Go 1.21. It zeroes all elements in a slice
+      and removes all elements from a map.'
+  - id: "Rtosshy_q3"
+    title: "make 後の append"
+    title_en: append after make
+    mode: "both"
+    text: "このコードの出力は何？"
+    text_en: What does this code print?
+    question_code_ref: "code/Rtosshy_q3_question.go"
+    choices:
+      - "[0 1 2 3 4 5 6 7 8 9]"
+      - "[]"
+      - "コンパイルエラー"
+      - "[0 0 0 0 0 0 0 0 0 0 0 1 2 3 4 5 6 7 8 9]"
+    choices_en:
+      - '[0 1 2 3 4 5 6 7 8 9]'
+      - '[]'
+      - Compilation error
+      - '[0 0 0 0 0 0 0 0 0 0 0 1 2 3 4 5 6 7 8 9]'
+    answer: 3
+    explanation: "make([]int, 10) は長さ10のスライスを作るため、ゼロ値で埋められた要素が10個入った状態になります。そこに append
+      すると末尾に追加されるため、計20要素になります。空のスライスに append したい場合は make([]int, 0, 10) のように長さ0・容量10で初期化しましょう。"
+
+    explanation_en: '`make([]int, 10)` creates a slice of length 10, already filled
+      with zero values. Appending to it adds new values at the end, so the result
+      has 20 elements. If you want to append to an empty slice with capacity 10, initialize
+      it as `make([]int, 0, 10)`.'
+  # tesso57 Q1
+  - id: "tesso57_q1"
+    title: "Stringer の無限再帰"
+    title_en: Infinite recursion in Stringer
+    mode: "both"
+    text: "このコードの挙動はどれ？"
+    text_en: What does this code do?
+    question_code_ref: "code/tesso57_q1_question.go"
+    choices:
+      - "Name: Go"
+      - "Name: Name: Go"
+      - "スタックオーバーフローで runtime error"
+      - "コンパイルエラー"
+    choices_en:
+      - 'Name: Go'
+      - 'Name: Name: Go'
+      - Runtime error from stack overflow
+      - Compilation error
+    answer: 2
+    explanation: |
+      %v は Stringer interface を実装している型に対して String() を呼びます。
+      String() の中で fmt.Sprintf("%v", n) を使うと、再び String() が呼ばれて無限再帰になります。
+      回避策は string(n) にキャストすることです。
+    explanation_en: |-
+      `%v` calls `String()` for types that implement the `fmt.Stringer` interface.
+      If `String()` itself uses `fmt.Sprintf("%v", n)`, it calls `String()` again and recurses forever.
+      The fix is to cast to `string(n)`.
+    answer_code_ref: "code/tesso57_q1_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/jmW7kd-T0UB"
+
+  # tesso57 Q2
+  - id: "tesso57_q2"
+    title: "fmt verb 逆引き"
+    title_en: Reverse lookup for fmt verbs
+    mode: "both"
+    text: |
+      fmt.Printf("????", u) の出力が main.User{Name:"Gopher", Age:10} になるとき、
+      ???? に入るのはどれ？
+    text_en: |-
+      If `fmt.Printf("????", u)` prints `main.User{Name:"Gopher", Age:10}`,
+      what should `????` be?
+    question_code_ref: "code/tesso57_q2_question.go"
+    choices:
+      - "%v"
+      - "%+v"
+      - "%#v"
+      - "%s"
+    choices_en:
+      - '%v'
+      - '%+v'
+      - '%#v'
+      - '%s'
+    answer: 2
+    explanation: |
+      %v は {Gopher 10}、%+v はフィールド名付きの {Name:Gopher Age:10}、
+      %#v は Go の構文そのままの main.User{Name:"Gopher", Age:10} を出力します。
+      %#v はパッケージ名・型名・フィールド名・値の引用符まで含むので、デバッグ時に型情報まで確認したいときに便利です。
+    explanation_en: |-
+      `%v` prints `{Gopher 10}`, `%+v` prints `{Name:Gopher Age:10}`,
+      and `%#v` prints the Go-syntax form `main.User{Name:"Gopher", Age:10}`.
+      `%#v` includes the package name, type name, field names, and even quotes around string values,
+      so it's useful when you want full type information while debugging.
+    answer_code_ref: "code/tesso57_q2_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/8nztK-oSFWT"
+
+  # tesso57 Q3
+  - id: "tesso57_q3"
+    title: "nil map の読み書き非対称"
+    title_en: Asymmetry of reading and writing a nil map
+    mode: "both"
+    text: "このコードの挙動はどれ？"
+    text_en: What does this code do?
+    question_code_ref: "code/tesso57_q3_question.go"
+    choices:
+      - "0 を出力した後、正常終了"
+      - "0 を出力した後、panic"
+      - "1行目の fmt.Println の時点で panic"
+      - "コンパイルエラー"
+    choices_en:
+      - Prints 0 and exits normally
+      - Prints 0 and then panics
+      - Panics at the first `fmt.Println`
+      - Compilation error
+    answer: 1
+    explanation: |
+      nil map は読み取り時にゼロ値を返しますが、書き込み時には panic します。
+      var m map[string]int は nil で初期化され、m["hello"] の読み取りは int のゼロ値 0 を返します。
+      しかし m["hello"] = 1 の書き込みで panic: assignment to entry in nil map が発生します。
+      make(map[string]int) で初期化することで回避できます。
+    explanation_en: |-
+      A nil map returns the zero value when you read from it, but panics when you write to it.
+      `var m map[string]int` initializes `m` to nil, so reading `m["hello"]` returns the zero value `0`.
+      However, writing `m["hello"] = 1` panics with `assignment to entry in nil map`.
+      You can avoid this by initializing it with `make(map[string]int)`.
+    answer_code_ref: "code/tesso57_q3_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/xL4MGI0wqHP"
+
+  # tesso57 Q4
+  - id: "tesso57_q4"
+    title: "map のキーにできる型"
+    title_en: Types that can be map keys
+    mode: "both"
+    text: "Go の map のキーとして使えない型はどれ？"
+    text_en: Which type cannot be used as a key in a Go map?
+    choices:
+      - "string"
+      - "int"
+      - "[2]int"
+      - "[]int"
+    choices_en:
+      - string
+      - int
+      - '[2]int'
+      - '[]int'
+    answer: 3
+    explanation: |
+      map のキーには == と != で比較できる comparable な型だけが使えます。
+      string、int、配列は比較可能ですが、slice は比較できないため map のキーにできません。
+      同じ理由で map や関数もキーにできません。
+    explanation_en: |-
+      Only comparable types, which can be compared with `==` and `!=`, can be used as map keys.
+      `string`, `int`, and arrays are comparable, but slices are not, so slices cannot be map keys.
+      For the same reason, maps and functions also cannot be map keys.
+    answer_code_ref: "code/tesso57_q4_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/s0DAFLy5Ebh"
+
+  # tesso57 Q5
+  - id: "tesso57_q5"
+    title: "map 要素は直接更新できない"
+    title_en: Map elements cannot be updated directly
+    mode: "both"
+    text: "このコードの挙動はどれ？"
+    text_en: What does this code do?
+    question_code_ref: "code/tesso57_q5_question.go"
+    choices:
+      - "11 に更新される"
+      - "新しい要素が追加される"
+      - "panic が発生する"
+      - "コンパイルエラー"
+    choices_en:
+      - It updates the value to 11
+      - It adds a new element
+      - It panics
+      - Compilation error
+    answer: 3
+    explanation: |
+      map の要素はアドレス可能ではないため、m["gopher"].Age = 11 のように構造体フィールドを直接更新できません。
+      map の再配置で要素のアドレスが変わりうるためです。
+      一度ローカル変数に取り出して更新し、m["gopher"] = u のように代入し直す必要があります。
+      あるいは map[string]*User のようにポインタを持たせる設計にする方法もあります。
+    explanation_en: |-
+      Map elements are not addressable, so you cannot update a struct field directly like `m["gopher"].Age = 11`.
+      This is because the address of a map element can change when the map is resized.
+      You must first copy the value into a local variable, update it, and assign it back with `m["gopher"] = u`.
+      Another option is to use a design like `map[string]*User` and store pointers.
+    answer_code_ref: "code/tesso57_q5_answer.go"
+    answer_code_play_ref: "https://go.dev/play/p/ESlQsu20rXB"
