@@ -1690,6 +1690,17 @@
       renderProgressReward(answeredCount, session.length);
     }
 
+    function scrollPageToTop() {
+      if (typeof window.scrollTo !== 'function') {
+        return;
+      }
+      try {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      } catch (_) {
+        window.scrollTo(0, 0);
+      }
+    }
+
     function shuffle(items) {
       const copy = items.slice();
       for (let i = copy.length - 1; i > 0; i--) {
@@ -2240,10 +2251,12 @@
     nextBtn.addEventListener('click', () => {
       if (currentIndex === session.length - 1) {
         showScore();
+        scrollPageToTop();
         return;
       }
       currentIndex++;
       showQuestion();
+      scrollPageToTop();
     });
     restartBtn.addEventListener('click', () => startSession());
     challengeBtn.addEventListener('click', () => {
