@@ -69,7 +69,8 @@
       top: 0;
       display: flex;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: space-between;
+      gap: var(--space-xs);
       padding: 4px 40px;
       height: var(--header-height);
       background: var(--surface-primary);
@@ -109,6 +110,49 @@
       font-weight: 400;
       color: var(--text-secondary);
       white-space: nowrap;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    .language-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--surface-disabled);
+      border-radius: 999px;
+      background: var(--surface-secondary);
+    }
+    .language-switch button {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: var(--font-base);
+      font-size: 0.85rem;
+      font-weight: 700;
+      line-height: 1;
+      padding: 10px 14px;
+      white-space: nowrap;
+      transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+    }
+    .language-switch button:hover {
+      color: var(--primitive-navy);
+    }
+    .language-switch button.active {
+      background: var(--surface-primary);
+      color: var(--primitive-navy);
+      box-shadow: 0 1px 4px rgba(16, 57, 114, 0.12);
+    }
+    .language-switch button:focus-visible {
+      outline: 2px solid var(--text-accent);
+      outline-offset: 2px;
     }
     .progress-subheader {
       position: fixed;
@@ -349,6 +393,21 @@
       padding: 0;
       font-size: inherit;
       line-height: inherit;
+    }
+    .inline-code {
+      margin: 0 0.08em;
+      padding: 0.08em 0.45em;
+      border: 1px solid rgba(16, 57, 114, 0.12);
+      border-radius: 6px;
+      background: rgba(16, 57, 114, 0.08);
+      color: var(--primitive-navy);
+      font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+    .choice-btn .inline-code {
+      color: inherit;
     }
 
     #choices {
@@ -732,7 +791,18 @@
       .header-product-mark {
         font-size: 1.25rem;
       }
+      .header-actions {
+        gap: var(--space-xxs);
+      }
       .header-tagline { display: none; }
+      .language-switch {
+        gap: 2px;
+        padding: 3px;
+      }
+      .language-switch button {
+        font-size: 0.74rem;
+        padding: 9px 10px;
+      }
       .progress-subheader {
         padding: 0 var(--space-xs);
       }
@@ -788,16 +858,22 @@
         <img class="header-conference-logo" src="./assets/go-conference-2026-logo.svg" alt="Go Conference 2026">
         <span class="header-product-mark">CodeLab</span>
       </div>
-      <span class="header-tagline">Go の知識を試してみよう！</span>
+      <span class="header-tagline" id="header-tagline">Go の知識を試してみよう！</span>
+    </div>
+    <div class="header-actions">
+      <div class="language-switch" id="language-switch" role="group" aria-label="Language switch">
+        <button id="lang-ja-btn" type="button">日本語</button>
+        <button id="lang-en-btn" type="button">English</button>
+      </div>
     </div>
   </header>
   <div class="progress-subheader" id="progress-subheader">
     <div class="progress-reward" aria-live="polite">
       <div class="progress-reward-meta">
-        <span class="progress-caption">Answered</span>
+        <span class="progress-caption" id="progress-caption">Answered</span>
         <div class="progress-summary">
           <span id="progress">0 / 5</span>
-          <span class="progress-summary-label">回答済み</span>
+          <span class="progress-summary-label" id="progress-summary-label">回答済み</span>
         </div>
       </div>
       <div
@@ -825,9 +901,9 @@
       <div id="error-msg"></div>
 
       <div class="card" id="home-card">
-        <div class="chip">WELCOME</div>
+        <div class="chip" id="home-chip">WELCOME</div>
         <h1 class="home-title">Go Conference 2026 CodeLab</h1>
-        <p class="home-lead">
+        <p class="home-lead" id="home-lead">
           ランダムに選ばれた 5 問に答える Go クイズです。<br>
           全問正解で素敵なご褒美が貰えます。
         </p>
@@ -838,7 +914,7 @@
 
         <div id="preview-entry">
           <button class="c-button" data-variant="tertiary" id="preview-btn" type="button">問題一覧を見る</button>
-          <p class="unlock-note">このブラウザでは問題一覧モードが解放されています。</p>
+          <p class="unlock-note" id="unlock-note">このブラウザでは問題一覧モードが解放されています。</p>
         </div>
       </div>
 
@@ -866,19 +942,19 @@
         <div id="score-label">クイズ終了！ あなたのスコア</div>
         <div id="score-value"></div>
         <div id="challenge-complete-section">
-          <p>エクストラモード全問正解！ スペシャルページと問題一覧モードが解放されました。</p>
-          <a class="special-link" href="https://example.com" target="_blank" rel="noopener noreferrer">
+          <p id="challenge-complete-copy">エクストラモード全問正解！ スペシャルページと問題一覧モードが解放されました。</p>
+          <a class="special-link" id="challenge-complete-link" href="https://example.com" target="_blank" rel="noopener noreferrer">
             スペシャルページへ進む
           </a>
         </div>
         <div id="special-link-section">
-          <p>全問正解！ スペシャルページへどうぞ</p>
-          <a class="special-link" href="https://example.com" target="_blank" rel="noopener noreferrer">
+          <p id="special-link-copy">全問正解！ スペシャルページへどうぞ</p>
+          <a class="special-link" id="special-link-cta" href="https://example.com" target="_blank" rel="noopener noreferrer">
             スペシャルページへ
           </a>
         </div>
         <div id="perfect-score-section">
-          <div class="secret-title">解き終わるまでの時間</div>
+          <div class="secret-title" id="perfect-time-title">解き終わるまでの時間</div>
           <div id="perfect-time-value"></div>
           <p class="secret-note" id="perfect-score-note">全問正解の記録を残せます。ニックネームを入力して送信してください。</p>
           <div class="secret-row">
@@ -910,15 +986,15 @@
 
   <div class="footer-gradient"></div>
   <footer id="footer-copyright">
-    <div class="footer-info">
-      <div class="logo-container">
-        <img class="footer-logo" src="./assets/go-conference-2026-logo.svg" alt="Go Conference 2026">
-        <span>Go Conference 2026</span>
-      </div>
-      <p class="copyright">
-        The Go gopher was designed by <a href="https://reneefrench.blogspot.com/">Renée French</a>. Illustrations by
-        <a href="https://x.com/avocadoneko">avocadoneko</a>.
-      </p>
+      <div class="footer-info">
+        <div class="logo-container">
+          <img class="footer-logo" src="./assets/go-conference-2026-logo.svg" alt="Go Conference 2026">
+          <span>Go Conference 2026</span>
+        </div>
+        <p class="copyright" id="footer-attribution">
+          The Go gopher was designed by <a href="https://reneefrench.blogspot.com/">Renée French</a>. Illustrations by
+          <a href="https://x.com/avocadoneko">avocadoneko</a>.
+        </p>
     </div>
   </footer>
 
@@ -926,7 +1002,7 @@
     <div class="admin-keyword-modal" role="dialog" aria-modal="true" aria-labelledby="admin-keyword-title">
       <button class="admin-keyword-close" id="admin-keyword-close-btn" type="button" aria-label="閉じる">✕</button>
       <div class="secret-title" id="admin-keyword-title">秘密のKeywordを入力</div>
-      <p class="secret-note">正しいKeywordを入力すると問題プレビューモードを開きます。</p>
+      <p class="secret-note" id="admin-keyword-note">正しいKeywordを入力すると問題プレビューモードを開きます。</p>
       <div class="secret-row">
         <input
           id="admin-keyword-input"
@@ -948,13 +1024,140 @@
     const previewUnlockCode = typeof appConfig.previewUnlockCode === 'string' ? appConfig.previewUnlockCode : '';
     const telemetrySessionStorageKey = 'quiz-telemetry-session-id';
     const previewStorageKey = 'quiz-preview-unlocked';
+    const languageStorageKey = 'quiz-language';
+    const defaultLanguage = 'ja';
 
+    const uiStrings = {
+      ja: {
+        documentTitle: 'Go Conference 2026 CodeLab',
+        headerTagline: 'Go の知識を試してみよう！',
+        languageSwitchAria: '表示言語',
+        languageJa: '日本語',
+        languageEn: 'English',
+        progressCaption: '回答数',
+        progressSummaryLabel: '回答済み',
+        progressAriaLabel: '回答済みの問題数',
+        homeChip: 'ようこそ',
+        homeLeadHtml: 'ランダムに選ばれた 5 問に答える Go クイズです。<br>全問正解で素敵なご褒美が貰えます。',
+        startButton: 'クイズを始める',
+        previewButton: '問題一覧を見る',
+        unlockNote: 'このブラウザでは問題一覧モードが解放されています。',
+        answerCodeLabel: '解答コード',
+        playLink: '▶ Go Playground で確認する',
+        scoreLabel: 'クイズ終了！ あなたのスコア',
+        challengeCompleteCopy: 'エクストラモード全問正解！ スペシャルページと問題一覧モードが解放されました。',
+        challengeCompleteLink: 'スペシャルページへ進む',
+        specialLinkCopy: '全問正解！ スペシャルページへどうぞ',
+        specialLinkCta: 'スペシャルページへ',
+        perfectTimeTitle: '解き終わるまでの時間',
+        perfectScoreNoteDefault: '全問正解の記録を残せます。ニックネームを入力して送信してください。',
+        perfectScoreNoteTelemetryDisabled: '解き終わった時間は表示中です。現在は記録送信エンドポイントが設定されていません。',
+        perfectScoreNoteSubmitted: '記録を送信しました。別の記録を残すには、もう一度クイズに挑戦してください。',
+        nicknamePlaceholder: 'ニックネームを入力',
+        submitPerfectScoreButton: '記録を送信',
+        submitPerfectScoreDone: '送信済み',
+        restartButton: 'もう一度チャレンジ',
+        challengeButton: 'エクストラモードに挑戦',
+        scorePreviewButton: '問題一覧を見る',
+        footerAttributionHtml: 'The Go gopher was designed by <a href="https://reneefrench.blogspot.com/">Renée French</a>. イラストは <a href="https://x.com/avocadoneko">avocadoneko</a>。',
+        adminKeywordCloseAria: '閉じる',
+        adminKeywordTitle: '秘密のKeywordを入力',
+        adminKeywordNote: '正しいKeywordを入力すると問題プレビューモードを開きます。',
+        adminKeywordPlaceholder: 'Keywordを入力',
+        adminKeywordOpen: '開く',
+        errorQuizLoad: 'クイズデータの読み込みに失敗しました。',
+        errorNoExtra: 'エクストラモード用の問題がありません。',
+        errorNoVisibleQuiz: '表示できる問題がありません。',
+        correctBadge: '正解！',
+        incorrectBadge: '不正解...',
+        correctAnswerSummary: ({ answer }) => `正解は「${answer}」です。`,
+        nextQuestion: '次の問題へ',
+        viewResults: '結果を見る',
+        elapsedSeconds: ({ seconds }) => `${seconds} 秒`,
+        perfectScoreMessageNoRecord: '送信できるクリア記録が見つかりません。',
+        perfectScoreMessageEndpointMissing: '記録送信エンドポイントが設定されていません。',
+        perfectScoreMessageNicknameRequired: 'ニックネームを入力してください。',
+        perfectScoreMessageNicknameTooLong: 'ニックネームは40文字以内で入力してください。',
+        perfectScoreMessageSending: '記録を送信しています…',
+        perfectScoreMessageSuccess: 'クリア記録を送信しました。',
+        perfectScoreMessageFailed: '記録の送信に失敗しました。通信環境を確認して、もう一度お試しください。',
+        adminKeywordMessageNotConfigured: 'Keyword は設定されていません。',
+        adminKeywordMessageRequired: 'Keyword を入力してください。',
+        adminKeywordMessageWrong: 'Keyword が違います。',
+      },
+      en: {
+        documentTitle: 'Go Conference 2026 CodeLab',
+        headerTagline: 'Test your Go knowledge!',
+        languageSwitchAria: 'Display language',
+        languageJa: 'Japanese',
+        languageEn: 'English',
+        progressCaption: 'Answered',
+        progressSummaryLabel: 'completed',
+        progressAriaLabel: 'Number of answered questions',
+        homeChip: 'WELCOME',
+        homeLeadHtml: 'Answer five randomly selected Go quiz questions.<br>Get a special reward if you answer them all correctly.',
+        startButton: 'Start quiz',
+        previewButton: 'Open quiz list',
+        unlockNote: 'Quiz list mode is unlocked in this browser.',
+        answerCodeLabel: 'Answer code',
+        playLink: '▶ View on Go Playground',
+        scoreLabel: 'Quiz complete! Your score',
+        challengeCompleteCopy: 'Perfect score in extra mode! The special page and quiz list mode are now unlocked.',
+        challengeCompleteLink: 'Open the special page',
+        specialLinkCopy: 'Perfect score! Enjoy the special page.',
+        specialLinkCta: 'Open the special page',
+        perfectTimeTitle: 'Completion time',
+        perfectScoreNoteDefault: 'You can save your perfect-score record. Enter a nickname and submit it.',
+        perfectScoreNoteTelemetryDisabled: 'Your completion time is shown, but score submission is unavailable because the telemetry endpoint is not configured.',
+        perfectScoreNoteSubmitted: 'Your record has been submitted. Challenge the quiz again to save another one.',
+        nicknamePlaceholder: 'Enter your nickname',
+        submitPerfectScoreButton: 'Submit record',
+        submitPerfectScoreDone: 'Submitted',
+        restartButton: 'Try again',
+        challengeButton: 'Try extra mode',
+        scorePreviewButton: 'Open quiz list',
+        footerAttributionHtml: 'The Go gopher was designed by <a href="https://reneefrench.blogspot.com/">Renée French</a>. Illustrations by <a href="https://x.com/avocadoneko">avocadoneko</a>.',
+        adminKeywordCloseAria: 'Close',
+        adminKeywordTitle: 'Enter the secret keyword',
+        adminKeywordNote: 'Enter the correct keyword to open quiz preview mode.',
+        adminKeywordPlaceholder: 'Enter keyword',
+        adminKeywordOpen: 'Open',
+        errorQuizLoad: 'Failed to load quiz data.',
+        errorNoExtra: 'No quizzes are available for extra mode.',
+        errorNoVisibleQuiz: 'No quizzes are available.',
+        correctBadge: 'Correct!',
+        incorrectBadge: 'Incorrect...',
+        correctAnswerSummary: ({ answer }) => `The correct answer is "${answer}".`,
+        nextQuestion: 'Next question',
+        viewResults: 'View results',
+        elapsedSeconds: ({ seconds }) => `${seconds} sec`,
+        perfectScoreMessageNoRecord: 'No completion record is available to submit.',
+        perfectScoreMessageEndpointMissing: 'The score submission endpoint is not configured.',
+        perfectScoreMessageNicknameRequired: 'Enter a nickname.',
+        perfectScoreMessageNicknameTooLong: 'Nicknames must be 40 characters or fewer.',
+        perfectScoreMessageSending: 'Submitting your record...',
+        perfectScoreMessageSuccess: 'Your clear record has been submitted.',
+        perfectScoreMessageFailed: 'Failed to submit your record. Check your connection and try again.',
+        adminKeywordMessageNotConfigured: 'The keyword is not configured.',
+        adminKeywordMessageRequired: 'Enter the keyword.',
+        adminKeywordMessageWrong: 'The keyword is incorrect.',
+      },
+    };
+
+    const headerTagline = document.getElementById('header-tagline');
+    const languageSwitch = document.getElementById('language-switch');
+    const langJaBtn = document.getElementById('lang-ja-btn');
+    const langEnBtn = document.getElementById('lang-en-btn');
+    const progressCaption = document.getElementById('progress-caption');
     const progressEl = document.getElementById('progress');
+    const progressSummaryLabel = document.getElementById('progress-summary-label');
     const errorMsg = document.getElementById('error-msg');
     const homeCard = document.getElementById('home-card');
+    const homeChip = document.getElementById('home-chip');
     const questionCard = document.getElementById('question-card');
     const resultEl = document.getElementById('result');
     const scoreCard = document.getElementById('score-card');
+    const homeLead = document.getElementById('home-lead');
     const questionText = document.getElementById('question-text');
     const codeBlock = document.getElementById('code-block');
     const choicesEl = document.getElementById('choices');
@@ -962,16 +1165,23 @@
     const correctAnswerText = document.getElementById('correct-answer-text');
     const explanation = document.getElementById('explanation');
     const answerCodeSection = document.getElementById('answer-code-section');
+    const answerCodeLabel = document.getElementById('answer-code-label');
     const answerCodeBlock = document.getElementById('answer-code-block');
     const playLink = document.getElementById('play-link');
     const nextBtn = document.getElementById('next-btn');
     const progressMeter = document.getElementById('progress-meter');
     const progressFill = document.getElementById('progress-fill');
     const progressMascotAnchor = document.getElementById('progress-mascot-anchor');
+    const scoreLabel = document.getElementById('score-label');
     const scoreValue = document.getElementById('score-value');
     const specialLinkSection = document.getElementById('special-link-section');
+    const specialLinkCopy = document.getElementById('special-link-copy');
+    const specialLinkCta = document.getElementById('special-link-cta');
     const challengeCompleteSection = document.getElementById('challenge-complete-section');
+    const challengeCompleteCopy = document.getElementById('challenge-complete-copy');
+    const challengeCompleteLink = document.getElementById('challenge-complete-link');
     const perfectScoreSection = document.getElementById('perfect-score-section');
+    const perfectTimeTitle = document.getElementById('perfect-time-title');
     const perfectTimeValue = document.getElementById('perfect-time-value');
     const perfectScoreNote = document.getElementById('perfect-score-note');
     const nicknameInput = document.getElementById('nickname-input');
@@ -984,11 +1194,15 @@
     const startBtn = document.getElementById('start-btn');
     const previewBtn = document.getElementById('preview-btn');
     const previewEntry = document.getElementById('preview-entry');
+    const unlockNote = document.getElementById('unlock-note');
     const footerCopyright = document.getElementById('footer-copyright');
+    const footerAttribution = document.getElementById('footer-attribution');
     const adminKeywordOverlay = document.getElementById('admin-keyword-overlay');
     const adminKeywordInput = document.getElementById('admin-keyword-input');
     const adminKeywordMessage = document.getElementById('admin-keyword-message');
     const adminKeywordCloseBtn = document.getElementById('admin-keyword-close-btn');
+    const adminKeywordTitle = document.getElementById('admin-keyword-title');
+    const adminKeywordNote = document.getElementById('admin-keyword-note');
     const openAdminBtn = document.getElementById('open-admin-btn');
 
     const totalPerSession = 5;
@@ -1053,6 +1267,204 @@
     let perfectCompletionAt = '';
     let perfectScoreSubmitted = false;
     let footerTapCount = 0;
+    let currentLanguage = loadLanguage();
+    let currentErrorKey = '';
+    let currentPerfectScoreMessageKey = '';
+    let currentAdminKeywordMessageKey = '';
+    let currentSelectedAnswerIndex = null;
+
+    function normalizeLanguage(value) {
+      return value === 'en' ? 'en' : defaultLanguage;
+    }
+
+    function loadLanguage() {
+      try {
+        return normalizeLanguage(window.localStorage.getItem(languageStorageKey));
+      } catch (_) {
+        return defaultLanguage;
+      }
+    }
+
+    function persistLanguage(language) {
+      try {
+        window.localStorage.setItem(languageStorageKey, language);
+      } catch (_) {}
+    }
+
+    function t(key, params = {}) {
+      const strings = uiStrings[currentLanguage] || uiStrings[defaultLanguage];
+      const fallbackStrings = uiStrings[defaultLanguage];
+      const value = strings[key] !== undefined ? strings[key] : fallbackStrings[key];
+      return typeof value === 'function' ? value(params) : value;
+    }
+
+    function normalizeLocalizedString(value, fallback) {
+      if (typeof value === 'string' && value.trim()) {
+        return value;
+      }
+      return typeof fallback === 'string' ? fallback : '';
+    }
+
+    function normalizeChoices(choices) {
+      if (!Array.isArray(choices)) {
+        return [];
+      }
+      return choices.map(choice => typeof choice === 'string' ? choice : '');
+    }
+
+    function getQuizTitle(quiz) {
+      return currentLanguage === 'en' ? quiz.title_en : quiz.title;
+    }
+
+    function getQuizText(quiz) {
+      return currentLanguage === 'en' ? quiz.text_en : quiz.text;
+    }
+
+    function getQuizExplanation(quiz) {
+      return currentLanguage === 'en' ? quiz.explanation_en : quiz.explanation;
+    }
+
+    function getDisplayedChoices(quiz) {
+      return currentLanguage === 'en' ? quiz.choices_en : quiz.choices;
+    }
+
+    function getDisplayedChoiceText(quiz, displayedIndex) {
+      const choices = getDisplayedChoices(quiz);
+      return typeof choices[displayedIndex] === 'string' ? choices[displayedIndex] : '';
+    }
+
+    function getOriginalChoiceText(quiz, originalIndex) {
+      const sourceChoices = currentLanguage === 'en'
+        ? (Array.isArray(quiz.original_choices_en) ? quiz.original_choices_en : quiz.choices_en)
+        : (Array.isArray(quiz.original_choices) ? quiz.original_choices : quiz.choices);
+      return typeof sourceChoices[originalIndex] === 'string' ? sourceChoices[originalIndex] : '';
+    }
+
+    function renderError() {
+      if (!currentErrorKey) {
+        errorMsg.style.display = 'none';
+        errorMsg.textContent = '';
+        return;
+      }
+      errorMsg.textContent = t(currentErrorKey);
+      errorMsg.style.display = 'block';
+    }
+
+    function showError(messageKey) {
+      currentErrorKey = messageKey;
+      renderError();
+    }
+
+    function hideError() {
+      currentErrorKey = '';
+      renderError();
+    }
+
+    function renderPerfectScoreMessage(type) {
+      if (!currentPerfectScoreMessageKey) {
+        perfectScoreMessage.style.display = 'none';
+        perfectScoreMessage.textContent = '';
+        perfectScoreMessage.className = 'helper-message';
+        return;
+      }
+      perfectScoreMessage.textContent = t(currentPerfectScoreMessageKey);
+      perfectScoreMessage.className = type ? `helper-message ${type}` : 'helper-message';
+      perfectScoreMessage.style.display = 'block';
+    }
+
+    function setPerfectScoreMessage(messageKey, type) {
+      currentPerfectScoreMessageKey = messageKey || '';
+      renderPerfectScoreMessage(type);
+    }
+
+    function renderAdminKeywordMessage(type) {
+      if (!currentAdminKeywordMessageKey) {
+        adminKeywordMessage.style.display = 'none';
+        adminKeywordMessage.textContent = '';
+        adminKeywordMessage.className = 'helper-message';
+        return;
+      }
+      adminKeywordMessage.textContent = t(currentAdminKeywordMessageKey);
+      adminKeywordMessage.className = type ? `helper-message ${type}` : 'helper-message';
+      adminKeywordMessage.style.display = 'block';
+    }
+
+    function setAdminKeywordMessage(messageKey, type) {
+      currentAdminKeywordMessageKey = messageKey || '';
+      renderAdminKeywordMessage(type);
+    }
+
+    function renderPerfectScoreNote() {
+      if (perfectScoreSubmitted) {
+        perfectScoreNote.textContent = t('perfectScoreNoteSubmitted');
+        return;
+      }
+      if (!telemetryEndpoint) {
+        perfectScoreNote.textContent = t('perfectScoreNoteTelemetryDisabled');
+        return;
+      }
+      perfectScoreNote.textContent = t('perfectScoreNoteDefault');
+    }
+
+    function applyLanguage() {
+      document.documentElement.lang = currentLanguage;
+      document.title = t('documentTitle');
+      languageSwitch.setAttribute('aria-label', t('languageSwitchAria'));
+      langJaBtn.textContent = t('languageJa');
+      langEnBtn.textContent = t('languageEn');
+      langJaBtn.classList.toggle('active', currentLanguage === 'ja');
+      langEnBtn.classList.toggle('active', currentLanguage === 'en');
+      langJaBtn.setAttribute('aria-pressed', String(currentLanguage === 'ja'));
+      langEnBtn.setAttribute('aria-pressed', String(currentLanguage === 'en'));
+      headerTagline.textContent = t('headerTagline');
+      progressCaption.textContent = t('progressCaption');
+      progressSummaryLabel.textContent = t('progressSummaryLabel');
+      progressMeter.setAttribute('aria-label', t('progressAriaLabel'));
+      homeChip.textContent = t('homeChip');
+      homeLead.innerHTML = t('homeLeadHtml');
+      startBtn.textContent = t('startButton');
+      previewBtn.textContent = t('previewButton');
+      unlockNote.textContent = t('unlockNote');
+      answerCodeLabel.textContent = t('answerCodeLabel');
+      playLink.textContent = t('playLink');
+      scoreLabel.textContent = t('scoreLabel');
+      challengeCompleteCopy.textContent = t('challengeCompleteCopy');
+      challengeCompleteLink.textContent = t('challengeCompleteLink');
+      specialLinkCopy.textContent = t('specialLinkCopy');
+      specialLinkCta.textContent = t('specialLinkCta');
+      perfectTimeTitle.textContent = t('perfectTimeTitle');
+      nicknameInput.placeholder = t('nicknamePlaceholder');
+      submitPerfectScoreBtn.textContent = perfectScoreSubmitted ? t('submitPerfectScoreDone') : t('submitPerfectScoreButton');
+      restartBtn.textContent = t('restartButton');
+      challengeBtn.textContent = t('challengeButton');
+      scorePreviewBtn.textContent = t('scorePreviewButton');
+      footerAttribution.innerHTML = t('footerAttributionHtml');
+      adminKeywordCloseBtn.setAttribute('aria-label', t('adminKeywordCloseAria'));
+      adminKeywordTitle.textContent = t('adminKeywordTitle');
+      adminKeywordNote.textContent = t('adminKeywordNote');
+      adminKeywordInput.placeholder = t('adminKeywordPlaceholder');
+      openAdminBtn.textContent = t('adminKeywordOpen');
+      renderError();
+      renderPerfectScoreNote();
+      renderPerfectScoreMessage(perfectScoreMessage.className.replace('helper-message', '').trim());
+      renderAdminKeywordMessage(adminKeywordMessage.className.replace('helper-message', '').trim());
+      if (questionCard.style.display === 'block') {
+        renderCurrentQuestion();
+      }
+      if (scoreCard.style.display === 'block') {
+        renderScoreCard();
+      }
+    }
+
+    function setLanguage(language) {
+      const nextLanguage = normalizeLanguage(language);
+      if (currentLanguage === nextLanguage) {
+        return;
+      }
+      currentLanguage = nextLanguage;
+      persistLanguage(currentLanguage);
+      applyLanguage();
+    }
 
     function createSessionID() {
       if (window.crypto && typeof window.crypto.randomUUID === 'function') {
@@ -1100,40 +1512,6 @@
       scorePreviewBtn.style.display = previewUnlocked ? '' : 'none';
     }
 
-    function showError(message) {
-      errorMsg.textContent = message;
-      errorMsg.style.display = 'block';
-    }
-
-    function hideError() {
-      errorMsg.style.display = 'none';
-      errorMsg.textContent = '';
-    }
-
-    function setPerfectScoreMessage(message, type) {
-      if (!message) {
-        perfectScoreMessage.style.display = 'none';
-        perfectScoreMessage.textContent = '';
-        perfectScoreMessage.className = 'helper-message';
-        return;
-      }
-      perfectScoreMessage.textContent = message;
-      perfectScoreMessage.className = type ? `helper-message ${type}` : 'helper-message';
-      perfectScoreMessage.style.display = 'block';
-    }
-
-    function setAdminKeywordMessage(message, type) {
-      if (!message) {
-        adminKeywordMessage.style.display = 'none';
-        adminKeywordMessage.textContent = '';
-        adminKeywordMessage.className = 'helper-message';
-        return;
-      }
-      adminKeywordMessage.textContent = message;
-      adminKeywordMessage.className = type ? `helper-message ${type}` : 'helper-message';
-      adminKeywordMessage.style.display = 'block';
-    }
-
     function escapeHTML(str) {
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
@@ -1145,6 +1523,16 @@
       );
     }
 
+    function formatInlineText(text, { linkifyUrls = false } = {}) {
+      const source = typeof text === 'string' ? text : '';
+      return source.split(/(`[^`\n]+`)/g).map(segment => {
+        if (segment.startsWith('`') && segment.endsWith('`')) {
+          return `<code class="inline-code">${escapeHTML(segment.slice(1, -1))}</code>`;
+        }
+        return linkifyUrls ? linkify(segment) : escapeHTML(segment);
+      }).join('');
+    }
+
     function normalizeQuizMode(value) {
       if (value === 'normal' || value === 'extra') {
         return value;
@@ -1153,8 +1541,22 @@
     }
 
     function normalizeQuizData(quiz) {
+      const choices = normalizeChoices(quiz && quiz.choices);
+      const rawChoicesEn = normalizeChoices(quiz && quiz.choices_en);
+      const choicesEn = rawChoicesEn.length === choices.length
+        ? rawChoicesEn.map((choice, index) => choice.trim() ? choice : choices[index])
+        : choices.slice();
+
       return {
         ...quiz,
+        title: normalizeLocalizedString(quiz && quiz.title, ''),
+        title_en: normalizeLocalizedString(quiz && quiz.title_en, quiz && quiz.title),
+        text: normalizeLocalizedString(quiz && quiz.text, ''),
+        text_en: normalizeLocalizedString(quiz && quiz.text_en, quiz && quiz.text),
+        choices,
+        choices_en: choicesEn,
+        explanation: normalizeLocalizedString(quiz && quiz.explanation, ''),
+        explanation_en: normalizeLocalizedString(quiz && quiz.explanation_en, quiz && quiz.explanation),
         mode: normalizeQuizMode(quiz && quiz.mode),
       };
     }
@@ -1207,6 +1609,7 @@
 
     function createSessionQuiz(quiz) {
       const originalChoices = Array.isArray(quiz.choices) ? quiz.choices.slice() : [];
+      const originalChoicesEn = Array.isArray(quiz.choices_en) ? quiz.choices_en.slice() : originalChoices.slice();
       const choiceOrder = shuffle(originalChoices.map((_, index) => index));
       const correctDisplayIndex = choiceOrder.indexOf(quiz.answer);
 
@@ -1214,8 +1617,10 @@
         ...quiz,
         original_answer: quiz.answer,
         original_choices: originalChoices,
+        original_choices_en: originalChoicesEn,
         choice_order: choiceOrder,
         choices: choiceOrder.map(index => originalChoices[index]),
+        choices_en: choiceOrder.map(index => originalChoicesEn[index]),
         answer: correctDisplayIndex >= 0 ? correctDisplayIndex : quiz.answer,
       };
     }
@@ -1230,11 +1635,6 @@
 
     function getOriginalCorrectAnswerIndex(quiz) {
       return Number.isInteger(quiz.original_answer) ? quiz.original_answer : quiz.answer;
-    }
-
-    function getOriginalChoiceText(quiz, originalIndex) {
-      const sourceChoices = Array.isArray(quiz.original_choices) ? quiz.original_choices : quiz.choices;
-      return typeof sourceChoices[originalIndex] === 'string' ? sourceChoices[originalIndex] : '';
     }
 
     function pickSession(excludeIds, mode) {
@@ -1264,7 +1664,7 @@
     }
 
     function formatElapsedSeconds(seconds) {
-      return `${seconds} 秒`;
+      return t('elapsedSeconds', { seconds });
     }
 
     function clearPerfectScoreCelebration() {
@@ -1352,12 +1752,12 @@
       perfectCompletionAt = '';
       perfectScoreSubmitted = false;
       perfectTimeValue.textContent = '';
-      perfectScoreNote.textContent = '全問正解の記録を残せます。ニックネームを入力して送信してください。';
       nicknameInput.value = '';
       nicknameInput.disabled = false;
       submitPerfectScoreBtn.disabled = false;
-      submitPerfectScoreBtn.textContent = '記録を送信';
+      submitPerfectScoreBtn.textContent = t('submitPerfectScoreButton');
       setPerfectScoreMessage('', '');
+      renderPerfectScoreNote();
       clearPerfectScoreCelebration();
     }
 
@@ -1386,16 +1786,16 @@
     function submitAdminKeyword() {
       const enteredKeyword = adminKeywordInput.value.trim();
       if (!previewUnlockCode) {
-        setAdminKeywordMessage('Keyword は設定されていません。', 'error');
+        setAdminKeywordMessage('adminKeywordMessageNotConfigured', 'error');
         return;
       }
       if (!enteredKeyword) {
-        setAdminKeywordMessage('Keyword を入力してください。', 'error');
+        setAdminKeywordMessage('adminKeywordMessageRequired', 'error');
         adminKeywordInput.focus();
         return;
       }
       if (enteredKeyword !== previewUnlockCode) {
-        setAdminKeywordMessage('Keyword が違います。', 'error');
+        setAdminKeywordMessage('adminKeywordMessageWrong', 'error');
         adminKeywordInput.focus();
         return;
       }
@@ -1444,7 +1844,7 @@
       postTelemetry({
         event_type: 'answer',
         question_id: quiz.id,
-        question_title: quiz.title,
+        question_title: getQuizTitle(quiz),
         selected_answer: selectedOriginalAnswer,
         correct_answer: correctOriginalAnswer,
         is_correct: isCorrect,
@@ -1458,7 +1858,7 @@
         question_elapsed_seconds: questionElapsedSeconds,
         selected_display_index: selectedAnswer,
         correct_display_index: quiz.answer,
-        selected_choice_text: typeof quiz.choices[selectedAnswer] === 'string' ? quiz.choices[selectedAnswer] : '',
+        selected_choice_text: getDisplayedChoiceText(quiz, selectedAnswer),
         correct_choice_text: getOriginalChoiceText(quiz, correctOriginalAnswer),
         choice_order: Array.isArray(quiz.choice_order) ? quiz.choice_order.slice() : [],
       }).catch(() => {});
@@ -1475,6 +1875,7 @@
       sessionSize = 0;
       attemptID = '';
       currentQuestionStartedAt = null;
+      currentSelectedAnswerIndex = null;
       closeAdminKeywordPopup();
       resetPerfectScoreState();
       updateProgress(0);
@@ -1483,7 +1884,7 @@
 
     function startSession(excludeIds = []) {
       if (allQuizzes.length === 0) {
-        showError('クイズデータの読み込みに失敗しました');
+        showError('errorQuizLoad');
         return;
       }
 
@@ -1501,7 +1902,7 @@
       sessionSize = session.length;
       if (sessionSize === 0) {
         renderHome();
-        showError(isChallenge ? 'エクストラモード用の問題がありません' : '表示できる問題がありません');
+        showError(isChallenge ? 'errorNoExtra' : 'errorNoVisibleQuiz');
         return;
       }
       currentIndex = 0;
@@ -1519,20 +1920,29 @@
     function showQuestion() {
       const quiz = session[currentIndex];
       if (!quiz) {
-        showError('表示できる問題がありません');
+        showError('errorNoVisibleQuiz');
         renderHome();
         return;
       }
 
+      currentSelectedAnswerIndex = null;
+      currentQuestionStartedAt = Date.now();
+      renderCurrentQuestion();
+    }
+
+    function renderCurrentQuestion() {
+      const quiz = session[currentIndex];
+      if (!quiz) {
+        return;
+      }
+
+      const displayedChoices = getDisplayedChoices(quiz);
+      const hasAnswered = Number.isInteger(currentSelectedAnswerIndex);
+      const isCorrect = hasAnswered && currentSelectedAnswerIndex === quiz.answer;
+
       questionCard.style.display = 'block';
       choicesEl.innerHTML = '';
-      resultEl.style.display = 'none';
-      correctAnswerText.style.display = 'none';
-      correctAnswerText.textContent = '';
-      answerCodeSection.style.display = 'none';
-      nextBtn.style.display = 'none';
-
-      questionText.textContent = quiz.text;
+      questionText.innerHTML = formatInlineText(getQuizText(quiz));
 
       if (quiz.question_code) {
         highlightCodeBlock(codeBlock.querySelector('code'), quiz.question_code);
@@ -1541,54 +1951,48 @@
         codeBlock.style.display = 'none';
       }
 
-      quiz.choices.forEach((choice, index) => {
+      displayedChoices.forEach((choice, index) => {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'choice-btn';
-        button.textContent = choice;
-        button.addEventListener('click', () => submitAnswer(quiz, index, button));
+        button.innerHTML = formatInlineText(choice);
+        if (hasAnswered) {
+          button.disabled = true;
+          if (index === quiz.answer) {
+            button.classList.add('correct');
+          } else if (index === currentSelectedAnswerIndex) {
+            button.classList.add('incorrect');
+          }
+        } else {
+          button.addEventListener('click', () => submitAnswer(quiz, index));
+        }
         choicesEl.appendChild(button);
       });
 
-      currentQuestionStartedAt = Date.now();
-      updateProgress();
-    }
-
-    function submitAnswer(quiz, answerIndex, clickedButton) {
-      const buttons = document.querySelectorAll('.choice-btn');
-      buttons.forEach(button => { button.disabled = true; });
-      correctAnswerText.style.display = 'none';
-      correctAnswerText.textContent = '';
-
-      const isCorrect = answerIndex === quiz.answer;
-      const answeredAtTime = Date.now();
-      const answeredAt = new Date(answeredAtTime).toISOString();
-      const elapsedSeconds = getElapsedSeconds(answeredAtTime);
-      const questionElapsedSeconds = currentQuestionStartedAt
-        ? Math.max(0, Math.floor((answeredAtTime - currentQuestionStartedAt) / 1000))
-        : '';
-      currentQuestionStartedAt = null;
-      latestAnswerElapsedSeconds = elapsedSeconds;
-      if (isCorrect) {
-        correctCount++;
+      if (!hasAnswered) {
+        resultEl.style.display = 'none';
+        correctAnswerText.style.display = 'none';
+        correctAnswerText.textContent = '';
+        answerCodeSection.style.display = 'none';
+        nextBtn.style.display = 'none';
+        updateProgress();
+        return;
       }
-      if (currentIndex === session.length - 1 && correctCount === session.length) {
-        perfectCompletionElapsedSeconds = elapsedSeconds;
-        perfectCompletionAt = answeredAt;
-      }
-      sendAnswerTelemetry(quiz, answerIndex, isCorrect, answeredAt, elapsedSeconds, questionElapsedSeconds);
 
-      clickedButton.classList.add(isCorrect ? 'correct' : 'incorrect');
-      if (!isCorrect && buttons[quiz.answer]) {
-        buttons[quiz.answer].classList.add('correct');
-      }
-      resultBadge.textContent = isCorrect ? '正解！' : '不正解...';
+      resultBadge.textContent = t(isCorrect ? 'correctBadge' : 'incorrectBadge');
       resultBadge.className = isCorrect ? 'correct' : 'incorrect';
-      if (!isCorrect && typeof quiz.choices[quiz.answer] === 'string') {
-        correctAnswerText.textContent = `正解は「${quiz.choices[quiz.answer]}」です。`;
+
+      if (!isCorrect) {
+        correctAnswerText.innerHTML = formatInlineText(
+          t('correctAnswerSummary', { answer: getDisplayedChoiceText(quiz, quiz.answer) })
+        );
         correctAnswerText.style.display = 'block';
+      } else {
+        correctAnswerText.style.display = 'none';
+        correctAnswerText.innerHTML = '';
       }
-      explanation.innerHTML = linkify(quiz.explanation);
+
+      explanation.innerHTML = formatInlineText(getQuizExplanation(quiz), { linkifyUrls: true });
 
       if (isCorrect && (quiz.answer_code || quiz.answer_code_play_ref)) {
         if (quiz.answer_code) {
@@ -1610,9 +2014,31 @@
       }
 
       resultEl.style.display = 'block';
-      nextBtn.textContent = currentIndex === session.length - 1 ? '結果を見る' : '次の問題へ';
+      nextBtn.textContent = currentIndex === session.length - 1 ? t('viewResults') : t('nextQuestion');
       nextBtn.style.display = 'block';
       updateProgress(currentIndex + 1);
+    }
+
+    function submitAnswer(quiz, answerIndex) {
+      const isCorrect = answerIndex === quiz.answer;
+      const answeredAtTime = Date.now();
+      const answeredAt = new Date(answeredAtTime).toISOString();
+      const elapsedSeconds = getElapsedSeconds(answeredAtTime);
+      const questionElapsedSeconds = currentQuestionStartedAt
+        ? Math.max(0, Math.floor((answeredAtTime - currentQuestionStartedAt) / 1000))
+        : '';
+      currentQuestionStartedAt = null;
+      latestAnswerElapsedSeconds = elapsedSeconds;
+      if (isCorrect) {
+        correctCount++;
+      }
+      if (currentIndex === session.length - 1 && correctCount === session.length) {
+        perfectCompletionElapsedSeconds = elapsedSeconds;
+        perfectCompletionAt = answeredAt;
+      }
+      sendAnswerTelemetry(quiz, answerIndex, isCorrect, answeredAt, elapsedSeconds, questionElapsedSeconds);
+      currentSelectedAnswerIndex = answerIndex;
+      renderCurrentQuestion();
     }
 
     function showScore() {
@@ -1622,16 +2048,21 @@
       resultEl.style.display = 'none';
       nextBtn.style.display = 'none';
 
+      if (isChallenge && correctCount === session.length) {
+        setPreviewUnlocked(true);
+      }
+
+      renderScoreCard(true);
+      updatePreviewButtons();
+    }
+
+    function renderScoreCard(triggerCelebration = false) {
       const extraPoolSize = getQuizPool('extra').length;
       const totalAnswered = isChallenge ? getSeenCount('extra') : session.length;
       const totalCorrect = isChallenge ? pastCorrect + correctCount : correctCount;
       const allCorrect = correctCount === session.length;
       const challengePerfect = isChallenge && allCorrect;
       const canChallengeMore = getSeenCount('extra') < extraPoolSize;
-
-      if (challengePerfect) {
-        setPreviewUnlocked(true);
-      }
 
       scoreValue.textContent = `${totalCorrect} / ${totalAnswered}`;
       challengeCompleteSection.style.display = challengePerfect ? 'block' : 'none';
@@ -1641,45 +2072,47 @@
         const elapsedSeconds = perfectCompletionElapsedSeconds ?? latestAnswerElapsedSeconds;
         perfectTimeValue.textContent = formatElapsedSeconds(elapsedSeconds);
         if (!telemetryEndpoint) {
-          perfectScoreNote.textContent = '解き終わった時間は表示中です。現在は記録送信エンドポイントが設定されていません。';
           nicknameInput.disabled = true;
           submitPerfectScoreBtn.disabled = true;
+        } else if (!perfectScoreSubmitted) {
+          nicknameInput.disabled = false;
+          submitPerfectScoreBtn.disabled = false;
         }
       }
+      renderPerfectScoreNote();
       challengeBtn.style.display = canChallengeMore && ((!isChallenge && allCorrect) || (isChallenge && !allCorrect)) ? '' : 'none';
       scoreCard.style.display = 'block';
       updateProgress(session.length);
-      if (allCorrect) {
+      if (allCorrect && triggerCelebration) {
         runPerfectScoreCelebration();
       }
-      updatePreviewButtons();
     }
 
     async function submitPerfectScore() {
       if (perfectCompletionElapsedSeconds === null || !perfectCompletionAt) {
-        setPerfectScoreMessage('送信できるクリア記録が見つかりません。', 'error');
+        setPerfectScoreMessage('perfectScoreMessageNoRecord', 'error');
         return;
       }
       if (!telemetryEndpoint) {
-        setPerfectScoreMessage('記録送信エンドポイントが設定されていません。', 'error');
+        setPerfectScoreMessage('perfectScoreMessageEndpointMissing', 'error');
         return;
       }
 
       const nickname = nicknameInput.value.trim();
       if (!nickname) {
-        setPerfectScoreMessage('ニックネームを入力してください。', 'error');
+        setPerfectScoreMessage('perfectScoreMessageNicknameRequired', 'error');
         nicknameInput.focus();
         return;
       }
       if (nickname.length > 40) {
-        setPerfectScoreMessage('ニックネームは40文字以内で入力してください。', 'error');
+        setPerfectScoreMessage('perfectScoreMessageNicknameTooLong', 'error');
         nicknameInput.focus();
         return;
       }
 
       nicknameInput.disabled = true;
       submitPerfectScoreBtn.disabled = true;
-      setPerfectScoreMessage('記録を送信しています…', 'pending');
+      setPerfectScoreMessage('perfectScoreMessageSending', 'pending');
 
       try {
         await postTelemetry({
@@ -1692,16 +2125,18 @@
           attempt_id: attemptID,
         });
         perfectScoreSubmitted = true;
-        perfectScoreNote.textContent = '記録を送信しました。別の記録を残すには、もう一度クイズに挑戦してください。';
-        submitPerfectScoreBtn.textContent = '送信済み';
-        setPerfectScoreMessage('クリア記録を送信しました。', 'success');
+        renderPerfectScoreNote();
+        submitPerfectScoreBtn.textContent = t('submitPerfectScoreDone');
+        setPerfectScoreMessage('perfectScoreMessageSuccess', 'success');
       } catch (_) {
         nicknameInput.disabled = false;
         submitPerfectScoreBtn.disabled = false;
-        setPerfectScoreMessage('記録の送信に失敗しました。通信環境を確認して、もう一度お試しください。', 'error');
+        setPerfectScoreMessage('perfectScoreMessageFailed', 'error');
       }
     }
 
+    langJaBtn.addEventListener('click', () => setLanguage('ja'));
+    langEnBtn.addEventListener('click', () => setLanguage('en'));
     startBtn.addEventListener('click', () => startSession());
     nextBtn.addEventListener('click', () => {
       if (currentIndex === session.length - 1) {
@@ -1745,10 +2180,11 @@
       }
     });
 
-    if (allQuizzes.length === 0) {
-      showError('クイズデータの読み込みに失敗しました');
-    }
     renderHome();
+    applyLanguage();
+    if (allQuizzes.length === 0) {
+      showError('errorQuizLoad');
+    }
   </script>
 </body>
 </html>

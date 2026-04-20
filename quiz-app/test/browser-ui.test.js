@@ -11,6 +11,22 @@ if (scripts.length === 0) {
   throw new Error('public/index.html does not contain an inline app script');
 }
 const appScript = scripts[scripts.length - 1][1];
+const previewScripts = [...previewHTML.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+if (previewScripts.length === 0) {
+  throw new Error('public/preview/index.html does not contain an inline preview script');
+}
+const previewScript = previewScripts[previewScripts.length - 1][1];
+
+function decodeHtmlEntities(text) {
+  return String(text)
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+}
+
+function stripHTML(html) {
+  return decodeHtmlEntities(String(html).replace(/<[^>]*>/g, ''));
+}
 
 function extractInputTag(id) {
   const match = appHTML.match(new RegExp(`<input[\\s\\S]*?id="${id}"[\\s\\S]*?>`));
@@ -36,6 +52,9 @@ function assertHeaderConferenceLogo(html, imagePath) {
   assert.ok(headerMatch, 'expected header markup');
   assert.match(headerMatch[1], new RegExp(`class="header-conference-logo" src="${imagePath.replace(/\./g, '\\.').replace(/\//g, '\\/')}" alt="Go Conference 2026"`));
   assert.match(headerMatch[1], /class="header-product-mark">CodeLab<\/span>/);
+  assert.match(headerMatch[1], /id="language-switch"/);
+  assert.match(headerMatch[1], /id="lang-ja-btn"/);
+  assert.match(headerMatch[1], /id="lang-en-btn"/);
   assert.doesNotMatch(headerMatch[1], /<span class="accent">Go<\/span> Conference 2026 CodeLab/);
   return headerMatch[1];
 }
@@ -47,12 +66,20 @@ const elementIDs = [
   'progress-fill',
   'progress-mascot-anchor',
   'progress-mascot',
+  'header-tagline',
+  'language-switch',
+  'lang-ja-btn',
+  'lang-en-btn',
+  'progress-caption',
+  'progress-summary-label',
   'error-msg',
   'home-card',
+  'home-chip',
   'question-card',
   'result',
   'score-card',
   'celebration-layer',
+  'home-lead',
   'question-text',
   'code-block',
   'choices',
@@ -60,13 +87,20 @@ const elementIDs = [
   'correct-answer-text',
   'explanation',
   'answer-code-section',
+  'answer-code-label',
   'answer-code-block',
   'play-link',
   'next-btn',
+  'score-label',
   'score-value',
   'special-link-section',
+  'special-link-copy',
+  'special-link-cta',
   'challenge-complete-section',
+  'challenge-complete-copy',
+  'challenge-complete-link',
   'perfect-score-section',
+  'perfect-time-title',
   'perfect-time-value',
   'perfect-score-note',
   'nickname-input',
@@ -78,11 +112,15 @@ const elementIDs = [
   'start-btn',
   'preview-btn',
   'preview-entry',
+  'unlock-note',
   'footer-copyright',
+  'footer-attribution',
   'admin-keyword-overlay',
   'admin-keyword-input',
   'admin-keyword-message',
   'admin-keyword-close-btn',
+  'admin-keyword-title',
+  'admin-keyword-note',
   'open-admin-btn',
 ];
 
@@ -149,11 +187,23 @@ class FakeElement {
           .filter(name => !namesToRemove.has(name))
           .join(' ');
       },
+      toggle: (name, force) => {
+        const classes = new Set(this.className.split(/\s+/).filter(Boolean));
+        const shouldHaveClass = force === undefined ? !classes.has(name) : Boolean(force);
+        if (shouldHaveClass) {
+          classes.add(name);
+        } else {
+          classes.delete(name);
+        }
+        this.className = [...classes].join(' ');
+        return shouldHaveClass;
+      },
     };
   }
 
   set innerHTML(value) {
     this._innerHTML = value;
+    this.textContent = stripHTML(value);
     if (value === '') {
       this.children = [];
     }
@@ -210,6 +260,7 @@ function createHarness(quizzes = sampleQuizzes) {
 
   const beacons = [];
   const storage = new Map();
+  const localStorage = new Map();
   const randomValues = [0.81, 0.14, 0.66, 0.29, 0.73, 0.42, 0.57, 0.33, 0.91, 0.18];
   let randomIndex = 0;
   const math = Object.create(Math);
@@ -243,6 +294,10 @@ function createHarness(quizzes = sampleQuizzes) {
   };
 
   context.document = {
+    title: '',
+    documentElement: {
+      lang: 'ja',
+    },
     getElementById(id) {
       if (!elements.has(id)) {
         elements.set(id, new FakeElement(id));
@@ -266,10 +321,21 @@ function createHarness(quizzes = sampleQuizzes) {
       previewUnlockCode: 'secret',
     },
     __QUIZ_DATA__: quizzes,
+    localStorage: {
+      getItem(key) {
+        return localStorage.has(key) ? localStorage.get(key) : null;
+      },
+      setItem(key, value) {
+        localStorage.set(key, String(value));
+      },
+      removeItem(key) {
+        localStorage.delete(key);
+      },
+    },
     sessionStorage: {
       getItem(key) {
         return storage.has(key) ? storage.get(key) : null;
-      },
+        },
       setItem(key, value) {
         storage.set(key, String(value));
       },
@@ -308,10 +374,11 @@ function createHarness(quizzes = sampleQuizzes) {
   vm.createContext(context);
   vm.runInContext(appScript, context);
 
-  const quizByText = new Map(quizzes.map(quiz => [quiz.text, quiz]));
-
   function currentQuiz() {
-    return quizByText.get(elements.get('question-text').textContent);
+    return quizzes.find(quiz => (
+      quiz.text === elements.get('question-text').textContent ||
+      quiz.text_en === elements.get('question-text').textContent
+    ));
   }
 
   function choiceButtons() {
@@ -354,13 +421,14 @@ function createHarness(quizzes = sampleQuizzes) {
     }
   }
 
-  return {
-    beacons,
-    elements,
-    location: context.window.location,
-    currentQuiz,
-    choiceButtons,
-    parseBeaconPayloads,
+    return {
+      beacons,
+      elements,
+      location: context.window.location,
+      localStorage,
+      currentQuiz,
+      choiceButtons,
+      parseBeaconPayloads,
     clickStart() {
       elements.get('start-btn').trigger('click');
     },
@@ -422,6 +490,84 @@ test('preview page header does not render the right-side badge', () => {
   const headerMarkup = assertHeaderConferenceLogo(previewHTML, '../assets/go-conference-2026-logo.svg');
   assert.doesNotMatch(headerMarkup, /header-badge/);
   assert.doesNotMatch(headerMarkup, /<span[^>]*>\s*問題一覧\s*<\/span>/);
+});
+
+test('preview page inline script parses successfully', () => {
+  assert.doesNotThrow(() => new vm.Script(previewScript));
+});
+
+test('language switch localizes the app UI and active quiz content', () => {
+  const app = createHarness([
+    {
+      id: 'localized_q1',
+      title: '日本語タイトル',
+      title_en: 'English title',
+      text: '日本語の問題文',
+      text_en: 'English question text',
+      choices: ['選択肢A', '選択肢B'],
+      choices_en: ['Choice A', 'Choice B'],
+      answer: 1,
+      explanation: '日本語の解説',
+      explanation_en: 'English explanation',
+    },
+  ]);
+
+  assert.equal(app.elements.get('start-btn').textContent, 'クイズを始める');
+
+  app.elements.get('lang-en-btn').trigger('click');
+  assert.equal(app.elements.get('header-tagline').textContent, 'Test your Go knowledge!');
+  assert.equal(app.elements.get('start-btn').textContent, 'Start quiz');
+  assert.equal(app.localStorage.get('quiz-language'), 'en');
+
+  app.clickStart();
+  assert.equal(app.elements.get('question-text').textContent, 'English question text');
+  assert.deepEqual(
+    new Set(app.choiceButtons().map(button => button.textContent)),
+    new Set(['Choice A', 'Choice B']),
+  );
+
+  const wrongButton = app.choiceButtons().find(button => button.textContent === 'Choice A');
+  assert.ok(wrongButton, 'expected localized wrong choice button');
+  wrongButton.trigger('click');
+
+  assert.equal(app.elements.get('result-badge').textContent, 'Incorrect...');
+  assert.equal(app.elements.get('correct-answer-text').textContent, 'The correct answer is "Choice B".');
+  assert.equal(app.elements.get('explanation').innerHTML, 'English explanation');
+});
+
+test('backtick-wrapped quiz text renders as inline code', () => {
+  assert.match(appHTML, /\.inline-code \{/);
+  assert.match(previewHTML, /\.inline-code \{/);
+  assert.match(previewHTML, /function formatInlineText/);
+  assert.match(previewHTML, /modalExplanation\.innerHTML = formatInlineText\(getQuizExplanation\(selectedQuiz\), \{ linkifyUrls: true \}\);/);
+
+  const app = createHarness([
+    {
+      id: 'inline_q1',
+      title: 'inline title',
+      text: '実行するコマンドは `go test ./...` です',
+      choices: ['`go test ./...`', '`go build`'],
+      answer: 1,
+      explanation: '解説では `go build` を実行します。',
+    },
+  ]);
+
+  app.clickStart();
+  assert.equal(
+    app.elements.get('question-text').innerHTML,
+    '実行するコマンドは <code class="inline-code">go test ./...</code> です',
+  );
+  assert.equal(app.choiceButtons()[0].innerHTML, '<code class="inline-code">go test ./...</code>');
+
+  app.choiceButtons()[0].trigger('click');
+  assert.equal(
+    app.elements.get('correct-answer-text').innerHTML,
+    '正解は「<code class="inline-code">go build</code>」です。',
+  );
+  assert.equal(
+    app.elements.get('explanation').innerHTML,
+    '解説では <code class="inline-code">go build</code> を実行します。',
+  );
 });
 
 test('progress is rendered as a reward-style subheader below the header', () => {

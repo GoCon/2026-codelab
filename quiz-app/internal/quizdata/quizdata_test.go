@@ -21,11 +21,15 @@ func TestBuildStaticQuizzes(t *testing.T) {
 	quizzes := []quizhandler.Quiz{{
 		ID:                "q1",
 		Title:             "title",
+		TitleEn:           "title en",
 		Text:              "text",
+		TextEn:            "text en",
 		Mode:              quizhandler.QuizModeExtra,
 		Choices:           []string{"a", "b"},
+		ChoicesEn:         []string{"a en", "b en"},
 		Answer:            1,
 		Explanation:       "exp",
+		ExplanationEn:     "exp en",
 		QuestionCodeRef:   "code/q1_question.go",
 		AnswerCodeRef:     "code/q1_answer.go",
 		AnswerCodePlayRef: "https://go.dev/play/p/example",
@@ -48,6 +52,12 @@ func TestBuildStaticQuizzes(t *testing.T) {
 	if got[0].Mode != quizhandler.QuizModeExtra {
 		t.Fatalf("mode = %q, want %q", got[0].Mode, quizhandler.QuizModeExtra)
 	}
+	if got[0].TitleEn != "title en" || got[0].TextEn != "text en" || got[0].ExplanationEn != "exp en" {
+		t.Fatalf("english localized fields should be preserved: %+v", got[0])
+	}
+	if strings.Join(got[0].ChoicesEn, ",") != "a en,b en" {
+		t.Fatalf("english choices mismatch: %#v", got[0].ChoicesEn)
+	}
 	if got[0].AnswerCodePlayRef == "" {
 		t.Fatalf("answer code play ref should be preserved")
 	}
@@ -58,11 +68,15 @@ func TestLoadFromBase(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "quizes.yaml"), []byte(`
 - id: "q1"
   title: "Q1"
+  title_en: "Question 1"
   text: "text"
+  text_en: "text en"
   question_code_ref: "code/q1_question.go"
   choices: ["A", "B"]
+  choices_en: ["A en", "B en"]
   answer: 1
   explanation: "exp"
+  explanation_en: "exp en"
   answer_code_ref: "code/q1_answer.go"
 `), 0o644); err != nil {
 		t.Fatal(err)
@@ -86,6 +100,12 @@ func TestLoadFromBase(t *testing.T) {
 	}
 	if quizzes[0].Mode != quizhandler.QuizModeBoth {
 		t.Fatalf("mode = %q, want %q", quizzes[0].Mode, quizhandler.QuizModeBoth)
+	}
+	if quizzes[0].TitleEn != "Question 1" || quizzes[0].TextEn != "text en" || quizzes[0].ExplanationEn != "exp en" {
+		t.Fatalf("localized english fields should be loaded: %+v", quizzes[0])
+	}
+	if strings.Join(quizzes[0].ChoicesEn, ",") != "A en,B en" {
+		t.Fatalf("english choices mismatch: %#v", quizzes[0].ChoicesEn)
 	}
 	if got := codeFiles["code/q1_question.go"]; strings.HasPrefix(got, "//go:build ignore") {
 		t.Fatalf("question code should strip build tag")

@@ -14,11 +14,15 @@ import (
 type StaticQuiz struct {
 	ID                string   `json:"id"`
 	Title             string   `json:"title"`
+	TitleEn           string   `json:"title_en,omitempty"`
 	Text              string   `json:"text"`
+	TextEn            string   `json:"text_en,omitempty"`
 	Mode              string   `json:"mode,omitempty"`
 	Choices           []string `json:"choices"`
+	ChoicesEn         []string `json:"choices_en,omitempty"`
 	Answer            int      `json:"answer"`
 	Explanation       string   `json:"explanation"`
+	ExplanationEn     string   `json:"explanation_en,omitempty"`
 	QuestionCode      string   `json:"question_code,omitempty"`
 	AnswerCode        string   `json:"answer_code,omitempty"`
 	AnswerCodePlayRef string   `json:"answer_code_play_ref,omitempty"`
@@ -70,11 +74,15 @@ func BuildStaticQuizzes(quizzes []quizhandler.Quiz, codeFiles map[string]string)
 		staticQuiz := StaticQuiz{
 			ID:                q.ID,
 			Title:             q.Title,
+			TitleEn:           q.TitleEn,
 			Text:              q.Text,
+			TextEn:            q.TextEn,
 			Mode:              mode,
 			Choices:           append([]string(nil), q.Choices...),
+			ChoicesEn:         append([]string(nil), q.ChoicesEn...),
 			Answer:            q.Answer,
 			Explanation:       q.Explanation,
+			ExplanationEn:     q.ExplanationEn,
 			AnswerCodePlayRef: q.AnswerCodePlayRef,
 		}
 		if q.QuestionCodeRef != "" {

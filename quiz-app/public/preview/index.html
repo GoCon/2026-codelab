@@ -63,7 +63,8 @@
       inset: 0 0 auto;
       display: flex;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: space-between;
+      gap: var(--space-xs);
       padding: 4px 40px;
       height: 81px;
       background: var(--surface-primary);
@@ -94,6 +95,48 @@
       color: var(--primitive-navy);
       letter-spacing: 0.02em;
       white-space: nowrap;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    .language-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--surface-disabled);
+      border-radius: 999px;
+      background: var(--surface-secondary);
+    }
+    .language-switch button {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: var(--font-base);
+      font-size: 0.85rem;
+      font-weight: 700;
+      line-height: 1;
+      padding: 10px 14px;
+      white-space: nowrap;
+      transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+    }
+    .language-switch button:hover {
+      color: var(--primitive-navy);
+    }
+    .language-switch button.active {
+      background: var(--surface-primary);
+      color: var(--primitive-navy);
+      box-shadow: 0 1px 4px rgba(16, 57, 114, 0.12);
+    }
+    .language-switch button:focus-visible {
+      outline: 2px solid var(--text-accent);
+      outline-offset: 2px;
     }
 
     .main-content { padding-top: 81px; }
@@ -320,6 +363,21 @@
       padding: 0;
       font-size: inherit;
     }
+    .inline-code {
+      margin: 0 0.08em;
+      padding: 0.08em 0.45em;
+      border: 1px solid rgba(16, 57, 114, 0.12);
+      border-radius: 6px;
+      background: rgba(16, 57, 114, 0.08);
+      color: var(--primitive-navy);
+      font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+    .choice-btn .inline-code {
+      color: inherit;
+    }
     #modal-explanation a,
     #modal-play-link {
       color: var(--text-accent);
@@ -385,6 +443,14 @@
       .header-product-mark {
         font-size: 1.25rem;
       }
+      .language-switch {
+        gap: 2px;
+        padding: 3px;
+      }
+      .language-switch button {
+        font-size: 0.74rem;
+        padding: 9px 10px;
+      }
       .main-content { padding-top: 56px; }
       main { padding: var(--space-s) var(--space-xs); }
       th, td { padding: var(--space-xxs) var(--space-xs); }
@@ -420,15 +486,21 @@
         <span class="header-product-mark">CodeLab</span>
       </div>
     </div>
+    <div class="header-actions">
+      <div class="language-switch" id="language-switch" role="group" aria-label="Language switch">
+        <button id="lang-ja-btn" type="button">日本語</button>
+        <button id="lang-en-btn" type="button">English</button>
+      </div>
+    </div>
   </header>
 
   <div class="main-content">
     <main>
       <div class="toolbar">
-        <a class="back-link" href="../">← トップへ戻る</a>
+        <a class="back-link" id="back-link" href="../">← トップへ戻る</a>
       </div>
-      <h1 class="page-title">クイズ出題一覧</h1>
-      <p class="page-lead">一覧から問題を選ぶと、解説・コード付きで内容を閲覧できます。</p>
+      <h1 class="page-title" id="page-title">クイズ出題一覧</h1>
+      <p class="page-lead" id="page-lead">一覧から問題を選ぶと、解説・コード付きで内容を閲覧できます。</p>
       <div id="error-msg"></div>
 
       <div class="card">
@@ -436,7 +508,7 @@
           <table>
             <thead>
               <tr>
-                <th>問題ID</th>
+                <th id="quiz-list-header">問題ID</th>
               </tr>
             </thead>
             <tbody id="quiz-list-body"></tbody>
@@ -448,15 +520,15 @@
 
   <div class="footer-gradient"></div>
   <footer id="footer-copyright">
-    <div class="footer-info">
-      <div class="logo-container">
-        <img class="footer-logo" src="../assets/go-conference-2026-logo.svg" alt="Go Conference 2026">
-        <span>Go Conference 2026</span>
-      </div>
-      <p class="copyright">
-        The Go gopher was designed by <a href="https://reneefrench.blogspot.com/">Renée French</a>. Illustrations by
-        <a href="https://x.com/avocadoneko">avocadoneko</a>.
-      </p>
+      <div class="footer-info">
+        <div class="logo-container">
+          <img class="footer-logo" src="../assets/go-conference-2026-logo.svg" alt="Go Conference 2026">
+          <span>Go Conference 2026</span>
+        </div>
+        <p class="copyright" id="footer-attribution">
+          The Go gopher was designed by <a href="https://reneefrench.blogspot.com/">Renée French</a>. Illustrations by
+          <a href="https://x.com/avocadoneko">avocadoneko</a>.
+        </p>
     </div>
   </footer>
 
@@ -466,21 +538,21 @@
       <div class="panel-content">
         <div class="modal-title" id="modal-title">問題を選択してください</div>
         <div class="panel-selected-meta" id="panel-selected-meta">一覧から問題を選ぶと詳細を表示します。</div>
-        <div class="modal-section-label">問題文</div>
+        <div class="modal-section-label" id="modal-text-label">問題文</div>
         <div class="modal-text" id="modal-text"></div>
         <div id="modal-question-code-wrap" style="display:none">
-          <div class="modal-section-label">問題コード</div>
+          <div class="modal-section-label" id="modal-question-code-label">問題コード</div>
           <pre><code class="language-go" id="modal-question-code"></code></pre>
         </div>
-        <div class="modal-section-label">選択肢</div>
+        <div class="modal-section-label" id="modal-choices-label">選択肢</div>
         <div class="choice-list" id="modal-choices"></div>
         <div class="result-card" id="modal-result">
           <div id="modal-result-badge"></div>
           <div class="answer-summary" id="modal-answer-summary"></div>
-          <div class="modal-section-label" style="margin-top:0">解説</div>
+          <div class="modal-section-label" id="modal-explanation-label" style="margin-top:0">解説</div>
           <div class="modal-text" id="modal-explanation"></div>
           <div id="modal-answer-code-wrap" style="display:none">
-            <div class="modal-section-label">解答コード</div>
+            <div class="modal-section-label" id="modal-answer-code-label">解答コード</div>
             <pre id="modal-answer-code-block"><code class="language-go" id="modal-answer-code"></code></pre>
             <a id="modal-play-link" href="#" target="_blank" rel="noopener" style="display:none;margin-top:var(--space-xxs);font-size:0.85rem">
               ▶ Go Playground で確認する
@@ -493,7 +565,68 @@
 
   <script>
     const previewStorageKey = 'quiz-preview-unlocked';
-    const allQuizzes = Array.isArray(window.__QUIZ_DATA__) ? window.__QUIZ_DATA__ : [];
+    const languageStorageKey = 'quiz-language';
+    const defaultLanguage = 'ja';
+    const allQuizzes = Array.isArray(window.__QUIZ_DATA__) ? window.__QUIZ_DATA__.map(normalizeQuizData) : [];
+
+    const uiStrings = {
+      ja: {
+        documentTitle: 'Go Conference 2026 CodeLab - 問題一覧',
+        languageSwitchAria: '表示言語',
+        languageJa: '日本語',
+        languageEn: 'English',
+        backLink: '← トップへ戻る',
+        pageTitle: 'クイズ出題一覧',
+        pageLead: '一覧から問題を選ぶと、解説・コード付きで内容を閲覧できます。',
+        quizListHeader: '問題ID',
+        emptyMsg: '表示できるクイズがありません。',
+        errorQuizLoad: 'クイズデータの読み込みに失敗しました。',
+        footerAttributionHtml: 'The Go gopher was designed by <a href="https://reneefrench.blogspot.com/">Renée French</a>. イラストは <a href="https://x.com/avocadoneko">avocadoneko</a>。',
+        modalCloseAria: '閉じる',
+        modalSelectTitle: '問題を選択してください',
+        modalSelectHint: '一覧から問題を選ぶと詳細を表示します。',
+        modalChooseHint: '選択肢を選ぶと解答と解説を表示します',
+        modalStatusCorrect: '正解',
+        modalStatusIncorrect: '不正解',
+        modalTextLabel: '問題文',
+        modalQuestionCodeLabel: '問題コード',
+        modalChoicesLabel: '選択肢',
+        modalExplanationLabel: '解説',
+        modalAnswerCodeLabel: '解答コード',
+        modalPlayLink: '▶ Go Playground で確認する',
+        correctBadge: '正解！',
+        incorrectBadge: '不正解...',
+        answerSummary: ({ answer }) => `正解: ${answer}`,
+      },
+      en: {
+        documentTitle: 'Go Conference 2026 CodeLab - Quiz List',
+        languageSwitchAria: 'Display language',
+        languageJa: 'Japanese',
+        languageEn: 'English',
+        backLink: '← Back to top',
+        pageTitle: 'Quiz list',
+        pageLead: 'Choose a question from the list to view its explanation and code.',
+        quizListHeader: 'Question ID',
+        emptyMsg: 'No quizzes are available.',
+        errorQuizLoad: 'Failed to load quiz data.',
+        footerAttributionHtml: 'The Go gopher was designed by <a href="https://reneefrench.blogspot.com/">Renée French</a>. Illustrations by <a href="https://x.com/avocadoneko">avocadoneko</a>.',
+        modalCloseAria: 'Close',
+        modalSelectTitle: 'Select a question',
+        modalSelectHint: 'Pick a question from the list to view the details.',
+        modalChooseHint: 'Choose an option to reveal the answer and explanation',
+        modalStatusCorrect: 'Correct',
+        modalStatusIncorrect: 'Incorrect',
+        modalTextLabel: 'Question',
+        modalQuestionCodeLabel: 'Question code',
+        modalChoicesLabel: 'Choices',
+        modalExplanationLabel: 'Explanation',
+        modalAnswerCodeLabel: 'Answer code',
+        modalPlayLink: '▶ View on Go Playground',
+        correctBadge: 'Correct!',
+        incorrectBadge: 'Incorrect...',
+        answerSummary: ({ answer }) => `Correct answer: ${answer}`,
+      },
+    };
 
     let hasPreviewAccess = false;
     try {
@@ -503,12 +636,25 @@
       window.location.replace('../');
     }
 
+    const languageSwitch = document.getElementById('language-switch');
+    const langJaBtn = document.getElementById('lang-ja-btn');
+    const langEnBtn = document.getElementById('lang-en-btn');
+    const backLink = document.getElementById('back-link');
+    const pageTitle = document.getElementById('page-title');
+    const pageLead = document.getElementById('page-lead');
+    const quizListHeader = document.getElementById('quiz-list-header');
+    const footerAttribution = document.getElementById('footer-attribution');
     const errorMsg = document.getElementById('error-msg');
     const quizListBody = document.getElementById('quiz-list-body');
     const modalOverlay = document.getElementById('modal-overlay');
     const modalClose = document.getElementById('modal-close');
     const modalTitle = document.getElementById('modal-title');
     const panelSelectedMeta = document.getElementById('panel-selected-meta');
+    const modalTextLabel = document.getElementById('modal-text-label');
+    const modalQuestionCodeLabel = document.getElementById('modal-question-code-label');
+    const modalChoicesLabel = document.getElementById('modal-choices-label');
+    const modalExplanationLabel = document.getElementById('modal-explanation-label');
+    const modalAnswerCodeLabel = document.getElementById('modal-answer-code-label');
     const modalText = document.getElementById('modal-text');
     const modalChoices = document.getElementById('modal-choices');
     const modalResult = document.getElementById('modal-result');
@@ -522,12 +668,99 @@
     const modalACode = document.getElementById('modal-answer-code');
     const modalPlayLink = document.getElementById('modal-play-link');
 
+    let currentLanguage = loadLanguage();
+    let currentErrorKey = '';
     let selectedQuiz = null;
     let selectedAnswerIndex = null;
 
-    function showError(message) {
-      errorMsg.textContent = message;
+    function normalizeLanguage(value) {
+      return value === 'en' ? 'en' : defaultLanguage;
+    }
+
+    function loadLanguage() {
+      try {
+        return normalizeLanguage(window.localStorage.getItem(languageStorageKey));
+      } catch (_) {
+        return defaultLanguage;
+      }
+    }
+
+    function persistLanguage(language) {
+      try {
+        window.localStorage.setItem(languageStorageKey, language);
+      } catch (_) {}
+    }
+
+    function t(key, params = {}) {
+      const strings = uiStrings[currentLanguage] || uiStrings[defaultLanguage];
+      const fallbackStrings = uiStrings[defaultLanguage];
+      const value = strings[key] !== undefined ? strings[key] : fallbackStrings[key];
+      return typeof value === 'function' ? value(params) : value;
+    }
+
+    function normalizeLocalizedString(value, fallback) {
+      if (typeof value === 'string' && value.trim()) {
+        return value;
+      }
+      return typeof fallback === 'string' ? fallback : '';
+    }
+
+    function normalizeChoices(choices) {
+      if (!Array.isArray(choices)) {
+        return [];
+      }
+      return choices.map(choice => typeof choice === 'string' ? choice : '');
+    }
+
+    function normalizeQuizData(quiz) {
+      const choices = normalizeChoices(quiz && quiz.choices);
+      const rawChoicesEn = normalizeChoices(quiz && quiz.choices_en);
+      const choicesEn = rawChoicesEn.length === choices.length
+        ? rawChoicesEn.map((choice, index) => choice.trim() ? choice : choices[index])
+        : choices.slice();
+
+      return {
+        ...quiz,
+        title: normalizeLocalizedString(quiz && quiz.title, ''),
+        title_en: normalizeLocalizedString(quiz && quiz.title_en, quiz && quiz.title),
+        text: normalizeLocalizedString(quiz && quiz.text, ''),
+        text_en: normalizeLocalizedString(quiz && quiz.text_en, quiz && quiz.text),
+        choices,
+        choices_en: choicesEn,
+        explanation: normalizeLocalizedString(quiz && quiz.explanation, ''),
+        explanation_en: normalizeLocalizedString(quiz && quiz.explanation_en, quiz && quiz.explanation),
+      };
+    }
+
+    function getQuizTitle(quiz) {
+      return currentLanguage === 'en' ? quiz.title_en : quiz.title;
+    }
+
+    function getQuizText(quiz) {
+      return currentLanguage === 'en' ? quiz.text_en : quiz.text;
+    }
+
+    function getQuizExplanation(quiz) {
+      return currentLanguage === 'en' ? quiz.explanation_en : quiz.explanation;
+    }
+
+    function getQuizChoices(quiz) {
+      return currentLanguage === 'en' ? quiz.choices_en : quiz.choices;
+    }
+
+    function renderError() {
+      if (!currentErrorKey) {
+        errorMsg.style.display = 'none';
+        errorMsg.textContent = '';
+        return;
+      }
+      errorMsg.textContent = t(currentErrorKey);
       errorMsg.style.display = 'block';
+    }
+
+    function showError(messageKey) {
+      currentErrorKey = messageKey;
+      renderError();
     }
 
     function escapeHtml(str) {
@@ -541,6 +774,16 @@
       );
     }
 
+    function formatInlineText(text, { linkifyUrls = false } = {}) {
+      const source = typeof text === 'string' ? text : '';
+      return source.split(/(`[^`\n]+`)/g).map(segment => {
+        if (segment.startsWith('`') && segment.endsWith('`')) {
+          return `<code class="inline-code">${escapeHtml(segment.slice(1, -1))}</code>`;
+        }
+        return linkifyUrls ? linkify(segment) : escapeHtml(segment);
+      }).join('');
+    }
+
     function setHighlightedCode(el, code) {
       el.textContent = code;
       el.removeAttribute('data-highlighted');
@@ -548,11 +791,53 @@
       hljs.highlightElement(el);
     }
 
+    function applyLanguage() {
+      document.documentElement.lang = currentLanguage;
+      document.title = t('documentTitle');
+      languageSwitch.setAttribute('aria-label', t('languageSwitchAria'));
+      langJaBtn.textContent = t('languageJa');
+      langEnBtn.textContent = t('languageEn');
+      langJaBtn.classList.toggle('active', currentLanguage === 'ja');
+      langEnBtn.classList.toggle('active', currentLanguage === 'en');
+      langJaBtn.setAttribute('aria-pressed', String(currentLanguage === 'ja'));
+      langEnBtn.setAttribute('aria-pressed', String(currentLanguage === 'en'));
+      backLink.textContent = t('backLink');
+      pageTitle.textContent = t('pageTitle');
+      pageLead.textContent = t('pageLead');
+      quizListHeader.textContent = t('quizListHeader');
+      footerAttribution.innerHTML = t('footerAttributionHtml');
+      modalClose.setAttribute('aria-label', t('modalCloseAria'));
+      modalTextLabel.textContent = t('modalTextLabel');
+      modalQuestionCodeLabel.textContent = t('modalQuestionCodeLabel');
+      modalChoicesLabel.textContent = t('modalChoicesLabel');
+      modalExplanationLabel.textContent = t('modalExplanationLabel');
+      modalAnswerCodeLabel.textContent = t('modalAnswerCodeLabel');
+      modalPlayLink.textContent = t('modalPlayLink');
+      renderError();
+      renderQuizList();
+      if (selectedQuiz) {
+        renderSelectedQuiz();
+      } else {
+        modalTitle.textContent = t('modalSelectTitle');
+        panelSelectedMeta.textContent = t('modalSelectHint');
+      }
+    }
+
+    function setLanguage(language) {
+      const nextLanguage = normalizeLanguage(language);
+      if (currentLanguage === nextLanguage) {
+        return;
+      }
+      currentLanguage = nextLanguage;
+      persistLanguage(currentLanguage);
+      applyLanguage();
+    }
+
     function renderQuizList() {
       quizListBody.innerHTML = '';
 
       if (allQuizzes.length === 0) {
-        quizListBody.innerHTML = '<tr><td colspan="1" class="empty-msg">表示できるクイズがありません</td></tr>';
+        quizListBody.innerHTML = `<tr><td colspan="1" class="empty-msg">${escapeHtml(t('emptyMsg'))}</td></tr>`;
         return;
       }
 
@@ -568,16 +853,20 @@
 
     function renderSelectedQuiz() {
       if (!selectedQuiz) {
+        modalTitle.textContent = t('modalSelectTitle');
+        panelSelectedMeta.textContent = t('modalSelectHint');
         return;
       }
 
       const hasAnswered = Number.isInteger(selectedAnswerIndex);
+      const choices = getQuizChoices(selectedQuiz);
+      const isCorrect = hasAnswered && selectedAnswerIndex === selectedQuiz.answer;
 
-      modalTitle.textContent = selectedQuiz.id;
+      modalTitle.innerHTML = formatInlineText(getQuizTitle(selectedQuiz) || selectedQuiz.id);
       panelSelectedMeta.textContent = hasAnswered
-        ? `${selectedAnswerIndex === selectedQuiz.answer ? '正解' : '不正解'}`
-        : '選択肢を選ぶと解答と解説を表示します';
-      modalText.textContent = selectedQuiz.text;
+        ? `${selectedQuiz.id} ・ ${t(isCorrect ? 'modalStatusCorrect' : 'modalStatusIncorrect')}`
+        : `${selectedQuiz.id} ・ ${t('modalChooseHint')}`;
+      modalText.innerHTML = formatInlineText(getQuizText(selectedQuiz));
 
       if (selectedQuiz.question_code) {
         setHighlightedCode(modalQCode, selectedQuiz.question_code);
@@ -587,11 +876,11 @@
       }
 
       modalChoices.innerHTML = '';
-      selectedQuiz.choices.forEach((choice, index) => {
+      choices.forEach((choice, index) => {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'choice-btn';
-        button.textContent = choice;
+        button.innerHTML = formatInlineText(choice);
 
         if (hasAnswered) {
           button.disabled = true;
@@ -618,10 +907,10 @@
       }
 
       modalResult.style.display = 'block';
-      modalResultBadge.textContent = selectedAnswerIndex === selectedQuiz.answer ? '正解！' : '不正解...';
-      modalResultBadge.className = selectedAnswerIndex === selectedQuiz.answer ? 'correct' : 'incorrect';
-      modalAnswerSummary.textContent = `正解: ${selectedQuiz.choices[selectedQuiz.answer]}`;
-      modalExplanation.innerHTML = linkify(selectedQuiz.explanation);
+      modalResultBadge.textContent = t(isCorrect ? 'correctBadge' : 'incorrectBadge');
+      modalResultBadge.className = isCorrect ? 'correct' : 'incorrect';
+      modalAnswerSummary.innerHTML = formatInlineText(t('answerSummary', { answer: choices[selectedQuiz.answer] }));
+      modalExplanation.innerHTML = formatInlineText(getQuizExplanation(selectedQuiz), { linkifyUrls: true });
 
       if (selectedQuiz.answer_code || selectedQuiz.answer_code_play_ref) {
         modalACodeWrap.style.display = 'block';
@@ -655,6 +944,8 @@
       modalOverlay.classList.remove('open');
     }
 
+    langJaBtn.addEventListener('click', () => setLanguage('ja'));
+    langEnBtn.addEventListener('click', () => setLanguage('en'));
     modalClose.addEventListener('click', closeModal);
     modalOverlay.addEventListener('click', event => {
       if (event.target === modalOverlay) {
@@ -667,10 +958,10 @@
       }
     });
 
+    applyLanguage();
     if (allQuizzes.length === 0) {
-      showError('クイズデータの読み込みに失敗しました');
+      showError('errorQuizLoad');
     }
-    renderQuizList();
   </script>
 </body>
 </html>

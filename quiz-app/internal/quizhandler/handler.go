@@ -17,11 +17,15 @@ const (
 type Quiz struct {
 	ID                string   `yaml:"id"`
 	Title             string   `yaml:"title"`
+	TitleEn           string   `yaml:"title_en"`
 	Text              string   `yaml:"text"`
+	TextEn            string   `yaml:"text_en"`
 	Mode              string   `yaml:"mode"`
 	Choices           []string `yaml:"choices"`
+	ChoicesEn         []string `yaml:"choices_en"`
 	Answer            int      `yaml:"answer"`
 	Explanation       string   `yaml:"explanation"`
+	ExplanationEn     string   `yaml:"explanation_en"`
 	QuestionCodeRef   string   `yaml:"question_code_ref"`
 	AnswerCodeRef     string   `yaml:"answer_code_ref"`
 	AnswerCodePlayRef string   `yaml:"answer_code_play_ref"`
@@ -43,8 +47,45 @@ func ParseQuizzes(data []byte) ([]Quiz, error) {
 			return nil, fmt.Errorf("quiz %s: %w", label, err)
 		}
 		quizzes[i].Mode = mode
+		if err := normalizeLocalizedFields(&quizzes[i]); err != nil {
+			label := quizzes[i].ID
+			if label == "" {
+				label = fmt.Sprintf("#%d", i+1)
+			}
+			return nil, fmt.Errorf("quiz %s: %w", label, err)
+		}
 	}
 	return quizzes, nil
+}
+
+func normalizeLocalizedFields(quiz *Quiz) error {
+	quiz.TitleEn = defaultLocalizedText(quiz.TitleEn, quiz.Title)
+	quiz.TextEn = defaultLocalizedText(quiz.TextEn, quiz.Text)
+	quiz.ExplanationEn = defaultLocalizedText(quiz.ExplanationEn, quiz.Explanation)
+
+	switch {
+	case len(quiz.ChoicesEn) == 0:
+		quiz.ChoicesEn = append([]string(nil), quiz.Choices...)
+	case len(quiz.ChoicesEn) != len(quiz.Choices):
+		return fmt.Errorf("choices_en count %d does not match choices count %d", len(quiz.ChoicesEn), len(quiz.Choices))
+	default:
+		normalizedChoicesEn := append([]string(nil), quiz.ChoicesEn...)
+		for i := range normalizedChoicesEn {
+			if strings.TrimSpace(normalizedChoicesEn[i]) == "" {
+				normalizedChoicesEn[i] = quiz.Choices[i]
+			}
+		}
+		quiz.ChoicesEn = normalizedChoicesEn
+	}
+
+	return nil
+}
+
+func defaultLocalizedText(value, fallback string) string {
+	if strings.TrimSpace(value) == "" {
+		return fallback
+	}
+	return value
 }
 
 // NormalizeQuizMode normalizes quiz pool metadata from YAML/static data.
