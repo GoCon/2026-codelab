@@ -17,6 +17,17 @@ if (previewScripts.length === 0) {
 }
 const previewScript = previewScripts[previewScripts.length - 1][1];
 
+function decodeHtmlEntities(text) {
+  return String(text)
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+}
+
+function stripHTML(html) {
+  return decodeHtmlEntities(String(html).replace(/<[^>]*>/g, ''));
+}
+
 function extractInputTag(id) {
   const match = appHTML.match(new RegExp(`<input[\\s\\S]*?id="${id}"[\\s\\S]*?>`));
   assert.ok(match, `expected input with id="${id}"`);
@@ -192,6 +203,7 @@ class FakeElement {
 
   set innerHTML(value) {
     this._innerHTML = value;
+    this.textContent = stripHTML(value);
     if (value === '') {
       this.children = [];
     }
@@ -521,6 +533,41 @@ test('language switch localizes the app UI and active quiz content', () => {
   assert.equal(app.elements.get('result-badge').textContent, 'Incorrect...');
   assert.equal(app.elements.get('correct-answer-text').textContent, 'The correct answer is "Choice B".');
   assert.equal(app.elements.get('explanation').innerHTML, 'English explanation');
+});
+
+test('backtick-wrapped quiz text renders as inline code', () => {
+  assert.match(appHTML, /\.inline-code \{/);
+  assert.match(previewHTML, /\.inline-code \{/);
+  assert.match(previewHTML, /function formatInlineText/);
+  assert.match(previewHTML, /modalExplanation\.innerHTML = formatInlineText\(getQuizExplanation\(selectedQuiz\), \{ linkifyUrls: true \}\);/);
+
+  const app = createHarness([
+    {
+      id: 'inline_q1',
+      title: 'inline title',
+      text: '実行するコマンドは `go test ./...` です',
+      choices: ['`go test ./...`', '`go build`'],
+      answer: 1,
+      explanation: '解説では `go build` を実行します。',
+    },
+  ]);
+
+  app.clickStart();
+  assert.equal(
+    app.elements.get('question-text').innerHTML,
+    '実行するコマンドは <code class="inline-code">go test ./...</code> です',
+  );
+  assert.equal(app.choiceButtons()[0].innerHTML, '<code class="inline-code">go test ./...</code>');
+
+  app.choiceButtons()[0].trigger('click');
+  assert.equal(
+    app.elements.get('correct-answer-text').innerHTML,
+    '正解は「<code class="inline-code">go build</code>」です。',
+  );
+  assert.equal(
+    app.elements.get('explanation').innerHTML,
+    '解説では <code class="inline-code">go build</code> を実行します。',
+  );
 });
 
 test('progress is rendered as a reward-style subheader below the header', () => {

@@ -394,6 +394,21 @@
       font-size: inherit;
       line-height: inherit;
     }
+    .inline-code {
+      margin: 0 0.08em;
+      padding: 0.08em 0.45em;
+      border: 1px solid rgba(16, 57, 114, 0.12);
+      border-radius: 6px;
+      background: rgba(16, 57, 114, 0.08);
+      color: var(--primitive-navy);
+      font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+    .choice-btn .inline-code {
+      color: inherit;
+    }
 
     #choices {
       display: flex;
@@ -1508,6 +1523,16 @@
       );
     }
 
+    function formatInlineText(text, { linkifyUrls = false } = {}) {
+      const source = typeof text === 'string' ? text : '';
+      return source.split(/(`[^`\n]+`)/g).map(segment => {
+        if (segment.startsWith('`') && segment.endsWith('`')) {
+          return `<code class="inline-code">${escapeHTML(segment.slice(1, -1))}</code>`;
+        }
+        return linkifyUrls ? linkify(segment) : escapeHTML(segment);
+      }).join('');
+    }
+
     function normalizeQuizMode(value) {
       if (value === 'normal' || value === 'extra') {
         return value;
@@ -1917,7 +1942,7 @@
 
       questionCard.style.display = 'block';
       choicesEl.innerHTML = '';
-      questionText.textContent = getQuizText(quiz);
+      questionText.innerHTML = formatInlineText(getQuizText(quiz));
 
       if (quiz.question_code) {
         highlightCodeBlock(codeBlock.querySelector('code'), quiz.question_code);
@@ -1930,7 +1955,7 @@
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'choice-btn';
-        button.textContent = choice;
+        button.innerHTML = formatInlineText(choice);
         if (hasAnswered) {
           button.disabled = true;
           if (index === quiz.answer) {
@@ -1958,14 +1983,16 @@
       resultBadge.className = isCorrect ? 'correct' : 'incorrect';
 
       if (!isCorrect) {
-        correctAnswerText.textContent = t('correctAnswerSummary', { answer: getDisplayedChoiceText(quiz, quiz.answer) });
+        correctAnswerText.innerHTML = formatInlineText(
+          t('correctAnswerSummary', { answer: getDisplayedChoiceText(quiz, quiz.answer) })
+        );
         correctAnswerText.style.display = 'block';
       } else {
         correctAnswerText.style.display = 'none';
-        correctAnswerText.textContent = '';
+        correctAnswerText.innerHTML = '';
       }
 
-      explanation.innerHTML = linkify(getQuizExplanation(quiz));
+      explanation.innerHTML = formatInlineText(getQuizExplanation(quiz), { linkifyUrls: true });
 
       if (isCorrect && (quiz.answer_code || quiz.answer_code_play_ref)) {
         if (quiz.answer_code) {
