@@ -59,7 +59,7 @@ questions:
     question_code_ref: "code/q4_question.go"
     choices:
       - "ループごとにファイルが上書きされる"
-      - "defer は関数の終了時に実行されるため、ファイルディスクリプタが枯渇する"
+      - "ファイルディスクリプタが枯渇する"
       - "os.Open は defer で閉じることができない"
       - "コンパイルエラーになる"
     answer: 1

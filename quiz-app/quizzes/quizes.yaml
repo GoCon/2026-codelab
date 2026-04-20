@@ -181,13 +181,12 @@
     question_code_ref: "code/tomtwinkle_q4_question.go"
     choices:
       - "ループごとにファイルが上書きされる"
-      - "defer は関数の終了時に実行されるため、ファイルディスクリプタが枯渇する"
+      - "ファイルディスクリプタが枯渇する"
       - "os.Open は defer で閉じることができない"
       - "コンパイルエラーになる"
     choices_en:
       - The file is overwritten on each loop iteration
-      - Because defer runs when the function returns, file descriptors are 
-        exhausted
+      - File descriptors are exhausted
       - '`os.Open` cannot be closed with defer'
       - It fails to compile
     answer: 1
