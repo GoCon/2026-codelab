@@ -455,7 +455,8 @@
       width: min(760px, 100%);
       margin: 0 auto;
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
       gap: var(--space-xs);
     }
     .logo-container {
@@ -468,6 +469,7 @@
       font-size: 1rem;
       font-weight: 700;
       letter-spacing: 0.02em;
+      flex-shrink: 0;
     }
     .footer-logo {
       display: block;
@@ -475,8 +477,11 @@
       height: auto;
     }
     .copyright {
+      margin: 0;
       font-size: 0.875rem;
       color: var(--text-secondary);
+      text-align: right;
+      white-space: nowrap;
     }
     .copyright a {
       color: var(--primitive-blue);
@@ -521,10 +526,18 @@
       footer {
         padding: var(--space-s) var(--space-xs);
       }
-      .footer-info,
+      .footer-info {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
       .logo-container {
         align-items: center;
         text-align: center;
+      }
+      .copyright {
+        text-align: center;
+        white-space: normal;
       }
     }
   </style>
@@ -649,7 +662,7 @@
         quizListHeader: '問題ID',
         emptyMsg: '表示できるクイズがありません。',
         errorQuizLoad: 'クイズデータの読み込みに失敗しました。',
-        footerAttributionHtml: 'The Go gopher was designed by <a href="https://reneefrench.blogspot.com/">Renée French</a>. イラストは <a href="https://x.com/avocadoneko">avocadoneko</a>。',
+        footerAttributionHtml: 'The Go gopher was designed by <a href="https://reneefrench.blogspot.com/">Renée French</a>. Illustrations by <a href="https://x.com/avocadoneko">avocadoneko</a>.',
         modalCloseAria: '閉じる',
         modalSelectTitle: '問題を選択してください',
         modalSelectHint: '一覧から問題を選ぶと詳細を表示します。',

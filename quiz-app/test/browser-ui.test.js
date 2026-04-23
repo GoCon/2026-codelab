@@ -47,6 +47,12 @@ function assertFooterInfoMarkup(html, imagePath) {
   assert.doesNotMatch(html, /© 2026 Go Conference Organizing Team/);
 }
 
+function assertFooterResponsiveLayoutCSS(html) {
+  assert.match(html, /\.footer-info \{[\s\S]*?display: flex;[\s\S]*?align-items: center;[\s\S]*?justify-content: space-between;[\s\S]*?\}/);
+  assert.match(html, /\.copyright \{[\s\S]*?margin: 0;[\s\S]*?text-align: right;[\s\S]*?white-space: nowrap;[\s\S]*?\}/);
+  assert.match(html, /@media \(max-width: 768px\) \{[\s\S]*?\.footer-info \{[\s\S]*?flex-direction: column;[\s\S]*?align-items: center;[\s\S]*?text-align: center;[\s\S]*?\}[\s\S]*?\.logo-container \{[\s\S]*?align-items: center;[\s\S]*?text-align: center;[\s\S]*?\}[\s\S]*?\.copyright \{[\s\S]*?text-align: center;[\s\S]*?white-space: normal;[\s\S]*?\}/);
+}
+
 function assertHeaderConferenceLogo(html, imagePath) {
   const headerMatch = html.match(/<header class="header">([\s\S]*?)<\/header>/);
   assert.ok(headerMatch, 'expected header markup');
@@ -482,10 +488,20 @@ test('nickname and admin keyword fields use plain text inputs', () => {
 
 test('top page footer uses the conference attribution block', () => {
   assertFooterInfoMarkup(appHTML, './assets/go-conference-2026-logo.svg');
+  assertFooterResponsiveLayoutCSS(appHTML);
 });
 
 test('preview page footer uses the conference attribution block', () => {
   assertFooterInfoMarkup(previewHTML, '../assets/go-conference-2026-logo.svg');
+  assertFooterResponsiveLayoutCSS(previewHTML);
+});
+
+test('preview page keeps footer attribution copy in English for Japanese UI', () => {
+  assert.match(
+    previewHTML,
+    /footerAttributionHtml: 'The Go gopher was designed by <a href="https:\/\/reneefrench\.blogspot\.com\/">Renée French<\/a>\. Illustrations by <a href="https:\/\/x\.com\/avocadoneko">avocadoneko<\/a>\.',\s+modalCloseAria: '閉じる'/,
+  );
+  assert.doesNotMatch(previewHTML, /footerAttributionHtml: '[^']*イラストは[^']*'/);
 });
 
 test('top page header uses the conference logo with CodeLab label', () => {
@@ -535,12 +551,15 @@ test('language switch localizes the app UI and active quiz content', () => {
     },
   ]);
 
+  assert.match(app.elements.get('footer-attribution').innerHTML, /Illustrations by/);
+  assert.doesNotMatch(app.elements.get('footer-attribution').innerHTML, /イラストは/);
   assert.equal(app.elements.get('start-btn').textContent, 'クイズを始める');
 
   app.elements.get('language-toggle-btn').trigger('click');
   assert.equal(app.elements.get('language-toggle-btn').attributes['aria-expanded'], 'true');
   app.elements.get('lang-en-btn').trigger('click');
   assert.equal(app.elements.get('language-toggle-btn').attributes['aria-expanded'], 'false');
+  assert.match(app.elements.get('footer-attribution').innerHTML, /Illustrations by/);
   assert.equal(app.elements.get('header-tagline').textContent, 'Test your Go knowledge!');
   assert.equal(app.elements.get('start-btn').textContent, 'Start quiz');
   assert.equal(app.localStorage.get('quiz-language'), 'en');
