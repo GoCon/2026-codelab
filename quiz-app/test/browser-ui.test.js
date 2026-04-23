@@ -5,6 +5,8 @@ const test = require('node:test');
 const vm = require('node:vm');
 
 const appHTML = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
+const extraModeCSS = fs.readFileSync(path.join(__dirname, '..', 'public', 'assets', 'extra-mode.css'), 'utf8');
+const extraModeScript = fs.readFileSync(path.join(__dirname, '..', 'public', 'assets', 'extra-mode.js'), 'utf8');
 const previewHTML = fs.readFileSync(path.join(__dirname, '..', 'public', 'preview', 'index.html'), 'utf8');
 const scripts = [...appHTML.matchAll(/<script>([\s\S]*?)<\/script>/g)];
 if (scripts.length === 0) {
@@ -120,6 +122,8 @@ const elementIDs = [
   'perfect-score-message',
   'challenge-btn',
   'restart-btn',
+  'retry-extra-mode-btn',
+  'score-home-btn',
   'score-preview-btn',
   'start-btn',
   'preview-btn',
@@ -134,6 +138,15 @@ const elementIDs = [
   'admin-keyword-title',
   'admin-keyword-note',
   'open-admin-btn',
+  'extra-mode-overlay',
+  'extra-mode-stack-stream',
+  'extra-mode-recover-line',
+  'extra-mode-download-btn',
+  'extra-mode-command-text',
+  'extra-mode-boot-output',
+  'extra-mode-install-log',
+  'extra-mode-status-line',
+  'extra-mode-clock',
 ];
 
 const sampleQuizzes = [
@@ -210,6 +223,7 @@ class FakeElement {
         this.className = [...classes].join(' ');
         return shouldHaveClass;
       },
+      contains: name => this.className.split(/\s+/).filter(Boolean).includes(name),
     };
   }
 
@@ -274,18 +288,34 @@ function createHarness(quizzes = sampleQuizzes) {
   const storage = new Map();
   const localStorage = new Map();
   const scrollCalls = [];
+  const timers = [];
+  const animationFrames = [];
   const randomValues = [0.81, 0.14, 0.66, 0.29, 0.73, 0.42, 0.57, 0.33, 0.91, 0.18];
   let randomIndex = 0;
+  let nextTimerID = 0;
+  let nextAnimationFrameID = 0;
+  let now = 0;
   const math = Object.create(Math);
   math.random = () => {
     const value = randomValues[randomIndex % randomValues.length];
     randomIndex += 1;
     return value;
   };
+  class FakeDate extends Date {
+    constructor(...args) {
+      super(...(args.length ? args : [now]));
+    }
+
+    static now() {
+      return now;
+    }
+  }
+  FakeDate.parse = Date.parse;
+  FakeDate.UTC = Date.UTC;
 
   const context = {
     console,
-    Date,
+    Date: FakeDate,
     Math: math,
     Blob: class Blob {
       constructor(parts) {
@@ -306,11 +336,55 @@ function createHarness(quizzes = sampleQuizzes) {
     },
   };
 
+  function advanceTimersBy(ms) {
+    now += ms;
+    let iterations = 0;
+    let hasReadyTimers = true;
+    while (hasReadyTimers) {
+      hasReadyTimers = false;
+      timers.sort((left, right) => left.time - right.time || left.id - right.id);
+      while (timers.length > 0 && timers[0].time <= now) {
+        const timer = timers.shift();
+        timer.fn();
+        hasReadyTimers = true;
+        iterations += 1;
+        if (iterations > 5000) {
+          throw new Error('too many queued timers');
+        }
+        timers.sort((left, right) => left.time - right.time || left.id - right.id);
+      }
+    }
+  }
+
+  function runAllTimers() {
+    let iterations = 0;
+    while (timers.length > 0) {
+      timers.sort((left, right) => left.time - right.time || left.id - right.id);
+      advanceTimersBy(Math.max(0, timers[0].time - now));
+      iterations += 1;
+      if (iterations > 5000) {
+        throw new Error('timers did not settle');
+      }
+    }
+  }
+
+  function advanceAnimationFrames(count = 1, frameMilliseconds = 16) {
+    for (let i = 0; i < count; i += 1) {
+      if (animationFrames.length === 0) {
+        return;
+      }
+      now += frameMilliseconds;
+      const frames = animationFrames.splice(0, animationFrames.length);
+      frames.forEach(frame => frame.fn(now));
+    }
+  }
+
   context.document = {
     title: '',
     documentElement: {
       lang: 'ja',
     },
+    body: new FakeElement('body'),
     getElementById(id) {
       if (!elements.has(id)) {
         elements.set(id, new FakeElement(id));
@@ -371,9 +445,34 @@ function createHarness(quizzes = sampleQuizzes) {
     scrollTo(...args) {
       scrollCalls.push(args);
     },
-    setTimeout(fn) {
-      fn();
-      return 0;
+    setTimeout(fn, delay = 0) {
+      const timer = {
+        id: ++nextTimerID,
+        time: now + Math.max(0, Number(delay) || 0),
+        fn,
+      };
+      timers.push(timer);
+      return timer.id;
+    },
+    clearTimeout(id) {
+      const index = timers.findIndex(timer => timer.id === id);
+      if (index >= 0) {
+        timers.splice(index, 1);
+      }
+    },
+    requestAnimationFrame(fn) {
+      const frame = {
+        id: ++nextAnimationFrameID,
+        fn,
+      };
+      animationFrames.push(frame);
+      return frame.id;
+    },
+    cancelAnimationFrame(id) {
+      const index = animationFrames.findIndex(frame => frame.id === id);
+      if (index >= 0) {
+        animationFrames.splice(index, 1);
+      }
     },
   };
 
@@ -385,9 +484,10 @@ function createHarness(quizzes = sampleQuizzes) {
   context.window.Blob = context.Blob;
   context.window.hljs = context.hljs;
   context.window.Math = math;
-  context.window.Date = Date;
+  context.window.Date = FakeDate;
 
   vm.createContext(context);
+  vm.runInContext(extraModeScript, context);
   vm.runInContext(appScript, context);
 
   function currentQuiz() {
@@ -452,6 +552,15 @@ function createHarness(quizzes = sampleQuizzes) {
     clickChallenge() {
       elements.get('challenge-btn').trigger('click');
     },
+    clickRetryExtraMode() {
+      elements.get('retry-extra-mode-btn').trigger('click');
+    },
+    clickScoreHome() {
+      elements.get('score-home-btn').trigger('click');
+    },
+    clickExtraModeDownload() {
+      elements.get('extra-mode-download-btn').trigger('click');
+    },
     openHiddenKeywordPopup() {
       for (let i = 0; i < 10; i += 1) {
         elements.get('footer-copyright').trigger('click');
@@ -464,6 +573,10 @@ function createHarness(quizzes = sampleQuizzes) {
     answerCurrentQuestionCorrectly,
     answerCurrentQuestionIncorrectly,
     runCurrentSessionCorrectly,
+    advanceTimersBy,
+    runAllTimers,
+    advanceAnimationFrames,
+    body: context.document.body,
   };
 }
 
@@ -764,6 +877,92 @@ test('perfect score renders a fireworks-style celebration layer with more confet
   );
 });
 
+test('normal mode completion time excludes explanation-viewing time', () => {
+  const app = createHarness();
+
+  app.clickStart();
+  app.advanceTimersBy(1100);
+  app.answerCurrentQuestionCorrectly();
+
+  app.advanceTimersBy(5000);
+  assert.equal(app.elements.get('perfect-time-value').textContent, '');
+
+  app.elements.get('next-btn').trigger('click');
+  app.advanceTimersBy(1200);
+  app.answerCurrentQuestionCorrectly();
+  app.elements.get('next-btn').trigger('click');
+
+  assert.equal(app.elements.get('score-card').style.display, 'block');
+  assert.equal(app.elements.get('perfect-time-value').textContent, '2 秒');
+});
+
+test('extra mode assets are extracted to dedicated files', () => {
+  assert.match(appHTML, /<link rel="stylesheet" href="\.\/assets\/extra-mode\.css">/);
+  assert.match(appHTML, /<script src="\.\/assets\/extra-mode\.js"><\/script>/);
+  assert.match(extraModeScript, /createExtraModeController/);
+});
+
+test('extra mode terminal theme brightens question text and uses white-based code highlighting', () => {
+  assert.match(
+    extraModeCSS,
+    /\.extra-mode-screen \{[\s\S]*?background: #000;/,
+  );
+  assert.match(
+    extraModeCSS,
+    /\.extra-mode-stack-stream \{[\s\S]*?min-height: auto;[\s\S]*?transform: none;/,
+  );
+  assert.doesNotMatch(`${appHTML}\n${extraModeCSS}`, /extra-mode-panic-scroll/);
+  assert.match(
+    extraModeCSS,
+    /body\.extra-mode-active #question-text \{[\s\S]*?color: #f7fff8;[\s\S]*?text-shadow: 0 0 12px rgba\(255, 255, 255, 0\.08\);/,
+  );
+  assert.match(
+    extraModeCSS,
+    /body\.extra-mode-active pre code\.hljs,\s+body\.extra-mode-active pre code\.hljs span,\s+body\.extra-mode-active pre code\.hljs \.hljs-subst \{[\s\S]*?color: #f7fff8 !important;/,
+  );
+  assert.match(
+    extraModeCSS,
+    /\.extra-mode-download-btn \{[\s\S]*?display: inline-flex;[\s\S]*?background: rgba\(0, 0, 0, 0\.92\);[\s\S]*?box-shadow: 4px 4px 0 rgba\(125, 255, 155, 0\.14\);/,
+  );
+  assert.match(
+    appHTML,
+    /class="extra-mode-download-btn-label">Enter<\/span>[\s\S]*?class="extra-mode-download-btn-hint">Run installer<\/span>/,
+  );
+});
+
+test('extra mode keeps header language switch and footer attribution in terminal theme', () => {
+  assert.match(
+    extraModeCSS,
+    /body\.extra-mode-active \.header \{[\s\S]*?position: static;[\s\S]*?padding: 14px 24px 14px 132px;[\s\S]*?border-bottom: 1px solid rgba\(125, 255, 155, 0\.18\);/,
+  );
+  assert.match(
+    extraModeCSS,
+    /body\.extra-mode-active \.language-toggle \{[\s\S]*?background: rgba\(0, 0, 0, 0\.34\);[\s\S]*?color: #d7ffd9;/,
+  );
+  assert.match(
+    extraModeCSS,
+    /body\.extra-mode-active footer \{[\s\S]*?background: rgba\(0, 0, 0, 0\.94\);/,
+  );
+
+  const app = createHarness();
+
+  app.clickStart();
+  app.runCurrentSessionCorrectly();
+  app.clickChallenge();
+  app.runAllTimers();
+  app.clickExtraModeDownload();
+  app.runAllTimers();
+
+  assert.match(app.elements.get('footer-attribution').innerHTML, /Illustrations by/);
+  assert.equal(app.elements.get('language-toggle-btn').attributes['aria-expanded'], 'false');
+
+  app.elements.get('language-toggle-btn').trigger('click');
+  assert.equal(app.elements.get('language-toggle-btn').attributes['aria-expanded'], 'true');
+
+  app.elements.get('language-toggle-btn').trigger('click');
+  assert.equal(app.elements.get('language-toggle-btn').attributes['aria-expanded'], 'false');
+});
+
 test('extra mode only serves extra quizzes and still shows the correct answer after a shuffled wrong click', () => {
   const app = createHarness();
 
@@ -772,6 +971,9 @@ test('extra mode only serves extra quizzes and still shows the correct answer af
 
   const beforeChallengeCount = app.beacons.length;
   app.clickChallenge();
+  app.runAllTimers();
+  app.clickExtraModeDownload();
+  app.runAllTimers();
 
   assert.equal(app.currentQuiz().id, 'extra_q1');
 
@@ -794,4 +996,154 @@ test('extra mode only serves extra quizzes and still shows the correct answer af
   const hasClass = (button, className) => button.className.split(/\s+/).includes(className);
   assert.equal(buttons.filter(button => hasClass(button, 'correct')).length, 1);
   assert.equal(buttons.filter(button => hasClass(button, 'incorrect')).length, 1);
+});
+
+test('extra mode trigger opens the fake installer and then enters terminal UI', () => {
+  const app = createHarness();
+
+  app.clickStart();
+  app.runCurrentSessionCorrectly();
+  app.clickChallenge();
+
+  assert.equal(app.elements.get('extra-mode-overlay').attributes['aria-hidden'], 'false');
+  assert.equal(app.elements.get('extra-mode-stack-stream').textContent, '');
+  assert.ok(app.elements.get('extra-mode-overlay').classList.contains('booting'));
+  assert.equal(app.body.classList.contains('extra-mode-transition'), false);
+
+  assert.equal(app.elements.get('extra-mode-download-btn').disabled, false);
+  assert.match(
+    app.elements.get('extra-mode-boot-output').textContent,
+    /staged command: \$ go mod download[\s\S]*Press Enter to run the hidden installer\./,
+  );
+
+  app.clickExtraModeDownload();
+  app.runAllTimers();
+
+  assert.equal(app.currentQuiz().id, 'extra_q1');
+  assert.ok(app.body.classList.contains('extra-mode-active'));
+  assert.equal(app.elements.get('extra-mode-overlay').attributes['aria-hidden'], 'true');
+  assert.equal(app.elements.get('extra-mode-command-text').textContent, '$ go mod download');
+  assert.match(
+    app.elements.get('extra-mode-install-log').textContent,
+    /go: downloading github\.com\/gopher\/brain-juice v1\.0\.0/,
+  );
+  assert.equal(app.elements.get('extra-mode-status-line').textContent, 'Build successful.');
+  assert.equal(app.elements.get('extra-mode-clock').textContent, '00:00.000');
+
+  app.advanceAnimationFrames(3, 29);
+
+  assert.notEqual(app.elements.get('extra-mode-clock').textContent, '00:00.000');
+});
+
+test('extra mode clock stops once all extra questions are completed', () => {
+  const app = createHarness([
+    {
+      id: 'normal_timer_q1',
+      title: 'normal timer question',
+      text: 'normal timer question',
+      mode: 'normal',
+      choices: ['N1', 'N2'],
+      answer: 0,
+      explanation: 'normal timer explanation',
+    },
+    {
+      id: 'extra_timer_q1',
+      title: 'extra timer question 1',
+      text: 'extra timer question 1',
+      mode: 'extra',
+      choices: ['E1', 'E2'],
+      answer: 0,
+      explanation: 'extra timer explanation 1',
+    },
+    {
+      id: 'extra_timer_q2',
+      title: 'extra timer question 2',
+      text: 'extra timer question 2',
+      mode: 'extra',
+      choices: ['E3', 'E4'],
+      answer: 1,
+      explanation: 'extra timer explanation 2',
+    },
+  ]);
+
+  app.clickStart();
+  app.runCurrentSessionCorrectly();
+  app.clickChallenge();
+  app.runAllTimers();
+  app.clickExtraModeDownload();
+  app.runAllTimers();
+
+  app.advanceAnimationFrames(40, 31);
+  const runningValue = app.elements.get('extra-mode-clock').textContent;
+  assert.notEqual(runningValue, '00:00.000');
+
+  app.answerCurrentQuestionCorrectly();
+
+  const pausedValue = app.elements.get('extra-mode-clock').textContent;
+  assert.notEqual(pausedValue, '00:00.000');
+
+  app.advanceAnimationFrames(5, 31);
+
+  assert.equal(app.elements.get('extra-mode-clock').textContent, pausedValue);
+
+  app.advanceTimersBy(5000);
+  assert.equal(app.elements.get('extra-mode-clock').textContent, pausedValue);
+
+  app.elements.get('next-btn').trigger('click');
+  app.advanceAnimationFrames(3, 31);
+
+  const resumedValue = app.elements.get('extra-mode-clock').textContent;
+  assert.notEqual(resumedValue, pausedValue);
+
+  app.answerCurrentQuestionCorrectly();
+
+  const stoppedValue = app.elements.get('extra-mode-clock').textContent;
+  assert.notEqual(stoppedValue, '00:00.000');
+
+  app.advanceTimersBy(5000);
+  app.advanceAnimationFrames(5, 31);
+  app.elements.get('next-btn').trigger('click');
+
+  assert.equal(app.elements.get('score-card').style.display, 'block');
+  assert.equal(app.elements.get('extra-mode-clock').textContent, stoppedValue);
+});
+
+test('perfect extra mode score replaces try again with extra retry and offers a home button', () => {
+  const app = createHarness();
+
+  app.clickStart();
+  app.runCurrentSessionCorrectly();
+  app.clickChallenge();
+  app.runAllTimers();
+  app.clickExtraModeDownload();
+  app.runAllTimers();
+
+  app.answerCurrentQuestionCorrectly();
+  app.elements.get('next-btn').trigger('click');
+
+  assert.equal(app.elements.get('score-card').style.display, 'block');
+  assert.equal(app.elements.get('restart-btn').style.display, 'none');
+  assert.equal(app.elements.get('retry-extra-mode-btn').style.display, '');
+  assert.equal(app.elements.get('retry-extra-mode-btn').textContent, 'もう一度チャレンジ');
+  assert.equal(app.elements.get('challenge-btn').style.display, 'none');
+  assert.equal(app.elements.get('score-home-btn').textContent, 'トップページに戻る');
+
+  app.clickRetryExtraMode();
+
+  assert.equal(app.elements.get('extra-mode-overlay').attributes['aria-hidden'], 'false');
+  assert.ok(app.elements.get('extra-mode-overlay').classList.contains('booting'));
+  assert.equal(app.elements.get('extra-mode-download-btn').disabled, false);
+
+  app.clickExtraModeDownload();
+  app.runAllTimers();
+  app.runCurrentSessionCorrectly();
+
+  assert.equal(app.elements.get('score-card').style.display, 'block');
+  assert.equal(app.elements.get('score-value').textContent, '2 / 2');
+
+  app.clickScoreHome();
+
+  assert.equal(app.elements.get('home-card').style.display, 'block');
+  assert.equal(app.elements.get('score-card').style.display, 'none');
+  assert.equal(app.body.classList.contains('extra-mode-active'), false);
 });

@@ -61,6 +61,7 @@
       color: var(--text-primary);
       min-height: 100vh;
       line-height: 1.75;
+      transition: background-color 220ms ease, color 220ms ease;
     }
 
     .header {
@@ -731,25 +732,6 @@
         transform: translate3d(-50%, -50%, 0) scale(var(--ring-scale, 4.2));
       }
     }
-    @media (prefers-reduced-motion: reduce) {
-      .progress-mascot-bob {
-        animation: none;
-      }
-      #celebration-layer {
-        display: none;
-      }
-    }
-
-    #error-msg {
-      display: none;
-      background: #fff4f1;
-      border: 1px solid var(--surface-primary-dark);
-      border-radius: var(--radius-objects);
-      color: var(--surface-primary-dark);
-      padding: var(--space-xs) var(--space-s);
-      margin-bottom: var(--space-xs);
-    }
-
     .footer-gradient {
       width: 100%;
       height: 8px;
@@ -799,41 +781,6 @@
     }
     .copyright a:hover {
       text-decoration: underline;
-    }
-    .admin-keyword-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 2500;
-      align-items: center;
-      justify-content: center;
-      background: rgba(16, 57, 114, 0.45);
-      padding: var(--space-xs);
-    }
-    .admin-keyword-modal {
-      position: relative;
-      width: min(480px, 100%);
-      background: var(--surface-primary);
-      border-radius: var(--radius-objects);
-      box-shadow: 0 12px 48px rgba(16, 57, 114, 0.18);
-      padding: var(--space-s);
-    }
-    .admin-keyword-close {
-      position: absolute;
-      top: var(--space-xs);
-      right: var(--space-xs);
-      appearance: none;
-      border: none;
-      background: transparent;
-      color: var(--text-secondary);
-      cursor: pointer;
-      font-size: 1.25rem;
-      line-height: 1;
-      padding: 4px 8px;
-      border-radius: 8px;
-    }
-    .admin-keyword-close:hover {
-      background: var(--surface-secondary);
     }
 
     @media (max-width: 768px) {
@@ -913,7 +860,9 @@
         white-space: normal;
       }
     }
+
   </style>
+  <link rel="stylesheet" href="./assets/extra-mode.css">
 </head>
 <body>
   <header class="header">
@@ -1059,6 +1008,8 @@
         <div id="score-actions">
           <button class="c-button" id="restart-btn" type="button">もう一度チャレンジ</button>
           <button class="c-button" data-variant="tertiary" id="challenge-btn" type="button">エクストラモードに挑戦</button>
+          <button class="c-button" data-variant="tertiary" id="retry-extra-mode-btn" type="button" style="display:none">もう一度チャレンジ</button>
+          <button class="c-button" data-variant="tertiary" id="score-home-btn" type="button">トップページに戻る</button>
           <button class="c-button" data-variant="tertiary" id="score-preview-btn" type="button" style="display:none">問題一覧を見る</button>
         </div>
       </div>
@@ -1098,6 +1049,33 @@
     </div>
   </div>
 
+  <div class="extra-mode-overlay" id="extra-mode-overlay" aria-hidden="true">
+    <div class="extra-mode-screen">
+      <div class="extra-mode-crash-view">
+        <div class="extra-mode-stack-shell">
+          <div class="extra-mode-stack-stream" id="extra-mode-stack-stream"></div>
+        </div>
+        <div class="extra-mode-recover-line" id="extra-mode-recover-line">recover() called... Welcome to Extra Mode.</div>
+      </div>
+      <div class="extra-mode-boot-view">
+        <pre class="extra-mode-boot-output" id="extra-mode-boot-output"></pre>
+        <div class="extra-mode-toolbar">
+          <button class="extra-mode-download-btn" id="extra-mode-download-btn" type="button" disabled>
+            <span class="extra-mode-download-btn-label">Enter</span>
+            <span class="extra-mode-download-btn-hint">Run installer</span>
+          </button>
+        </div>
+        <div class="extra-mode-prompt-line">
+          <span class="extra-mode-command-text" id="extra-mode-command-text"></span><span class="extra-mode-cursor" aria-hidden="true"></span>
+        </div>
+        <pre class="extra-mode-install-log" id="extra-mode-install-log"></pre>
+        <div class="extra-mode-status-line" id="extra-mode-status-line"></div>
+      </div>
+    </div>
+  </div>
+  <div class="extra-mode-clock" id="extra-mode-clock" aria-hidden="true">00:00.000</div>
+
+  <script src="./assets/extra-mode.js"></script>
   <script>
     const appConfig = window.__QUIZ_APP_CONFIG__ || {};
     const allQuizzes = Array.isArray(window.__QUIZ_DATA__) ? window.__QUIZ_DATA__.map(normalizeQuizData) : [];
@@ -1139,6 +1117,8 @@
         submitPerfectScoreDone: '送信済み',
         restartButton: 'もう一度チャレンジ',
         challengeButton: 'エクストラモードに挑戦',
+        retryExtraModeButton: 'もう一度チャレンジ',
+        scoreHomeButton: 'トップページに戻る',
         scorePreviewButton: '問題一覧を見る',
         footerAttributionHtml: 'The Go gopher was designed by <a href="https://reneefrench.blogspot.com/">Renée French</a>. Illustrations by <a href="https://x.com/avocadoneko">avocadoneko</a>.',
         adminKeywordCloseAria: '閉じる',
@@ -1196,6 +1176,8 @@
         submitPerfectScoreDone: 'Submitted',
         restartButton: 'Try again',
         challengeButton: 'Try extra mode',
+        retryExtraModeButton: 'Try again',
+        scoreHomeButton: 'Back to home',
         scorePreviewButton: 'Open quiz list',
         footerAttributionHtml: 'The Go gopher was designed by <a href="https://reneefrench.blogspot.com/">Renée French</a>. Illustrations by <a href="https://x.com/avocadoneko">avocadoneko</a>.',
         adminKeywordCloseAria: 'Close',
@@ -1273,6 +1255,8 @@
     const perfectScoreMessage = document.getElementById('perfect-score-message');
     const challengeBtn = document.getElementById('challenge-btn');
     const restartBtn = document.getElementById('restart-btn');
+    const retryExtraModeBtn = document.getElementById('retry-extra-mode-btn');
+    const scoreHomeBtn = document.getElementById('score-home-btn');
     const scorePreviewBtn = document.getElementById('score-preview-btn');
     const celebrationLayer = document.getElementById('celebration-layer');
     const startBtn = document.getElementById('start-btn');
@@ -1292,6 +1276,7 @@
     const totalPerSession = 5;
     const previewURL = './preview/';
     const adminTapThreshold = 10;
+
     const celebrationToneStyles = {
       gold: 'linear-gradient(180deg, #ffe082, #ffb300)',
       cyan: 'linear-gradient(180deg, #8be9ff, #22c7ff)',
@@ -1345,6 +1330,8 @@
     let attemptID = '';
     let sessionSize = 0;
     let sessionStartedAt = null;
+    let sessionElapsedMilliseconds = 0;
+    let sessionElapsedResumedAt = null;
     let currentQuestionStartedAt = null;
     let latestAnswerElapsedSeconds = 0;
     let perfectCompletionElapsedSeconds = null;
@@ -1357,6 +1344,20 @@
     let currentAdminKeywordMessageKey = '';
     let currentSelectedAnswerIndex = null;
     let isLanguageMenuOpen = false;
+    if (typeof window.createExtraModeController !== 'function') {
+      throw new Error('extra mode controller is not loaded');
+    }
+    const extraMode = window.createExtraModeController({
+      closeLanguageMenu,
+      getElapsedMilliseconds: now => getElapsedMilliseconds(now),
+      getIsChallenge: () => isChallenge,
+      hideError,
+      onSequenceFinish(pendingStart) {
+        pastCorrect = pendingStart.pastCorrect;
+        startSession(pendingStart.excludeIds, { forceChallenge: pendingStart.forceChallenge });
+      },
+      scrollPageToTop,
+    });
 
     function normalizeLanguage(value) {
       return value === 'en' ? 'en' : defaultLanguage;
@@ -1540,6 +1541,8 @@
       submitPerfectScoreBtn.textContent = perfectScoreSubmitted ? t('submitPerfectScoreDone') : t('submitPerfectScoreButton');
       restartBtn.textContent = t('restartButton');
       challengeBtn.textContent = t('challengeButton');
+      retryExtraModeBtn.textContent = t('retryExtraModeButton');
+      scoreHomeBtn.textContent = t('scoreHomeButton');
       scorePreviewBtn.textContent = t('scorePreviewButton');
       footerAttribution.innerHTML = t('footerAttributionHtml');
       adminKeywordCloseBtn.setAttribute('aria-label', t('adminKeywordCloseAria'));
@@ -1772,11 +1775,38 @@
       hljs.highlightElement(codeElement);
     }
 
-    function getElapsedSeconds(now = Date.now()) {
-      if (!sessionStartedAt) {
+    function resetSessionElapsed(now = Date.now()) {
+      sessionElapsedMilliseconds = 0;
+      sessionElapsedResumedAt = now;
+    }
+
+    function pauseSessionElapsed(now = Date.now()) {
+      if (sessionElapsedResumedAt === null) {
+        return;
+      }
+      sessionElapsedMilliseconds += Math.max(0, now - sessionElapsedResumedAt);
+      sessionElapsedResumedAt = null;
+    }
+
+    function resumeSessionElapsed(now = Date.now()) {
+      if (sessionElapsedResumedAt !== null) {
+        return;
+      }
+      sessionElapsedResumedAt = now;
+    }
+
+    function getElapsedMilliseconds(now = Date.now()) {
+      if (sessionStartedAt === null) {
         return 0;
       }
-      return Math.max(0, Math.floor((now - sessionStartedAt) / 1000));
+      if (sessionElapsedResumedAt === null) {
+        return sessionElapsedMilliseconds;
+      }
+      return sessionElapsedMilliseconds + Math.max(0, now - sessionElapsedResumedAt);
+    }
+
+    function getElapsedSeconds(now = Date.now()) {
+      return Math.max(0, Math.floor(getElapsedMilliseconds(now) / 1000));
     }
 
     function formatElapsedSeconds(seconds) {
@@ -1794,6 +1824,7 @@
         return false;
       }
     }
+
 
     function applyCelebrationStyles(piece, styles) {
       Object.entries(styles).forEach(([name, value]) => {
@@ -1982,6 +2013,7 @@
     }
 
     function renderHome() {
+      extraMode.setActive(false);
       closeLanguageMenu();
       hideError();
       homeCard.style.display = 'block';
@@ -1991,6 +2023,9 @@
       scoreCard.style.display = 'none';
       perfectScoreSection.style.display = 'none';
       sessionSize = 0;
+      sessionStartedAt = null;
+      sessionElapsedMilliseconds = 0;
+      sessionElapsedResumedAt = null;
       attemptID = '';
       currentQuestionStartedAt = null;
       currentSelectedAnswerIndex = null;
@@ -2000,14 +2035,15 @@
       updatePreviewButtons();
     }
 
-    function startSession(excludeIds = []) {
+    function startSession(excludeIds = [], { forceChallenge = false } = {}) {
       if (allQuizzes.length === 0) {
         showError('errorQuizLoad');
         return;
       }
 
       hideError();
-      isChallenge = excludeIds.length > 0;
+      isChallenge = Boolean(forceChallenge) || excludeIds.length > 0;
+      extraMode.setActive(isChallenge);
       if (!isChallenge) {
         pastCorrect = 0;
         seenIds.clear();
@@ -2016,7 +2052,8 @@
       sessionID = sessionID || loadOrCreateSessionID();
       attemptID = createSessionID();
       sessionStartedAt = Date.now();
-      session = pickSession(excludeIds, getTelemetryMode());
+      resetSessionElapsed(sessionStartedAt);
+      session = pickSession(excludeIds, isChallenge ? 'extra' : 'normal');
       sessionSize = session.length;
       if (sessionSize === 0) {
         renderHome();
@@ -2026,6 +2063,11 @@
       currentIndex = 0;
       correctCount = 0;
       resetPerfectScoreState();
+      if (isChallenge) {
+        extraMode.startClock();
+      } else {
+        extraMode.stopClock();
+      }
 
       homeCard.style.display = 'none';
       scoreCard.style.display = 'none';
@@ -2046,6 +2088,10 @@
 
       currentSelectedAnswerIndex = null;
       currentQuestionStartedAt = Date.now();
+      resumeSessionElapsed(currentQuestionStartedAt);
+      if (isChallenge) {
+        extraMode.startClock();
+      }
       renderCurrentQuestion();
     }
 
@@ -2148,12 +2194,18 @@
         : '';
       currentQuestionStartedAt = null;
       latestAnswerElapsedSeconds = elapsedSeconds;
+      pauseSessionElapsed(answeredAtTime);
       if (isCorrect) {
         correctCount++;
       }
       if (currentIndex === session.length - 1 && correctCount === session.length) {
         perfectCompletionElapsedSeconds = elapsedSeconds;
         perfectCompletionAt = answeredAt;
+      }
+      if (isChallenge && currentIndex === session.length - 1) {
+        extraMode.freezeClockAtElapsedSeconds(elapsedSeconds);
+      } else if (isChallenge) {
+        extraMode.pauseClock(answeredAtTime);
       }
       sendAnswerTelemetry(quiz, answerIndex, isCorrect, answeredAt, elapsedSeconds, questionElapsedSeconds);
       currentSelectedAnswerIndex = answerIndex;
@@ -2199,7 +2251,10 @@
         }
       }
       renderPerfectScoreNote();
+      restartBtn.style.display = challengePerfect ? 'none' : '';
       challengeBtn.style.display = canChallengeMore && ((!isChallenge && allCorrect) || (isChallenge && !allCorrect)) ? '' : 'none';
+      retryExtraModeBtn.style.display = challengePerfect ? '' : 'none';
+      scoreHomeBtn.style.display = '';
       scoreCard.style.display = 'block';
       updateProgress(session.length);
       if (allCorrect && triggerCelebration) {
@@ -2273,8 +2328,25 @@
     });
     restartBtn.addEventListener('click', () => startSession());
     challengeBtn.addEventListener('click', () => {
-      pastCorrect = isChallenge ? pastCorrect + correctCount : countQuizzesForMode(session, 'extra');
-      startSession([...seenIds]);
+      if (extraMode.isRunning()) {
+        return;
+      }
+      extraMode.startSequence(
+        [...seenIds],
+        isChallenge ? pastCorrect + correctCount : countQuizzesForMode(session, 'extra')
+      );
+    });
+    retryExtraModeBtn.addEventListener('click', () => {
+      if (extraMode.isRunning()) {
+        return;
+      }
+      seenIds.clear();
+      pastCorrect = 0;
+      extraMode.startSequence([], 0, true);
+    });
+    scoreHomeBtn.addEventListener('click', () => {
+      renderHome();
+      scrollPageToTop();
     });
     submitPerfectScoreBtn.addEventListener('click', submitPerfectScore);
     previewBtn.addEventListener('click', () => {
