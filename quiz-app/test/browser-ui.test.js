@@ -488,6 +488,14 @@ test('preview page footer uses the conference attribution block', () => {
   assertFooterInfoMarkup(previewHTML, '../assets/go-conference-2026-logo.svg');
 });
 
+test('preview page keeps footer attribution copy in English for Japanese UI', () => {
+  assert.match(
+    previewHTML,
+    /footerAttributionHtml: 'The Go gopher was designed by <a href="https:\/\/reneefrench\.blogspot\.com\/">Renée French<\/a>\. Illustrations by <a href="https:\/\/x\.com\/avocadoneko">avocadoneko<\/a>\.',\s+modalCloseAria: '閉じる'/,
+  );
+  assert.doesNotMatch(previewHTML, /footerAttributionHtml: '[^']*イラストは[^']*'/);
+});
+
 test('top page header uses the conference logo with CodeLab label', () => {
   const headerMarkup = assertHeaderConferenceLogo(appHTML, './assets/go-conference-2026-logo.svg');
   assert.match(headerMarkup, /Go の知識を試してみよう！/);
@@ -535,12 +543,15 @@ test('language switch localizes the app UI and active quiz content', () => {
     },
   ]);
 
+  assert.match(app.elements.get('footer-attribution').innerHTML, /Illustrations by/);
+  assert.doesNotMatch(app.elements.get('footer-attribution').innerHTML, /イラストは/);
   assert.equal(app.elements.get('start-btn').textContent, 'クイズを始める');
 
   app.elements.get('language-toggle-btn').trigger('click');
   assert.equal(app.elements.get('language-toggle-btn').attributes['aria-expanded'], 'true');
   app.elements.get('lang-en-btn').trigger('click');
   assert.equal(app.elements.get('language-toggle-btn').attributes['aria-expanded'], 'false');
+  assert.match(app.elements.get('footer-attribution').innerHTML, /Illustrations by/);
   assert.equal(app.elements.get('header-tagline').textContent, 'Test your Go knowledge!');
   assert.equal(app.elements.get('start-btn').textContent, 'Start quiz');
   assert.equal(app.localStorage.get('quiz-language'), 'en');
