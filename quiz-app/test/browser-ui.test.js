@@ -1035,6 +1035,29 @@ test('extra mode trigger opens the fake installer and then enters terminal UI', 
   assert.notEqual(app.elements.get('extra-mode-clock').textContent, '00:00.000');
 });
 
+test('extra mode swaps the underlying screen before the installer overlay fully hides', () => {
+  const app = createHarness();
+
+  app.clickStart();
+  app.runCurrentSessionCorrectly();
+  app.clickChallenge();
+  app.clickExtraModeDownload();
+  for (let i = 0; i < 16; i += 1) {
+    app.advanceTimersBy(56);
+  }
+  for (let i = 0; i < 6; i += 1) {
+    app.advanceTimersBy(70);
+  }
+  app.advanceTimersBy(720);
+
+  assert.ok(app.body.classList.contains('extra-mode-active'));
+  assert.equal(app.elements.get('question-card').style.display, 'block');
+  assert.equal(app.elements.get('score-card').style.display, 'none');
+  assert.equal(app.currentQuiz().id, 'extra_q1');
+  assert.equal(app.elements.get('extra-mode-overlay').attributes['aria-hidden'], 'false');
+  assert.ok(app.elements.get('extra-mode-overlay').classList.contains('finishing'));
+});
+
 test('extra mode clock stops once all extra questions are completed', () => {
   const app = createHarness([
     {

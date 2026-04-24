@@ -187,21 +187,20 @@
       if (token !== sequenceToken) {
         return;
       }
-      overlay.classList.add('finishing');
-      scheduleStep(token, () => {
-        if (document.body) {
-          document.body.classList.remove('extra-mode-transition');
-        }
-        resetOverlay();
-        const nextStart = pendingStart;
-        pendingStart = null;
-        introRunning = false;
-        installRunning = false;
-        if (!nextStart) {
-          return;
-        }
+      if (document.body) {
+        document.body.classList.remove('extra-mode-transition');
+      }
+      const nextStart = pendingStart;
+      pendingStart = null;
+      if (nextStart) {
         onSequenceFinish(nextStart);
         scrollPageToTop();
+      }
+      overlay.classList.add('finishing');
+      scheduleStep(token, () => {
+        resetOverlay();
+        introRunning = false;
+        installRunning = false;
       }, prefersReducedMotion() ? 0 : 360);
     }
 
