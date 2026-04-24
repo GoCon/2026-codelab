@@ -1323,6 +1323,7 @@
     let currentIndex = 0;
     let correctCount = 0;
     let pastCorrect = 0;
+    let challengeSeenIds = new Set();
     let seenIds = new Set();
     let isChallenge = false;
     let previewUnlocked = loadPreviewUnlocked();
@@ -1769,8 +1770,11 @@
       if (candidates.length === 0) {
         candidates = pool.slice();
       }
+      const sessionLimit = mode === 'extra'
+        ? candidates.length
+        : Math.min(totalPerSession, candidates.length);
       return shuffle(candidates)
-        .slice(0, Math.min(totalPerSession, candidates.length))
+        .slice(0, sessionLimit)
         .map(createSessionQuiz);
     }
 
@@ -2058,6 +2062,7 @@
       extraMode.setActive(isChallenge);
       if (!isChallenge) {
         pastCorrect = 0;
+        challengeSeenIds.clear();
         seenIds.clear();
       }
 
@@ -2233,6 +2238,9 @@
 
     function showScore() {
       session.forEach(quiz => seenIds.add(quiz.id));
+      if (isChallenge) {
+        session.forEach(quiz => challengeSeenIds.add(quiz.id));
+      }
 
       questionCard.style.display = 'none';
       resultEl.style.display = 'none';
@@ -2247,12 +2255,15 @@
     }
 
     function renderScoreCard(triggerCelebration = false) {
-      const extraPoolSize = getQuizPool('extra').length;
-      const totalAnswered = isChallenge ? getSeenCount('extra') : session.length;
+      const remainingExtraCount = getQuizPool('extra').reduce(
+        (count, quiz) => count + (seenIds.has(quiz.id) ? 0 : 1),
+        0,
+      );
+      const totalAnswered = isChallenge ? challengeSeenIds.size : session.length;
       const totalCorrect = isChallenge ? pastCorrect + correctCount : correctCount;
       const allCorrect = correctCount === session.length;
       const challengePerfect = isChallenge && allCorrect;
-      const canChallengeMore = getSeenCount('extra') < extraPoolSize;
+      const canChallengeMore = remainingExtraCount > 0;
 
       scoreValue.textContent = `${totalCorrect} / ${totalAnswered}`;
       challengeCompleteSection.style.display = challengePerfect ? 'block' : 'none';
@@ -2350,15 +2361,19 @@
       if (extraMode.isRunning()) {
         return;
       }
+      if (!isChallenge) {
+        challengeSeenIds.clear();
+      }
       extraMode.startSequence(
         [...seenIds],
-        isChallenge ? pastCorrect + correctCount : countQuizzesForMode(session, 'extra')
+        isChallenge ? pastCorrect + correctCount : 0
       );
     });
     retryExtraModeBtn.addEventListener('click', () => {
       if (extraMode.isRunning()) {
         return;
       }
+      challengeSeenIds.clear();
       seenIds.clear();
       pastCorrect = 0;
       extraMode.startSequence([], 0, true);

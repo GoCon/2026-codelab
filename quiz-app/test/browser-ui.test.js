@@ -1017,6 +1017,60 @@ test('extra mode only serves extra quizzes and still shows the correct answer af
   assert.equal(buttons.filter(button => hasClass(button, 'incorrect')).length, 1);
 });
 
+test('extra mode score counts only extra-mode answers and not normal-mode answers', () => {
+  const app = createHarness();
+
+  app.clickStart();
+  app.runCurrentSessionCorrectly();
+  app.clickChallenge();
+  app.runAllTimers();
+  app.clickExtraModeDownload();
+  app.runAllTimers();
+
+  app.answerCurrentQuestionCorrectly();
+  app.elements.get('next-btn').trigger('click');
+
+  assert.equal(app.elements.get('score-card').style.display, 'block');
+  assert.equal(app.elements.get('score-value').textContent, '1 / 1');
+});
+
+test('extra mode serves all remaining extra questions in one session', () => {
+  const app = createHarness([
+    {
+      id: 'normal_entry_q1',
+      title: 'normal entry question',
+      text: 'normal entry question',
+      mode: 'normal',
+      choices: ['N1', 'N2'],
+      answer: 0,
+      explanation: 'normal entry explanation',
+    },
+    ...Array.from({ length: 6 }, (_, index) => ({
+      id: `extra_bulk_q${index + 1}`,
+      title: `extra bulk question ${index + 1}`,
+      text: `extra bulk question ${index + 1}`,
+      mode: 'extra',
+      choices: [`E${index + 1}A`, `E${index + 1}B`],
+      answer: 0,
+      explanation: `extra bulk explanation ${index + 1}`,
+    })),
+  ]);
+
+  app.clickStart();
+  app.runCurrentSessionCorrectly();
+  app.clickChallenge();
+  app.runAllTimers();
+  app.clickExtraModeDownload();
+  app.runAllTimers();
+
+  assert.equal(app.elements.get('progress').textContent, '0 / 6');
+
+  app.runCurrentSessionCorrectly();
+
+  assert.equal(app.elements.get('score-card').style.display, 'block');
+  assert.equal(app.elements.get('score-value').textContent, '6 / 6');
+});
+
 test('extra mode trigger opens the fake installer and then enters terminal UI', () => {
   const app = createHarness();
 
@@ -1164,6 +1218,7 @@ test('perfect extra mode score replaces try again with extra retry and offers a 
   app.elements.get('next-btn').trigger('click');
 
   assert.equal(app.elements.get('score-card').style.display, 'block');
+  assert.equal(app.elements.get('score-value').textContent, '1 / 1');
   assert.equal(app.elements.get('restart-btn').style.display, 'none');
   assert.equal(app.elements.get('retry-extra-mode-btn').style.display, '');
   assert.equal(app.elements.get('retry-extra-mode-btn').textContent, 'もう一度チャレンジ');
