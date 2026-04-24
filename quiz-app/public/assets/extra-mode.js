@@ -7,6 +7,7 @@
     const closeLanguageMenu = requireOption(options, 'closeLanguageMenu');
     const getElapsedMilliseconds = requireOption(options, 'getElapsedMilliseconds');
     const hideError = requireOption(options, 'hideError');
+    const onSequenceOverlayHidden = requireOption(options, 'onSequenceOverlayHidden');
     const scrollPageToTop = requireOption(options, 'scrollPageToTop');
     const getIsChallenge = requireOption(options, 'getIsChallenge');
     const onSequenceFinish = requireOption(options, 'onSequenceFinish');
@@ -97,9 +98,9 @@
       });
     }
 
-    function freezeClockAtElapsedSeconds(elapsedSeconds) {
-      clock.textContent = formatClock(Math.max(0, elapsedSeconds) * 1000);
+    function freezeClockAtElapsedMilliseconds(elapsedMilliseconds) {
       stopClock(false);
+      clock.textContent = formatClock(Math.max(0, elapsedMilliseconds));
     }
 
     function pauseClock(now) {
@@ -192,6 +193,7 @@
       }
       const nextStart = pendingStart;
       pendingStart = null;
+      const shouldStartTiming = Boolean(nextStart);
       if (nextStart) {
         onSequenceFinish(nextStart);
         scrollPageToTop();
@@ -201,6 +203,9 @@
         resetOverlay();
         introRunning = false;
         installRunning = false;
+        if (shouldStartTiming) {
+          onSequenceOverlayHidden();
+        }
       }, prefersReducedMotion() ? 0 : 360);
     }
 
@@ -280,7 +285,7 @@
     downloadBtn.addEventListener('click', triggerInstall);
 
     return {
-      freezeClockAtElapsedSeconds,
+      freezeClockAtElapsedMilliseconds,
       isRunning() {
         return introRunning;
       },

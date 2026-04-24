@@ -881,19 +881,38 @@ test('normal mode completion time excludes explanation-viewing time', () => {
   const app = createHarness();
 
   app.clickStart();
-  app.advanceTimersBy(1100);
+  app.advanceTimersBy(1123);
   app.answerCurrentQuestionCorrectly();
 
   app.advanceTimersBy(5000);
   assert.equal(app.elements.get('perfect-time-value').textContent, '');
 
   app.elements.get('next-btn').trigger('click');
-  app.advanceTimersBy(1200);
+  app.advanceTimersBy(2000);
   app.answerCurrentQuestionCorrectly();
   app.elements.get('next-btn').trigger('click');
 
   assert.equal(app.elements.get('score-card').style.display, 'block');
-  assert.equal(app.elements.get('perfect-time-value').textContent, '2 秒');
+  assert.equal(app.elements.get('perfect-time-value').textContent, '3.123 秒');
+});
+
+test('perfect score submission records millisecond-precision completion time', () => {
+  const app = createHarness();
+
+  app.clickStart();
+  app.advanceTimersBy(1123);
+  app.answerCurrentQuestionCorrectly();
+  app.elements.get('next-btn').trigger('click');
+  app.advanceTimersBy(2000);
+  app.answerCurrentQuestionCorrectly();
+  app.elements.get('next-btn').trigger('click');
+
+  app.elements.get('nickname-input').value = 'gopher';
+  app.elements.get('submit-perfect-score-btn').trigger('click');
+
+  const perfectPayload = app.parseBeaconPayloads().find(payload => payload.event_type === 'perfect_score');
+  assert.ok(perfectPayload, 'perfect score telemetry should exist');
+  assert.equal(perfectPayload.elapsed_seconds, 3.123);
 });
 
 test('extra mode assets are extracted to dedicated files', () => {
@@ -1121,7 +1140,7 @@ test('extra mode clock stops once all extra questions are completed', () => {
   app.answerCurrentQuestionCorrectly();
 
   const stoppedValue = app.elements.get('extra-mode-clock').textContent;
-  assert.notEqual(stoppedValue, '00:00.000');
+  assert.equal(stoppedValue, '00:01.333');
 
   app.advanceTimersBy(5000);
   app.advanceAnimationFrames(5, 31);

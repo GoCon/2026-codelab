@@ -1333,8 +1333,8 @@
     let sessionElapsedMilliseconds = 0;
     let sessionElapsedResumedAt = null;
     let currentQuestionStartedAt = null;
-    let latestAnswerElapsedSeconds = 0;
-    let perfectCompletionElapsedSeconds = null;
+    let latestAnswerElapsedMilliseconds = 0;
+    let perfectCompletionElapsedMilliseconds = null;
     let perfectCompletionAt = '';
     let perfectScoreSubmitted = false;
     let footerTapCount = 0;
@@ -1352,9 +1352,15 @@
       getElapsedMilliseconds: now => getElapsedMilliseconds(now),
       getIsChallenge: () => isChallenge,
       hideError,
+      onSequenceOverlayHidden() {
+        startCurrentQuestionTiming();
+      },
       onSequenceFinish(pendingStart) {
         pastCorrect = pendingStart.pastCorrect;
-        startSession(pendingStart.excludeIds, { forceChallenge: pendingStart.forceChallenge });
+        startSession(pendingStart.excludeIds, {
+          forceChallenge: pendingStart.forceChallenge,
+          deferElapsedStart: true,
+        });
       },
       scrollPageToTop,
     });
@@ -1809,8 +1815,14 @@
       return Math.max(0, Math.floor(getElapsedMilliseconds(now) / 1000));
     }
 
-    function formatElapsedSeconds(seconds) {
-      return t('elapsedSeconds', { seconds });
+    function serializeElapsedMilliseconds(elapsedMilliseconds) {
+      return Number((Math.max(0, elapsedMilliseconds) / 1000).toFixed(3));
+    }
+
+    function formatElapsedMilliseconds(elapsedMilliseconds) {
+      return t('elapsedSeconds', {
+        seconds: serializeElapsedMilliseconds(elapsedMilliseconds).toFixed(3),
+      });
     }
 
     function clearPerfectScoreCelebration() {
@@ -1894,8 +1906,8 @@
     }
 
     function resetPerfectScoreState() {
-      latestAnswerElapsedSeconds = 0;
-      perfectCompletionElapsedSeconds = null;
+      latestAnswerElapsedMilliseconds = 0;
+      perfectCompletionElapsedMilliseconds = null;
       perfectCompletionAt = '';
       perfectScoreSubmitted = false;
       perfectTimeValue.textContent = '';
@@ -2035,7 +2047,7 @@
       updatePreviewButtons();
     }
 
-    function startSession(excludeIds = [], { forceChallenge = false } = {}) {
+    function startSession(excludeIds = [], { forceChallenge = false, deferElapsedStart = false } = {}) {
       if (allQuizzes.length === 0) {
         showError('errorQuizLoad');
         return;
@@ -2053,6 +2065,9 @@
       attemptID = createSessionID();
       sessionStartedAt = Date.now();
       resetSessionElapsed(sessionStartedAt);
+      if (deferElapsedStart) {
+        pauseSessionElapsed(sessionStartedAt);
+      }
       session = pickSession(excludeIds, isChallenge ? 'extra' : 'normal');
       sessionSize = session.length;
       if (sessionSize === 0) {
@@ -2063,21 +2078,25 @@
       currentIndex = 0;
       correctCount = 0;
       resetPerfectScoreState();
-      if (isChallenge) {
-        extraMode.startClock();
-      } else {
-        extraMode.stopClock();
-      }
+      extraMode.stopClock();
 
       homeCard.style.display = 'none';
       scoreCard.style.display = 'none';
       resultEl.style.display = 'none';
       nextBtn.style.display = 'none';
 
-      showQuestion();
+      showQuestion({ startTiming: !deferElapsedStart });
     }
 
-    function showQuestion() {
+    function startCurrentQuestionTiming(now = Date.now()) {
+      currentQuestionStartedAt = now;
+      resumeSessionElapsed(now);
+      if (isChallenge) {
+        extraMode.startClock();
+      }
+    }
+
+    function showQuestion({ startTiming = true } = {}) {
       closeLanguageMenu();
       const quiz = session[currentIndex];
       if (!quiz) {
@@ -2087,10 +2106,9 @@
       }
 
       currentSelectedAnswerIndex = null;
-      currentQuestionStartedAt = Date.now();
-      resumeSessionElapsed(currentQuestionStartedAt);
-      if (isChallenge) {
-        extraMode.startClock();
+      currentQuestionStartedAt = null;
+      if (startTiming) {
+        startCurrentQuestionTiming();
       }
       renderCurrentQuestion();
     }
@@ -2188,22 +2206,23 @@
       const isCorrect = answerIndex === quiz.answer;
       const answeredAtTime = Date.now();
       const answeredAt = new Date(answeredAtTime).toISOString();
+      const elapsedMilliseconds = getElapsedMilliseconds(answeredAtTime);
       const elapsedSeconds = getElapsedSeconds(answeredAtTime);
       const questionElapsedSeconds = currentQuestionStartedAt
         ? Math.max(0, Math.floor((answeredAtTime - currentQuestionStartedAt) / 1000))
         : '';
       currentQuestionStartedAt = null;
-      latestAnswerElapsedSeconds = elapsedSeconds;
+      latestAnswerElapsedMilliseconds = elapsedMilliseconds;
       pauseSessionElapsed(answeredAtTime);
       if (isCorrect) {
         correctCount++;
       }
       if (currentIndex === session.length - 1 && correctCount === session.length) {
-        perfectCompletionElapsedSeconds = elapsedSeconds;
+        perfectCompletionElapsedMilliseconds = elapsedMilliseconds;
         perfectCompletionAt = answeredAt;
       }
       if (isChallenge && currentIndex === session.length - 1) {
-        extraMode.freezeClockAtElapsedSeconds(elapsedSeconds);
+        extraMode.freezeClockAtElapsedMilliseconds(elapsedMilliseconds);
       } else if (isChallenge) {
         extraMode.pauseClock(answeredAtTime);
       }
@@ -2240,8 +2259,8 @@
       specialLinkSection.style.display = (!isChallenge && allCorrect) ? 'block' : 'none';
       perfectScoreSection.style.display = allCorrect ? 'block' : 'none';
       if (allCorrect) {
-        const elapsedSeconds = perfectCompletionElapsedSeconds ?? latestAnswerElapsedSeconds;
-        perfectTimeValue.textContent = formatElapsedSeconds(elapsedSeconds);
+        const elapsedMilliseconds = perfectCompletionElapsedMilliseconds ?? latestAnswerElapsedMilliseconds;
+        perfectTimeValue.textContent = formatElapsedMilliseconds(elapsedMilliseconds);
         if (!telemetryEndpoint) {
           nicknameInput.disabled = true;
           submitPerfectScoreBtn.disabled = true;
@@ -2263,7 +2282,7 @@
     }
 
     async function submitPerfectScore() {
-      if (perfectCompletionElapsedSeconds === null || !perfectCompletionAt) {
+      if (perfectCompletionElapsedMilliseconds === null || !perfectCompletionAt) {
         setPerfectScoreMessage('perfectScoreMessageNoRecord', 'error');
         return;
       }
@@ -2292,7 +2311,7 @@
         await postTelemetry({
           event_type: 'perfect_score',
           nickname,
-          elapsed_seconds: perfectCompletionElapsedSeconds,
+          elapsed_seconds: serializeElapsedMilliseconds(perfectCompletionElapsedMilliseconds),
           completed_at: perfectCompletionAt,
           mode: getTelemetryMode(),
           session_id: sessionID,
