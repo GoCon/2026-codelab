@@ -96,6 +96,7 @@ function doPost(e) {
     if (payload.event_type === 'perfect_score') {
       const perfectScoreSheet = ensureSheet_(spreadsheet, PERFECT_SCORE_SHEET_NAME, PERFECT_SCORE_HEADERS);
       appendPerfectScoreRow_(perfectScoreSheet, payload);
+      rebuildPerfectScoreSheet_(perfectScoreSheet);
     } else {
       const logSheet = ensureSheet_(spreadsheet, LOG_SHEET_NAME, LOG_HEADERS);
       appendLogRow_(logSheet, payload);
@@ -263,6 +264,11 @@ function appendPerfectScoreRow_(sheet, payload) {
   ]);
 }
 
+function rebuildPerfectScoreSheet_(sheet) {
+  const rankedRows = buildPerfectScoreRows_(loadPerfectScoreRows_(sheet));
+  rewriteSheet_(sheet, PERFECT_SCORE_HEADERS, rankedRows);
+}
+
 function rebuildAnalytics_(logSheet, summarySheet, attemptsSheet) {
   const rows = loadLogRows_(logSheet);
 
@@ -301,6 +307,52 @@ function loadLogRows_(sheet) {
     return [];
   }
   return sheet.getRange(2, 1, lastRow - 1, LOG_HEADERS.length).getValues();
+}
+
+function loadPerfectScoreRows_(sheet) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) {
+    return [];
+  }
+  return sheet.getRange(2, 1, lastRow - 1, PERFECT_SCORE_HEADERS.length).getValues();
+}
+
+function buildPerfectScoreRows_(rows) {
+  return rows
+    .map((row, rowIndex) => ({
+      row: normalizePerfectScoreRow_(row),
+      rowIndex,
+    }))
+    .sort((left, right) => {
+      const byCorrectCount = compareNumbersDesc_(
+        left.row[2],
+        right.row[2],
+      );
+      if (byCorrectCount !== 0) {
+        return byCorrectCount;
+      }
+
+      const byElapsedSeconds = compareNumbersAsc_(
+        left.row[1],
+        right.row[1],
+      );
+      if (byElapsedSeconds !== 0) {
+        return byElapsedSeconds;
+      }
+
+      const byCompletedAt = compareStringsAsc_(left.row[3], right.row[3]);
+      if (byCompletedAt !== 0) {
+        return byCompletedAt;
+      }
+
+      const byReceivedAt = compareStringsAsc_(left.row[7], right.row[7]);
+      if (byReceivedAt !== 0) {
+        return byReceivedAt;
+      }
+
+      return left.rowIndex - right.rowIndex;
+    })
+    .map(entry => entry.row);
 }
 
 function buildSummaryRows_(rows) {
@@ -527,6 +579,90 @@ function rate_(numerator, denominator) {
     return 0;
   }
   return numerator / denominator;
+}
+
+function normalizePerfectScoreRow_(row) {
+  const nickname = normalizeString_(row[0]);
+  const elapsedSeconds = normalizeNonNegativeNumber_(row[1]);
+  const maybeCorrectCount = normalizeNonNegativeNumber_(row[2]);
+  const maybeLegacyMode = normalizeString_(row[3]);
+  if (maybeCorrectCount === '' && (maybeLegacyMode === 'normal' || maybeLegacyMode === 'extra' || maybeLegacyMode === 'challenge')) {
+    return [
+      nickname,
+      elapsedSeconds,
+      '',
+      normalizeString_(row[2]),
+      normalizeMode_(row[3]),
+      normalizeString_(row[4]),
+      normalizeString_(row[5]),
+      normalizeString_(row[6]),
+    ];
+  }
+
+  return [
+    nickname,
+    elapsedSeconds,
+    maybeCorrectCount,
+    normalizeString_(row[3]),
+    normalizeMode_(row[4]),
+    normalizeString_(row[5]),
+    normalizeString_(row[6]),
+    normalizeString_(row[7]),
+  ];
+}
+
+function compareNumbersAsc_(left, right) {
+  const leftHasValue = left !== '';
+  const rightHasValue = right !== '';
+  if (leftHasValue && !rightHasValue) {
+    return -1;
+  }
+  if (!leftHasValue && rightHasValue) {
+    return 1;
+  }
+  if (!leftHasValue && !rightHasValue) {
+    return 0;
+  }
+  if (left === right) {
+    return 0;
+  }
+  return left < right ? -1 : 1;
+}
+
+function compareNumbersDesc_(left, right) {
+  const leftHasValue = left !== '';
+  const rightHasValue = right !== '';
+  if (leftHasValue && !rightHasValue) {
+    return -1;
+  }
+  if (!leftHasValue && rightHasValue) {
+    return 1;
+  }
+  if (!leftHasValue && !rightHasValue) {
+    return 0;
+  }
+  if (left === right) {
+    return 0;
+  }
+  return left > right ? -1 : 1;
+}
+
+function compareStringsAsc_(left, right) {
+  const leftValue = normalizeString_(left);
+  const rightValue = normalizeString_(right);
+  if (leftValue && !rightValue) {
+    return -1;
+  }
+  if (!leftValue && rightValue) {
+    return 1;
+  }
+  if (!leftValue && !rightValue) {
+    return 0;
+  }
+  if (leftValue === rightValue) {
+    return 0;
+  }
+  return leftValue < rightValue ? -1 : 1;
 }
 
 function normalizeString_(value) {

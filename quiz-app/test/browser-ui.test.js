@@ -7,6 +7,7 @@ const vm = require('node:vm');
 const appHTML = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
 const extraModeCSS = fs.readFileSync(path.join(__dirname, '..', 'public', 'assets', 'extra-mode.css'), 'utf8');
 const extraModeScript = fs.readFileSync(path.join(__dirname, '..', 'public', 'assets', 'extra-mode.js'), 'utf8');
+const telemetryGasScript = fs.readFileSync(path.join(__dirname, '..', 'gas', 'telemetry.gs'), 'utf8');
 const previewHTML = fs.readFileSync(path.join(__dirname, '..', 'public', 'preview', 'index.html'), 'utf8');
 const scripts = [...appHTML.matchAll(/<script>([\s\S]*?)<\/script>/g)];
 if (scripts.length === 0) {
@@ -18,6 +19,13 @@ if (previewScripts.length === 0) {
   throw new Error('public/preview/index.html does not contain an inline preview script');
 }
 const previewScript = previewScripts[previewScripts.length - 1][1];
+
+function loadTelemetryHelpers() {
+  const context = {};
+  vm.createContext(context);
+  new vm.Script(`${telemetryGasScript}\nthis.__telemetry = { buildPerfectScoreRows_ };`).runInContext(context);
+  return context.__telemetry;
+}
 
 function decodeHtmlEntities(text) {
   return String(text)
@@ -914,6 +922,21 @@ test('perfect score submission records millisecond-precision completion time', (
   assert.ok(perfectPayload, 'perfect score telemetry should exist');
   assert.equal(perfectPayload.elapsed_seconds, 3.123);
   assert.equal(perfectPayload.correct_count, 2);
+});
+
+test('perfect score rows are ranked by correct count and then elapsed time', () => {
+  const { buildPerfectScoreRows_ } = loadTelemetryHelpers();
+  const rankedRows = buildPerfectScoreRows_([
+    ['slow-four', 12.4, 4, '2026-04-24T10:03:00.000Z', 'extra', 's1', 'a1', '2026-04-24T10:03:01.000Z'],
+    ['best-five', 25.0, 5, '2026-04-24T10:00:00.000Z', 'extra', 's2', 'a2', '2026-04-24T10:00:01.000Z'],
+    ['fast-four', 10.2, 4, '2026-04-24T10:02:00.000Z', 'normal', 's3', 'a3', '2026-04-24T10:02:01.000Z'],
+    ['low-three', 2.1, 3, '2026-04-24T10:01:00.000Z', 'extra', 's4', 'a4', '2026-04-24T10:01:01.000Z'],
+  ]);
+
+  assert.deepEqual(
+    rankedRows.map(row => row[0]),
+    ['best-five', 'fast-four', 'slow-four', 'low-three'],
+  );
 });
 
 test('normal mode score hides the home button', () => {
