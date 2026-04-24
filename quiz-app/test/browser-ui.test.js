@@ -913,6 +913,17 @@ test('perfect score submission records millisecond-precision completion time', (
   const perfectPayload = app.parseBeaconPayloads().find(payload => payload.event_type === 'perfect_score');
   assert.ok(perfectPayload, 'perfect score telemetry should exist');
   assert.equal(perfectPayload.elapsed_seconds, 3.123);
+  assert.equal(perfectPayload.correct_count, 2);
+});
+
+test('normal mode score hides the home button', () => {
+  const app = createHarness();
+
+  app.clickStart();
+  app.runCurrentSessionCorrectly();
+
+  assert.equal(app.elements.get('score-card').style.display, 'block');
+  assert.equal(app.elements.get('score-home-btn').style.display, 'none');
 });
 
 test('extra mode assets are extracted to dedicated files', () => {
@@ -941,7 +952,7 @@ test('extra mode terminal theme brightens question text and uses white-based cod
   );
   assert.match(
     extraModeCSS,
-    /\.extra-mode-download-btn \{[\s\S]*?display: inline-flex;[\s\S]*?background: rgba\(0, 0, 0, 0\.92\);[\s\S]*?box-shadow: 4px 4px 0 rgba\(125, 255, 155, 0\.14\);/,
+    /\.extra-mode-download-btn \{[\s\S]*?display: inline-flex;[\s\S]*?min-width: 212px;[\s\S]*?background: rgba\(0, 0, 0, 0\.92\);[\s\S]*?box-shadow: 4px 4px 0 rgba\(125, 255, 155, 0\.14\);/,
   );
   assert.match(
     appHTML,
@@ -1015,6 +1026,56 @@ test('extra mode only serves extra quizzes and still shows the correct answer af
   const hasClass = (button, className) => button.className.split(/\s+/).includes(className);
   assert.equal(buttons.filter(button => hasClass(button, 'correct')).length, 1);
   assert.equal(buttons.filter(button => hasClass(button, 'incorrect')).length, 1);
+});
+
+test('extra mode retry still excludes questions shown in normal mode', () => {
+  const app = createHarness();
+
+  app.clickStart();
+  app.runCurrentSessionCorrectly();
+  app.clickChallenge();
+  app.runAllTimers();
+  app.clickExtraModeDownload();
+  app.runAllTimers();
+
+  assert.equal(app.elements.get('progress').textContent, '0 / 1');
+
+  app.answerCurrentQuestionCorrectly();
+  app.elements.get('next-btn').trigger('click');
+  app.clickRetryExtraMode();
+  app.clickExtraModeDownload();
+  app.runAllTimers();
+
+  assert.equal(app.elements.get('progress').textContent, '0 / 1');
+  assert.equal(app.currentQuiz().id, 'extra_q1');
+});
+
+test('extra mode can submit a nickname even without a perfect score', () => {
+  const app = createHarness();
+
+  app.clickStart();
+  app.runCurrentSessionCorrectly();
+  app.clickChallenge();
+  app.runAllTimers();
+  app.clickExtraModeDownload();
+  app.runAllTimers();
+  app.advanceTimersBy(1234);
+  app.answerCurrentQuestionIncorrectly();
+  app.elements.get('next-btn').trigger('click');
+
+  assert.equal(app.elements.get('perfect-score-section').style.display, 'block');
+  assert.equal(app.elements.get('score-value').textContent, '0 / 1');
+
+  app.elements.get('nickname-input').value = 'extra-runner';
+  app.elements.get('submit-perfect-score-btn').trigger('click');
+
+  const extraScorePayload = app.parseBeaconPayloads().find(payload =>
+    payload.event_type === 'perfect_score' && payload.nickname === 'extra-runner'
+  );
+  assert.ok(extraScorePayload, 'extra mode score telemetry should exist');
+  assert.equal(extraScorePayload.mode, 'extra');
+  assert.equal(extraScorePayload.elapsed_seconds, 1.234);
+  assert.equal(extraScorePayload.correct_count, 0);
 });
 
 test('extra mode score counts only extra-mode answers and not normal-mode answers', () => {
@@ -1223,6 +1284,7 @@ test('perfect extra mode score replaces try again with extra retry and offers a 
   assert.equal(app.elements.get('retry-extra-mode-btn').style.display, '');
   assert.equal(app.elements.get('retry-extra-mode-btn').textContent, 'もう一度チャレンジ');
   assert.equal(app.elements.get('challenge-btn').style.display, 'none');
+  assert.equal(app.elements.get('score-home-btn').style.display, '');
   assert.equal(app.elements.get('score-home-btn').textContent, 'トップページに戻る');
 
   app.clickRetryExtraMode();
@@ -1236,7 +1298,7 @@ test('perfect extra mode score replaces try again with extra retry and offers a 
   app.runCurrentSessionCorrectly();
 
   assert.equal(app.elements.get('score-card').style.display, 'block');
-  assert.equal(app.elements.get('score-value').textContent, '2 / 2');
+  assert.equal(app.elements.get('score-value').textContent, '1 / 1');
 
   app.clickScoreHome();
 

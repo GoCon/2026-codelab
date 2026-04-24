@@ -134,13 +134,14 @@ Apps Script は `Logs`、`Summary`、`Attempts`、`PerfectScores` の 4 シー�
 - `selected_display_index` / `correct_display_index`: シャッフル後に画面へ表示された index
 - `choice_order`: 表示順から元の index への対応（例: `[3,0,1,2]` は「表示1番目=元の4番目」）
 
-全問正解時にニックネーム送信用フォームから送られる payload は以下です。
+スコア記録送信用フォームから送られる payload は以下です。
 
 ```json
 {
   "event_type": "perfect_score",
   "nickname": "gopher",
   "elapsed_seconds": 42,
+  "correct_count": 4,
   "completed_at": "2026-04-15T12:39:56.000Z",
   "mode": "extra",
   "session_id": "same-browser-session-id",
@@ -151,7 +152,7 @@ Apps Script は `Logs`、`Summary`、`Attempts`、`PerfectScores` の 4 シー�
 - `Logs` シートには全回答が追記され、`session_id`、`attempt_id`、各回答時点の `elapsed_seconds`、各問題にかかった `question_elapsed_seconds` に加えて、元の選択肢 index / 表示 index / 選択肢テキスト / `choice_order` が保存されます
 - `Summary` シートには問題ごとの **初回回答時の正答率** と **最終回答時の正答率**、および初回/最終回答時点の平均所要秒数が再計算されます
 - `Attempts` シートには各 `attempt_id` ごとの回答数、完走有無、最後に到達した問題番号、総経過秒数がまとまり、途中離脱の分析に使えます
-- `PerfectScores` シートには全問正解時に送信されたニックネーム、クリアタイム、回答完了日時、`mode`（`normal` / `extra`）、`attempt_id` が追記されます
+- `PerfectScores` シートには normal の全問正解時と extra の完走時に送信されたニックネーム、完走タイム、正解数、回答完了日時、`mode`（`normal` / `extra`）、`attempt_id` が追記されます
 
 ## GitHub Pages デプロイについて
 

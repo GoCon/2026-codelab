@@ -81,6 +81,7 @@ const ATTEMPT_HEADERS = [
 const PERFECT_SCORE_HEADERS = [
   'nickname',
   'elapsed_seconds',
+  'correct_count',
   'completed_at',
   'mode',
   'session_id',
@@ -199,6 +200,10 @@ function parsePerfectScorePayload_(payload) {
   if (payload.elapsed_seconds === '') {
     throw new Error('elapsed_seconds must be a non-negative number');
   }
+  payload.correct_count = normalizeNonNegativeNumber_(payload.correct_count);
+  if (payload.correct_count === '') {
+    throw new Error('correct_count must be a non-negative number');
+  }
 
   payload.completed_at = normalizeString_(payload.completed_at) || new Date().toISOString();
   return payload;
@@ -249,6 +254,7 @@ function appendPerfectScoreRow_(sheet, payload) {
   sheet.appendRow([
     payload.nickname,
     payload.elapsed_seconds,
+    payload.correct_count,
     payload.completed_at,
     payload.mode,
     payload.session_id,

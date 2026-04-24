@@ -1109,7 +1109,7 @@
         specialLinkCopy: '全問正解！ スペシャルページへどうぞ',
         specialLinkCta: 'スペシャルページへ',
         perfectTimeTitle: '解き終わるまでの時間',
-        perfectScoreNoteDefault: '全問正解の記録を残せます。ニックネームを入力して送信してください。',
+        perfectScoreNoteDefault: '記録を残せます。ニックネームを入力して送信してください。',
         perfectScoreNoteTelemetryDisabled: '解き終わった時間は表示中です。現在は記録送信エンドポイントが設定されていません。',
         perfectScoreNoteSubmitted: '記録を送信しました。別の記録を残すには、もう一度クイズに挑戦してください。',
         nicknamePlaceholder: 'ニックネームを入力',
@@ -1140,7 +1140,7 @@
         perfectScoreMessageNicknameRequired: 'ニックネームを入力してください。',
         perfectScoreMessageNicknameTooLong: 'ニックネームは40文字以内で入力してください。',
         perfectScoreMessageSending: '記録を送信しています…',
-        perfectScoreMessageSuccess: 'クリア記録を送信しました。',
+        perfectScoreMessageSuccess: '記録を送信しました。',
         perfectScoreMessageFailed: '記録の送信に失敗しました。通信環境を確認して、もう一度お試しください。',
         adminKeywordMessageNotConfigured: 'Keyword は設定されていません。',
         adminKeywordMessageRequired: 'Keyword を入力してください。',
@@ -1168,7 +1168,7 @@
         specialLinkCopy: 'Perfect score! Enjoy the special page.',
         specialLinkCta: 'Open the special page',
         perfectTimeTitle: 'Completion time',
-        perfectScoreNoteDefault: 'You can save your perfect-score record. Enter a nickname and submit it.',
+        perfectScoreNoteDefault: 'You can save your record. Enter a nickname and submit it.',
         perfectScoreNoteTelemetryDisabled: 'Your completion time is shown, but score submission is unavailable because the telemetry endpoint is not configured.',
         perfectScoreNoteSubmitted: 'Your record has been submitted. Challenge the quiz again to save another one.',
         nicknamePlaceholder: 'Enter your nickname',
@@ -1199,7 +1199,7 @@
         perfectScoreMessageNicknameRequired: 'Enter a nickname.',
         perfectScoreMessageNicknameTooLong: 'Nicknames must be 40 characters or fewer.',
         perfectScoreMessageSending: 'Submitting your record...',
-        perfectScoreMessageSuccess: 'Your clear record has been submitted.',
+        perfectScoreMessageSuccess: 'Your record has been submitted.',
         perfectScoreMessageFailed: 'Failed to submit your record. Check your connection and try again.',
         adminKeywordMessageNotConfigured: 'The keyword is not configured.',
         adminKeywordMessageRequired: 'Enter the keyword.',
@@ -1324,6 +1324,7 @@
     let correctCount = 0;
     let pastCorrect = 0;
     let challengeSeenIds = new Set();
+    let normalSeenIds = new Set();
     let seenIds = new Set();
     let isChallenge = false;
     let previewUnlocked = loadPreviewUnlocked();
@@ -1334,6 +1335,7 @@
     let sessionElapsedMilliseconds = 0;
     let sessionElapsedResumedAt = null;
     let currentQuestionStartedAt = null;
+    let latestAnswerAt = '';
     let latestAnswerElapsedMilliseconds = 0;
     let perfectCompletionElapsedMilliseconds = null;
     let perfectCompletionAt = '';
@@ -1910,6 +1912,7 @@
     }
 
     function resetPerfectScoreState() {
+      latestAnswerAt = '';
       latestAnswerElapsedMilliseconds = 0;
       perfectCompletionElapsedMilliseconds = null;
       perfectCompletionAt = '';
@@ -2063,6 +2066,7 @@
       if (!isChallenge) {
         pastCorrect = 0;
         challengeSeenIds.clear();
+        normalSeenIds.clear();
         seenIds.clear();
       }
 
@@ -2217,6 +2221,7 @@
         ? Math.max(0, Math.floor((answeredAtTime - currentQuestionStartedAt) / 1000))
         : '';
       currentQuestionStartedAt = null;
+      latestAnswerAt = answeredAt;
       latestAnswerElapsedMilliseconds = elapsedMilliseconds;
       pauseSessionElapsed(answeredAtTime);
       if (isCorrect) {
@@ -2240,6 +2245,8 @@
       session.forEach(quiz => seenIds.add(quiz.id));
       if (isChallenge) {
         session.forEach(quiz => challengeSeenIds.add(quiz.id));
+      } else {
+        session.forEach(quiz => normalSeenIds.add(quiz.id));
       }
 
       questionCard.style.display = 'none';
@@ -2262,15 +2269,18 @@
       const totalAnswered = isChallenge ? challengeSeenIds.size : session.length;
       const totalCorrect = isChallenge ? pastCorrect + correctCount : correctCount;
       const allCorrect = correctCount === session.length;
+      const canSubmitScore = isChallenge || allCorrect;
       const challengePerfect = isChallenge && allCorrect;
       const canChallengeMore = remainingExtraCount > 0;
 
       scoreValue.textContent = `${totalCorrect} / ${totalAnswered}`;
       challengeCompleteSection.style.display = challengePerfect ? 'block' : 'none';
       specialLinkSection.style.display = (!isChallenge && allCorrect) ? 'block' : 'none';
-      perfectScoreSection.style.display = allCorrect ? 'block' : 'none';
-      if (allCorrect) {
-        const elapsedMilliseconds = perfectCompletionElapsedMilliseconds ?? latestAnswerElapsedMilliseconds;
+      perfectScoreSection.style.display = canSubmitScore ? 'block' : 'none';
+      if (canSubmitScore) {
+        const elapsedMilliseconds = isChallenge
+          ? latestAnswerElapsedMilliseconds
+          : (perfectCompletionElapsedMilliseconds ?? latestAnswerElapsedMilliseconds);
         perfectTimeValue.textContent = formatElapsedMilliseconds(elapsedMilliseconds);
         if (!telemetryEndpoint) {
           nicknameInput.disabled = true;
@@ -2279,12 +2289,14 @@
           nicknameInput.disabled = false;
           submitPerfectScoreBtn.disabled = false;
         }
+      } else {
+        perfectTimeValue.textContent = '';
       }
       renderPerfectScoreNote();
       restartBtn.style.display = challengePerfect ? 'none' : '';
       challengeBtn.style.display = canChallengeMore && ((!isChallenge && allCorrect) || (isChallenge && !allCorrect)) ? '' : 'none';
       retryExtraModeBtn.style.display = challengePerfect ? '' : 'none';
-      scoreHomeBtn.style.display = '';
+      scoreHomeBtn.style.display = isChallenge ? '' : 'none';
       scoreCard.style.display = 'block';
       updateProgress(session.length);
       if (allCorrect && triggerCelebration) {
@@ -2293,7 +2305,13 @@
     }
 
     async function submitPerfectScore() {
-      if (perfectCompletionElapsedMilliseconds === null || !perfectCompletionAt) {
+      const submissionElapsedMilliseconds = isChallenge
+        ? latestAnswerElapsedMilliseconds
+        : perfectCompletionElapsedMilliseconds;
+      const submissionCompletedAt = isChallenge
+        ? latestAnswerAt
+        : perfectCompletionAt;
+      if (submissionElapsedMilliseconds === null || !submissionCompletedAt) {
         setPerfectScoreMessage('perfectScoreMessageNoRecord', 'error');
         return;
       }
@@ -2322,8 +2340,9 @@
         await postTelemetry({
           event_type: 'perfect_score',
           nickname,
-          elapsed_seconds: serializeElapsedMilliseconds(perfectCompletionElapsedMilliseconds),
-          completed_at: perfectCompletionAt,
+          elapsed_seconds: serializeElapsedMilliseconds(submissionElapsedMilliseconds),
+          correct_count: isChallenge ? pastCorrect + correctCount : correctCount,
+          completed_at: submissionCompletedAt,
           mode: getTelemetryMode(),
           session_id: sessionID,
           attempt_id: attemptID,
@@ -2365,7 +2384,7 @@
         challengeSeenIds.clear();
       }
       extraMode.startSequence(
-        [...seenIds],
+        [...new Set([...normalSeenIds, ...seenIds])],
         isChallenge ? pastCorrect + correctCount : 0
       );
     });
@@ -2374,9 +2393,9 @@
         return;
       }
       challengeSeenIds.clear();
-      seenIds.clear();
+      seenIds = new Set(normalSeenIds);
       pastCorrect = 0;
-      extraMode.startSequence([], 0, true);
+      extraMode.startSequence([...normalSeenIds], 0, true);
     });
     scoreHomeBtn.addEventListener('click', () => {
       renderHome();
