@@ -324,6 +324,11 @@ function buildPerfectScoreRows_(rows) {
       rowIndex,
     }))
     .sort((left, right) => {
+      const byMode = comparePerfectScoreModes_(left.row[4], right.row[4]);
+      if (byMode !== 0) {
+        return byMode;
+      }
+
       const byCorrectCount = compareNumbersDesc_(
         left.row[2],
         right.row[2],
@@ -663,6 +668,16 @@ function compareStringsAsc_(left, right) {
     return 0;
   }
   return leftValue < rightValue ? -1 : 1;
+}
+
+function comparePerfectScoreModes_(left, right) {
+  const rank = mode => (normalizeMode_(mode) === 'extra' ? 0 : 1);
+  const leftRank = rank(left);
+  const rightRank = rank(right);
+  if (leftRank === rightRank) {
+    return 0;
+  }
+  return leftRank < rightRank ? -1 : 1;
 }
 
 function normalizeString_(value) {

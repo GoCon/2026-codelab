@@ -924,18 +924,18 @@ test('perfect score submission records millisecond-precision completion time', (
   assert.equal(perfectPayload.correct_count, 2);
 });
 
-test('perfect score rows are ranked by correct count and then elapsed time', () => {
+test('perfect score rows are ranked by mode, correct count, and elapsed time', () => {
   const { buildPerfectScoreRows_ } = loadTelemetryHelpers();
   const rankedRows = buildPerfectScoreRows_([
-    ['slow-four', 12.4, 4, '2026-04-24T10:03:00.000Z', 'extra', 's1', 'a1', '2026-04-24T10:03:01.000Z'],
-    ['best-five', 25.0, 5, '2026-04-24T10:00:00.000Z', 'extra', 's2', 'a2', '2026-04-24T10:00:01.000Z'],
-    ['fast-four', 10.2, 4, '2026-04-24T10:02:00.000Z', 'normal', 's3', 'a3', '2026-04-24T10:02:01.000Z'],
-    ['low-three', 2.1, 3, '2026-04-24T10:01:00.000Z', 'extra', 's4', 'a4', '2026-04-24T10:01:01.000Z'],
+    ['normal-six', 1.2, 6, '2026-04-24T10:03:00.000Z', 'normal', 's1', 'a1', '2026-04-24T10:03:01.000Z'],
+    ['extra-five', 25.0, 5, '2026-04-24T10:00:00.000Z', 'extra', 's2', 'a2', '2026-04-24T10:00:01.000Z'],
+    ['extra-four-slow', 12.4, 4, '2026-04-24T10:02:00.000Z', 'extra', 's3', 'a3', '2026-04-24T10:02:01.000Z'],
+    ['extra-four-fast', 10.2, 4, '2026-04-24T10:01:00.000Z', 'extra', 's4', 'a4', '2026-04-24T10:01:01.000Z'],
   ]);
 
   assert.deepEqual(
     rankedRows.map(row => row[0]),
-    ['best-five', 'fast-four', 'slow-four', 'low-three'],
+    ['extra-five', 'extra-four-fast', 'extra-four-slow', 'normal-six'],
   );
 });
 

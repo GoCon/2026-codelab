@@ -152,7 +152,7 @@ Apps Script は `Logs`、`Summary`、`Attempts`、`PerfectScores` の 4 シー�
 - `Logs` シートには全回答が追記され、`session_id`、`attempt_id`、各回答時点の `elapsed_seconds`、各問題にかかった `question_elapsed_seconds` に加えて、元の選択肢 index / 表示 index / 選択肢テキスト / `choice_order` が保存されます
 - `Summary` シートには問題ごとの **初回回答時の正答率** と **最終回答時の正答率**、および初回/最終回答時点の平均所要秒数が再計算されます
 - `Attempts` シートには各 `attempt_id` ごとの回答数、完走有無、最後に到達した問題番号、総経過秒数がまとまり、途中離脱の分析に使えます
-- `PerfectScores` シートには normal の全問正解時と extra の完走時に送信されたニックネーム、完走タイム、正解数、回答完了日時、`mode`（`normal` / `extra`）、`attempt_id` が保存され、**正解数の多い順 → 完走タイムの短い順** のランキングになるよう再構築されます
+- `PerfectScores` シートには normal の全問正解時と extra の完走時に送信されたニックネーム、完走タイム、正解数、回答完了日時、`mode`（`normal` / `extra`）、`attempt_id` が保存され、**extra → normal → 正解数の多い順 → 完走タイムの短い順** のランキングになるよう再構築されます
 
 ## GitHub Pages デプロイについて
 
