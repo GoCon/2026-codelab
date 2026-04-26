@@ -10,10 +10,55 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   transition: opacity 280ms ease, visibility 280ms ease;
 }
+.extra-mode-overlay::before,
+.extra-mode-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+}
 .extra-mode-overlay.active {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
+}
+.extra-mode-overlay.glitching,
+.extra-mode-overlay.inverting {
+  background: transparent;
+}
+.extra-mode-overlay.glitching .extra-mode-screen,
+.extra-mode-overlay.inverting .extra-mode-screen {
+  background: transparent;
+}
+.extra-mode-overlay.glitching::before,
+.extra-mode-overlay.glitching::after,
+.extra-mode-overlay.inverting::before,
+.extra-mode-overlay.inverting::after {
+  opacity: 1;
+}
+.extra-mode-overlay.glitching::before {
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.12) 0 2px, transparent 2px 6px),
+    linear-gradient(90deg, rgba(255, 0, 119, 0.14), rgba(0, 255, 255, 0.1), rgba(255, 255, 255, 0.08));
+  mix-blend-mode: screen;
+  animation: extra-mode-preboot-noise 140ms steps(4, end) infinite;
+}
+.extra-mode-overlay.glitching::after {
+  background:
+    linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.22) 40%, transparent 100%),
+    radial-gradient(circle at 24% 18%, rgba(255, 255, 255, 0.18), transparent 26%);
+  mix-blend-mode: difference;
+  animation: extra-mode-preboot-bands 180ms steps(3, end) infinite;
+}
+.extra-mode-overlay.inverting::before {
+  background: #ffffff;
+  mix-blend-mode: difference;
+  animation: extra-mode-preboot-invert 180ms ease forwards;
+}
+.extra-mode-overlay.inverting::after {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.44), rgba(0, 0, 0, 0.92));
+  animation: extra-mode-preboot-blackout 180ms ease forwards;
 }
 .extra-mode-screen {
   position: relative;
@@ -311,15 +356,115 @@ body.extra-mode-transition .card,
 body.extra-mode-transition #next-btn,
 body.extra-mode-transition .footer-gradient,
 body.extra-mode-transition footer {
-  animation: extra-mode-collapse 900ms cubic-bezier(0.16, 0.82, 0.24, 1) 2460ms both;
+  animation: extra-mode-preboot-page-glitch 360ms steps(4, end) both;
   transform-origin: top center;
 }
 body.extra-mode-transition .c-button,
 body.extra-mode-transition .header-conference-logo,
 body.extra-mode-transition .footer-logo,
 body.extra-mode-transition #progress-mascot-anchor {
-  animation: extra-mode-fragment-drop 840ms cubic-bezier(0.18, 0.8, 0.28, 1) 2500ms both;
+  animation: extra-mode-preboot-fragment-glitch 360ms steps(4, end) both;
   transform-origin: center;
+}
+@keyframes extra-mode-preboot-noise {
+  0% {
+    opacity: 0.14;
+    transform: translate3d(0, 0, 0);
+  }
+  25% {
+    opacity: 0.28;
+    transform: translate3d(-2px, 1px, 0);
+  }
+  50% {
+    opacity: 0.2;
+    transform: translate3d(2px, -1px, 0);
+  }
+  75% {
+    opacity: 0.34;
+    transform: translate3d(-1px, 2px, 0);
+  }
+  100% {
+    opacity: 0.16;
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes extra-mode-preboot-bands {
+  0% {
+    transform: translate3d(0, 0, 0) scaleY(1);
+  }
+  50% {
+    transform: translate3d(0, -8px, 0) scaleY(1.06);
+  }
+  100% {
+    transform: translate3d(0, 8px, 0) scaleY(0.96);
+  }
+}
+@keyframes extra-mode-preboot-invert {
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.92;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes extra-mode-preboot-blackout {
+  0% {
+    opacity: 0.18;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes extra-mode-preboot-page-glitch {
+  0% {
+    filter: none;
+    transform: translate3d(0, 0, 0);
+  }
+  18% {
+    filter: contrast(1.28) saturate(1.22);
+    transform: translate3d(2px, -1px, 0);
+  }
+  34% {
+    filter: hue-rotate(55deg) contrast(1.5);
+    transform: translate3d(-3px, 1px, 0);
+  }
+  54% {
+    filter: contrast(0.9) brightness(1.5);
+    transform: translate3d(1px, 2px, 0);
+  }
+  72% {
+    filter: invert(1) contrast(1.55) brightness(1.05);
+    transform: translate3d(-1px, 0, 0);
+  }
+  100% {
+    filter: brightness(0) contrast(1);
+    transform: translate3d(0, 0, 0);
+  }
+}
+@keyframes extra-mode-preboot-fragment-glitch {
+  0% {
+    filter: none;
+    transform: translate3d(0, 0, 0);
+  }
+  22% {
+    filter: contrast(1.36) saturate(1.4);
+    transform: translate3d(3px, -2px, 0);
+  }
+  42% {
+    filter: hue-rotate(75deg) contrast(1.55);
+    transform: translate3d(-2px, 2px, 0);
+  }
+  68% {
+    filter: invert(1) contrast(1.5) brightness(1.08);
+    transform: translate3d(2px, 1px, 0);
+  }
+  100% {
+    filter: brightness(0) contrast(1);
+    transform: translate3d(0, 0, 0);
+  }
 }
 body.extra-mode-active {
   background: #000;
@@ -623,6 +768,8 @@ body.extra-mode-active #perfect-score-section {
 
 @media (prefers-reduced-motion: reduce) {
   .extra-mode-overlay,
+  .extra-mode-overlay::before,
+  .extra-mode-overlay::after,
   .extra-mode-crash-view,
   .extra-mode-boot-view,
   .extra-mode-recover-line,

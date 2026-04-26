@@ -978,6 +978,10 @@ test('extra mode terminal theme brightens question text and uses white-based cod
     /\.extra-mode-download-btn \{[\s\S]*?display: inline-flex;[\s\S]*?min-width: 212px;[\s\S]*?background: rgba\(0, 0, 0, 0\.92\);[\s\S]*?box-shadow: 4px 4px 0 rgba\(125, 255, 155, 0\.14\);/,
   );
   assert.match(
+    extraModeCSS,
+    /\.extra-mode-overlay\.glitching,\s+\.extra-mode-overlay\.inverting \{[\s\S]*?background: transparent;[\s\S]*?\.extra-mode-overlay\.glitching \.extra-mode-screen,/,
+  );
+  assert.match(
     appHTML,
     /class="extra-mode-download-btn-label">Enter<\/span>[\s\S]*?class="extra-mode-download-btn-hint">Run installer<\/span>/,
   );
@@ -1066,6 +1070,7 @@ test('extra mode retry still excludes questions shown in normal mode', () => {
   app.answerCurrentQuestionCorrectly();
   app.elements.get('next-btn').trigger('click');
   app.clickRetryExtraMode();
+  app.runAllTimers();
   app.clickExtraModeDownload();
   app.runAllTimers();
 
@@ -1164,9 +1169,18 @@ test('extra mode trigger opens the fake installer and then enters terminal UI', 
 
   assert.equal(app.elements.get('extra-mode-overlay').attributes['aria-hidden'], 'false');
   assert.equal(app.elements.get('extra-mode-stack-stream').textContent, '');
-  assert.ok(app.elements.get('extra-mode-overlay').classList.contains('booting'));
-  assert.equal(app.body.classList.contains('extra-mode-transition'), false);
+  assert.ok(app.elements.get('extra-mode-overlay').classList.contains('glitching'));
+  assert.equal(app.body.classList.contains('extra-mode-transition'), true);
+  assert.equal(app.elements.get('extra-mode-download-btn').disabled, true);
 
+  app.advanceTimersBy(180);
+
+  assert.ok(app.elements.get('extra-mode-overlay').classList.contains('inverting'));
+  assert.equal(app.elements.get('extra-mode-overlay').classList.contains('glitching'), false);
+
+  app.advanceTimersBy(180);
+
+  assert.ok(app.elements.get('extra-mode-overlay').classList.contains('booting'));
   assert.equal(app.elements.get('extra-mode-download-btn').disabled, false);
   assert.match(
     app.elements.get('extra-mode-boot-output').textContent,
@@ -1198,6 +1212,7 @@ test('extra mode swaps the underlying screen before the installer overlay fully 
   app.clickStart();
   app.runCurrentSessionCorrectly();
   app.clickChallenge();
+  app.runAllTimers();
   app.clickExtraModeDownload();
   for (let i = 0; i < 16; i += 1) {
     app.advanceTimersBy(56);
@@ -1313,6 +1328,11 @@ test('perfect extra mode score replaces try again with extra retry and offers a 
   app.clickRetryExtraMode();
 
   assert.equal(app.elements.get('extra-mode-overlay').attributes['aria-hidden'], 'false');
+  assert.ok(app.elements.get('extra-mode-overlay').classList.contains('glitching'));
+  assert.equal(app.elements.get('extra-mode-download-btn').disabled, true);
+
+  app.runAllTimers();
+
   assert.ok(app.elements.get('extra-mode-overlay').classList.contains('booting'));
   assert.equal(app.elements.get('extra-mode-download-btn').disabled, false);
 

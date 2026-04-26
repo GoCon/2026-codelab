@@ -23,6 +23,8 @@
     const command = '$ go mod download';
     const clockDefaultText = '00:00.000';
     const buildSuccessText = 'Build successful.';
+    const preBootGlitchDelay = 180;
+    const preBootInvertDelay = 180;
     const bootText = [
       'extra mode bootstrap terminal ready',
       'staged command: $ go mod download',
@@ -254,6 +256,7 @@
       }
       bootOutput.textContent = bootText;
       downloadBtn.disabled = false;
+      overlay.classList.remove('glitching', 'inverting');
       overlay.classList.add('booting', 'boot-ready', 'show-output');
     }
 
@@ -269,6 +272,9 @@
         pastCorrect: nextPastCorrect,
         forceChallenge: Boolean(forceChallenge),
       };
+      if (document.body) {
+        document.body.classList.add('extra-mode-transition');
+      }
       closeLanguageMenu();
       hideError();
       downloadBtn.disabled = true;
@@ -277,9 +283,15 @@
       installLog.textContent = '';
       statusLine.textContent = '';
       statusLine.className = 'extra-mode-status-line';
-      overlay.className = 'extra-mode-overlay active booting';
+      overlay.className = 'extra-mode-overlay active glitching';
       overlay.setAttribute('aria-hidden', 'false');
-      beginBootSequence(token);
+      scheduleStep(token, () => {
+        overlay.classList.remove('glitching');
+        overlay.classList.add('inverting');
+      }, prefersReducedMotion() ? 0 : preBootGlitchDelay);
+      scheduleStep(token, () => {
+        beginBootSequence(token);
+      }, prefersReducedMotion() ? 0 : preBootGlitchDelay + preBootInvertDelay);
     }
 
     downloadBtn.addEventListener('click', triggerInstall);
