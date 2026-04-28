@@ -1,8 +1,8 @@
   # sivchari Q1
-  - id: "sivchari_q1"
+  - id: "Indexed elements in array literals"
     title: "配列リテラルのインデックス指定"
     title_en: Indexed elements in array literals
-    mode: "both"
+    mode: "extra"
     text: "このコードの出力は何？"
     text_en: What does this code print?
     question_code_ref: "code/sivchari_q1_question.go"
@@ -51,10 +51,10 @@
     answer_code_ref: "code/sivchari_q1_answer.go"
 
   # sivchari Q2
-  - id: "sivchari_q2"
+  - id: "How iota continues across lines"
     title: "iota の継続と式の引き継ぎ"
     title_en: How iota continues across lines
-    mode: "both"
+    mode: "extra"
     text: "このコードの出力は何？"
     text_en: What does this code print?
     question_code_ref: "code/sivchari_q2_question.go"
@@ -98,10 +98,10 @@
     answer_code_ref: "code/sivchari_q2_answer.go"
 
   # tomtwinkle Q1
-  - id: "tomtwinkle_q1"
+  - id: "go test cache"
     title: "go test キャッシュ"
     title_en: go test cache
-    mode: "both"
+    mode: "extra"
     text: |
       go test は、同じコードに対して2回目を実行すると「(cached)」と表示され一瞬で終わります。
       このキャッシュを無視して強制的に再テストするフラグはどれ？
@@ -134,10 +134,10 @@
     answer_code_play_ref: "https://go.dev/play/p/q3esYHlP6lG"
 
   # tomtwinkle Q2
-  - id: "tomtwinkle_q2"
+  - id: "Precision of untyped constants"
     title: "型無し定数の精度"
     title_en: Precision of untyped constants
-    mode: "both"
+    mode: "extra"
     text: |
       変数を使わず、定数で64ビットの限界を超える巨大な数値を定義するとどうなる？
     text_en: What happens if you define a huge constant, without using a 
@@ -171,10 +171,10 @@
     answer_code_play_ref: "https://go.dev/play/p/vb4924cUKsl"
 
   # tomtwinkle Q4
-  - id: "tomtwinkle_q4"
+  - id: "defer inside a loop"
     title: "defer in loop"
     title_en: defer inside a loop
-    mode: "both"
+    mode: "extra"
     text: |
       以下のコードの問題点は？
     text_en: What is the problem with this code?
@@ -209,10 +209,10 @@
     answer_code_play_ref: "https://go.dev/play/p/hM0PTI0iko7"
 
   # tomtwinkle Q5
-  - id: "tomtwinkle_q5"
+  - id: "clear() on a slice"
     title: "clear() on slice"
     title_en: clear() on a slice
-    mode: "both"
+    mode: "extra"
     text: |
       以下のコードの実行結果は？
     text_en: What is the result of running this code?
@@ -247,10 +247,10 @@
     answer_code_play_ref: "https://go.dev/play/p/NkAkv-tUNKr"
 
   # tomtwinkle Q6
-  - id: "tomtwinkle_q6"
+  - id: "Named returns and defer"
     title: "named return + defer"
     title_en: Named returns and defer
-    mode: "both"
+    mode: "extra"
     text: |
       以下の関数を呼び出したとき、呼び出し元が受け取る値は？
     text_en: When this function is called, what value does the caller receive?
@@ -285,10 +285,10 @@
     answer_code_play_ref: "https://go.dev/play/p/973xesVL17U"
 
   # tomtwinkle Q7
-  - id: "tomtwinkle_q7"
+  - id: "range over a string"
     title: "range over string"
     title_en: range over a string
-    mode: "both"
+    mode: "extra"
     text: |
       以下のコードの出力はどれ？
     text_en: Which output does this code produce?
@@ -353,10 +353,10 @@
     answer_code_play_ref: "https://go.dev/play/p/BVyqOwrA1tg"
 
   # tomtwinkle Q8
-  - id: "tomtwinkle_q8"
+  - id: "t.Fatal inside a goroutine"
     title: "t.Fatal in goroutine"
     title_en: t.Fatal inside a goroutine
-    mode: "both"
+    mode: "extra"
     text: |
       テスト goroutine ではない「別途起動した goroutine」の中で t.Fatal() を呼ぶとどうなる？
     text_en: What happens if you call `t.Fatal()` inside a goroutine that is not
@@ -392,10 +392,10 @@
     answer_code_play_ref: "https://go.dev/play/p/uP543Km7JNK"
 
   # tomtwinkle Q9
-  - id: "tomtwinkle_q9"
+  - id: "GOMAXPROCS in containers"
     title: "GOMAXPROCS in containers"
     title_en: GOMAXPROCS in containers
-    mode: "both"
+    mode: "extra"
     text: |
       Docker や Kubernetes 上で Go アプリを動かす際、CPU のコア数を認識させて GOMAXPROCS を最適化するために、
       最新の Go バージョンにおいて推奨されるコードはどれ？
@@ -430,10 +430,10 @@
     answer_code_play_ref: "https://go.dev/play/p/3Az4nyarOeI"
 
   # tomtwinkle Q10
-  - id: "tomtwinkle_q10"
+  - id: "synctest isolation"
     title: "synctest isolation"
     title_en: synctest isolation
-    mode: "both"
+    mode: "extra"
     text: |
       synctest.Run ブロックの「外側」で起動した goroutine と、「内側」で起動した goroutine 同士が
       channel で同期通信しようとするとどうなる？
@@ -469,10 +469,10 @@
       Go Blog (`synctest`): https://go.dev/blog/synctest
       Go 1.24 release notes: https://go.dev/doc/go1.24
   # tomtwinkle Q11
-  - id: "tomtwinkle_q11"
+  - id: "Go keyword"
     title: "Go keyword"
     title_en: Go keyword
-    mode: "both"
+    mode: "normal"
     text: |
       この中から Go の keyword を選択してください。
     text_en: Which of these is a Go keyword?
@@ -502,10 +502,10 @@
       Go spec (Keywords): https://go.dev/ref/spec#Keywords
       Go spec (Predeclared identifiers): https://go.dev/ref/spec#Predeclared_identifiers
   # tomtwinkle Q12
-  - id: "tomtwinkle_q12"
+  - id: "time.Format layout"
     title: "time.Format layout"
     title_en: time.Format layout
-    mode: "both"
+    mode: "extra"
     text: |
       Go の time.Format で時刻レイアウトを指定する方法として正しいのはどれ？
     text_en: Which one is the correct way to specify a time layout in Go's 
@@ -535,10 +535,10 @@
 
       pkg.go.dev (`time`): https://pkg.go.dev/time
   # tomtwinkle Q13
-  - id: "tomtwinkle_q13"
+  - id: "A legendary Go founder"
     title: "Go founding member"
     title_en: A legendary Go founder
-    mode: "both"
+    mode: "normal"
     text: |
       Go 言語は Google のエンジニアによって作られましたが、初期メンバーの中には
       IT の歴史を作った「生きる伝説」とも呼べる偉大なプログラマが含まれています。
@@ -575,10 +575,10 @@
 
       Go FAQ: https://go.dev/doc/faq#history
   # tomtwinkle Q14
-  - id: "tomtwinkle_q14"
+  - id: "Initial goroutine stack size"
     title: "goroutine initial stack"
     title_en: Initial goroutine stack size
-    mode: "both"
+    mode: "extra"
     text: |
       ゴルーチンは 1 つ起動するのに、初期状態でどれくらいのメモリを消費すると考えるのが近いでしょうか？
     text_en: Roughly how much memory does a newly started goroutine use at 
@@ -607,10 +607,10 @@
 
       Go FAQ (Goroutines): https://go.dev/doc/faq#goroutines
   # tomtwinkle Q15
-  - id: "tomtwinkle_q15"
+  - id: "Pointer arithmetic"
     title: "pointer arithmetic"
     title_en: Pointer arithmetic
-    mode: "both"
+    mode: "extra"
     text: |
       Go 言語には C 言語でおなじみの「ポインタ」がありますが、
       C 言語では当たり前にできて、Go 言語では安全のために意図的にできなくしているポインタ操作はどれでしょう？
@@ -644,10 +644,10 @@
       Go FAQ (Why is there no pointer arithmetic?): https://go.dev/doc/faq#no_pointer_arithmetic
       pkg.go.dev (`unsafe`): https://pkg.go.dev/unsafe
   # tomtwinkle Q16
-  - id: "tomtwinkle_q16"
+  - id: "Compiler warnings"
     title: "compiler warnings"
     title_en: Compiler warnings
-    mode: "both"
+    mode: "extra"
     text: |
       他のコンパイル言語と比較した場合の Go 言語のコンパイラの特徴として正しいのはどれ？
     text_en: Which statement correctly describes the Go compiler compared with 
@@ -679,10 +679,10 @@
       Go FAQ (Can I stop these complaints about my unused variable/import?): https://go.dev/doc/faq#unused_variables_and_imports
       pkg.go.dev (`go vet`): https://pkg.go.dev/cmd/vet
   # tomtwinkle Q17
-  - id: "tomtwinkle_q17"
+  - id: "Who designed the Gopher?"
     title: "Gopher designer"
     title_en: Who designed the Gopher?
-    mode: "both"
+    mode: "extra"
     text: |
       愛らしいマスコット「Gopher」君ですが、このキャラクターをデザインしたのは誰でしょう？
     text_en: The adorable Go mascot is the Gopher. Who designed this character?
@@ -711,10 +711,10 @@
 
       The Go Gopher: https://go.dev/blog/gopher
   # wancom Q1
-  - id: "wancom_q1"
+  - id: "Execution order of select"
     title: "select の実行順序"
     title_en: Execution order of select
-    mode: "both"
+    mode: "extra"
     text: "このコードの出力は何？"
     text_en: What does this code print?
     question_code_ref: "code/wancom_q1_question.go"
@@ -738,10 +738,10 @@
     answer_code_ref: "code/wancom_q1_answer.go"
 
   # wancom Q2
-  - id: "wancom_q2"
+  - id: "Formats supported by the standard library"
     title: "標準パッケージの対応フォーマット"
     title_en: Formats supported by the standard library
-    mode: "both"
+    mode: "extra"
     text: "標準パッケージでサポートされていないデータフォーマットは？"
     text_en: Which data format is NOT supported by Go's standard library?
     choices:
@@ -769,10 +769,10 @@
       - `image/png`: https://pkg.go.dev/image/png@go1.26.2
       - `encoding/pem`: https://pkg.go.dev/encoding/pem@go1.26.2
   # wancom Q3
-  - id: "wancom_q3"
+  - id: "pprof data provided by both packages"
     title: "pprof の提供データ"
     title_en: pprof data provided by both packages
-    mode: "both"
+    mode: "extra"
     text: "net/http/pprofとruntime/pprof両方で提供しているプロファイリングデータは？"
     text_en: Which profiling data is provided by both `net/http/pprof` and 
       `runtime/pprof`?
@@ -796,10 +796,10 @@
     answer_code_ref: "code/wancom_q3_answer.go"
 
   # sat0ken Q1
-  - id: "sat0ken_q1"
+  - id: "Microcontrollers supported by TinyGo"
     title: "TinyGo 対応マイコン"
     title_en: Microcontrollers supported by TinyGo
-    mode: "both"
+    mode: "extra"
     text: "TinyGoでサポートされているマイコンは？"
     text_en: Which microcontrollers are supported by TinyGo?
     choices:
@@ -821,10 +821,10 @@
       All of the first three microcontrollers are supported.
       Official docs: https://tinygo.org/docs/reference/microcontrollers/
   # sat0ken Q2
-  - id: "sat0ken_q2"
+  - id: "machine.PinMode"
     title: "machine.PinMode"
     title_en: machine.PinMode
-    mode: "both"
+    mode: "extra"
     text: |
       TinyGoでLEDを光らせるには、machineパッケージでピンの入出力を指定する必要があります。
       machine.PinModeで指定するタイプは次のうちどれですか？
@@ -850,10 +850,10 @@
       To light an LED, the pin must be configured as output using `machine.PinOutput`.
       Official docs: https://pkg.go.dev/github.com/tinygo-org/tinygo/src/machine#PinMode
   # sat0ken Q3
-  - id: "sat0ken_q3"
+  - id: "Color on the Gopher Badge"
     title: "Gopher Badge の色指定"
     title_en: Color on the Gopher Badge
-    mode: "both"
+    mode: "normal"
     text: |
       Gopher Badgeの画面の色を黒から赤に変えてみましょう。
       color.RGBAでどのように指定すればよいでしょうか？
@@ -884,10 +884,10 @@
       In TinyGo, you use the `image/color` package the same way as in Go and specify RGBA values.
       Setting `255, 0, 0, 0` changes the Gopher Badge screen from black to red.
   # ryokotmng Q1
-  - id: "ryokotmng_q1"
+  - id: "append and shared arrays"
     title: "append と共有配列"
     title_en: append and shared arrays
-    mode: "both"
+    mode: "extra"
     text: "このコードの出力は何？"
     text_en: What does this code print?
     question_code_ref: "code/ryokotmng_q1.go"
@@ -908,10 +908,10 @@
     explanation_en: '`b := a[:2]` is not a copy; it is a slice over the same underlying
       array. Because `append` stays within the existing capacity (`cap=3`), no new
       array is allocated, and `a[2]` gets overwritten with `99`.'
-  - id: "hasegawa_itsuki_q1"
+  - id: "Go loop syntax"
     title: "Go のループ構文"
     title_en: Go loop syntax
-    mode: "both"
+    mode: "extra"
     text: "Goにおいて、繰り返し処理を実現するために用意されているものは次のうちどれですか？"
     text_en: In Go, which construct is provided for repeated processing?
     choices:
@@ -931,10 +931,10 @@
     explanation_en: Only `for`. Even patterns equivalent to `while`, `do-while`,
       and `foreach` are all expressed with `for` in Go. By unifying loops around
       `for`, Go encourages consistent, readable code.
-  - id: "hasegawa_itsuki_q2"
+  - id: "What animal is the Gopher?"
     title: "Gopher のモチーフ"
     title_en: What animal is the Gopher?
-    mode: "both"
+    mode: "normal"
     text: "Goのマスコットキャラクター「Gopher」は何の生き物をモチーフにしている？"
     text_en: Go's mascot character, the Gopher, is based on which animal?
     choices:
@@ -953,10 +953,10 @@
 
     explanation_en: In English, "gopher" refers to a pocket gopher. The Go 
       mascot is based on a pocket gopher designed by Renée French.
-  - id: "hasegawa_itsuki_q3"
+  - id: "Updating through a pointer"
     title: "ポインタ渡しの更新"
     title_en: Updating through a pointer
-    mode: "both"
+    mode: "extra"
     text: "以下の A〜D のうち、関数を呼んだ後に msg の値が \"Original\" から\"Changed\" に変わるのはどれ？"
     text_en: Among A-D below, which call changes `msg` from "Original" to 
       "Changed" after the function returns?
@@ -981,10 +981,10 @@
       directly to the value pointed to by `s` with `*s = "Changed"`, so `msg` 
       becomes `Changed`. D only changes what `ptr` points to, so `msg` stays the
       same.
-  - id: "Rtosshy_q1"
+  - id: "The typed nil trap"
     title: "typed nil の罠"
     title_en: The typed nil trap
-    mode: "both"
+    mode: "extra"
     text: "このコードの出力は何？"
     text_en: What does this code print?
     question_code_ref: "code/Rtosshy_q1_question.go"
@@ -1005,10 +1005,10 @@
       nil unless the type information is also nil. Reference: https://go.dev/src/internal/abi/iface.go'
     answer_code_ref: "code/Rtosshy_q1_answer.go"
 
-  - id: "Rtosshy_q2"
+  - id: "The clear built-in"
     title: "clear 組み込み関数"
     title_en: The clear built-in
-    mode: "both"
+    mode: "extra"
     text: "Goで存在する組み込み関数は？"
     text_en: Which of the following is a real Go built-in function?
     choices:
@@ -1026,10 +1026,10 @@
 
     explanation_en: '`clear` was added in Go 1.21. It zeroes all elements in a slice
       and removes all elements from a map.'
-  - id: "Rtosshy_q3"
+  - id: "append after make"
     title: "make 後の append"
     title_en: append after make
-    mode: "both"
+    mode: "extra"
     text: "このコードの出力は何？"
     text_en: What does this code print?
     question_code_ref: "code/Rtosshy_q3_question.go"
@@ -1052,10 +1052,10 @@
       has 20 elements. If you want to append to an empty slice with capacity 10, initialize
       it as `make([]int, 0, 10)`.'
   # tesso57 Q1
-  - id: "tesso57_q1"
+  - id: "Infinite recursion in Stringer"
     title: "Stringer の無限再帰"
     title_en: Infinite recursion in Stringer
-    mode: "both"
+    mode: "extra"
     text: "このコードの挙動はどれ？"
     text_en: What does this code do?
     question_code_ref: "code/tesso57_q1_question.go"
@@ -1082,10 +1082,10 @@
     answer_code_play_ref: "https://go.dev/play/p/jmW7kd-T0UB"
 
   # tesso57 Q2
-  - id: "tesso57_q2"
+  - id: "Reverse lookup for fmt verbs"
     title: "fmt verb 逆引き"
     title_en: Reverse lookup for fmt verbs
-    mode: "both"
+    mode: "extra"
     text: |
       fmt.Printf("????", u) の出力が main.User{Name:"Gopher", Age:10} になるとき、
       ???? に入るのはどれ？
@@ -1117,10 +1117,10 @@
     answer_code_play_ref: "https://go.dev/play/p/8nztK-oSFWT"
 
   # tesso57 Q3
-  - id: "tesso57_q3"
+  - id: "Asymmetry of reading and writing a nil map"
     title: "nil map の読み書き非対称"
     title_en: Asymmetry of reading and writing a nil map
-    mode: "both"
+    mode: "normal"
     text: "このコードの挙動はどれ？"
     text_en: What does this code do?
     question_code_ref: "code/tesso57_q3_question.go"
@@ -1149,10 +1149,10 @@
     answer_code_play_ref: "https://go.dev/play/p/xL4MGI0wqHP"
 
   # tesso57 Q4
-  - id: "tesso57_q4"
+  - id: "Types that can be map keys"
     title: "map のキーにできる型"
     title_en: Types that can be map keys
-    mode: "both"
+    mode: "extra"
     text: "Go の map のキーとして使えない型はどれ？"
     text_en: Which type cannot be used as a key in a Go map?
     choices:
@@ -1178,10 +1178,10 @@
     answer_code_play_ref: "https://go.dev/play/p/s0DAFLy5Ebh"
 
   # tesso57 Q5
-  - id: "tesso57_q5"
+  - id: "Map elements cannot be updated directly"
     title: "map 要素は直接更新できない"
     title_en: Map elements cannot be updated directly
-    mode: "both"
+    mode: "extra"
     text: "このコードの挙動はどれ？"
     text_en: What does this code do?
     question_code_ref: "code/tesso57_q5_question.go"
@@ -1210,10 +1210,10 @@
     answer_code_play_ref: "https://go.dev/play/p/ESlQsu20rXB"
 
   # makki_d Q1
-  - id: "makki_d_q1"
+  - id: "Keywords vs predeclared identifiers"
     title: "Goの予約語と事前定義識別子"
     title_en: Keywords vs predeclared identifiers
-    mode: "both"
+    mode: "extra"
     text: "Goの予約語ではないものはどれ？"
     text_en: Which of the following is not a Go keyword?
     choices:
@@ -1245,10 +1245,10 @@
       (although that is not recommended).
 
   # makki_d Q2
-  - id: "makki_d_q2"
+  - id: "errors.Join and typed nil"
     title: "errors.Joinとtyped nil"
     title_en: errors.Join and typed nil
-    mode: "both"
+    mode: "extra"
     text: "非nilとなるerrorはどれ？"
     text_en: Which error becomes non-nil?
     question_code_ref: "code/makki_d_q2_question.go"
@@ -1275,10 +1275,10 @@
     answer_code_play_ref: "https://go.dev/play/p/g-_VO1PYt6b"
 
   # makki_d Q3
-  - id: "makki_d_q3"
+  - id: "Generics and method sets"
     title: "Genericsとメソッド集合"
     title_en: Generics and method sets
-    mode: "both"
+    mode: "extra"
     text: "型パラメータ付き関数「MyFunc」の引数にできない型はどれ？"
     text_en: Which type cannot be passed to the type-parameterized function `MyFunc`?
     question_code_ref: "code/makki_d_q3_question.go"

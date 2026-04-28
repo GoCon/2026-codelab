@@ -183,6 +183,14 @@ func TestQuizesYAML_NoEmptyIDs(t *testing.T) {
 	}
 }
 
+func TestQuizesYAML_IDsMatchEnglishTitles(t *testing.T) {
+	for _, q := range loadRealQuizzes(t) {
+		if q.ID != q.TitleEn {
+			t.Errorf("quiz title_en=%q: id=%q, want %q", q.TitleEn, q.ID, q.TitleEn)
+		}
+	}
+}
+
 func TestQuizesYAML_AnswerIndexInRange(t *testing.T) {
 	for _, q := range loadRealQuizzes(t) {
 		if q.Answer < 0 || q.Answer >= len(q.Choices) {
