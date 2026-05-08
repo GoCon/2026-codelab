@@ -972,7 +972,7 @@
         <div id="score-label">クイズ終了！ あなたのスコア</div>
         <div id="score-value"></div>
         <div id="challenge-complete-section">
-          <p id="challenge-complete-copy">エクストラモード全問正解！ スペシャルページと問題一覧モードが解放されました。</p>
+          <p id="challenge-complete-copy">エクストラモード全問正解！ スペシャルページが解放されました。</p>
           <a class="special-link" id="challenge-complete-link" href="https://example.com" target="_blank" rel="noopener noreferrer">
             スペシャルページへ進む
           </a>
@@ -1104,7 +1104,7 @@
         answerCodeLabel: '解答コード',
         playLink: '▶ Go Playground で確認する',
         scoreLabel: 'クイズ終了！ あなたのスコア',
-        challengeCompleteCopy: 'エクストラモード全問正解！ スペシャルページと問題一覧モードが解放されました。',
+        challengeCompleteCopy: 'エクストラモード全問正解！ スペシャルページが解放されました。',
         challengeCompleteLink: 'スペシャルページへ進む',
         specialLinkCopy: '全問正解！ スペシャルページへどうぞ',
         specialLinkCta: 'スペシャルページへ',
@@ -1163,7 +1163,7 @@
         answerCodeLabel: 'Answer code',
         playLink: '▶ View on Go Playground',
         scoreLabel: 'Quiz complete! Your score',
-        challengeCompleteCopy: 'Perfect score in extra mode! The special page and quiz list mode are now unlocked.',
+        challengeCompleteCopy: 'Perfect score in extra mode! The special page is now unlocked.',
         challengeCompleteLink: 'Open the special page',
         specialLinkCopy: 'Perfect score! Enjoy the special page.',
         specialLinkCta: 'Open the special page',
@@ -2253,7 +2253,7 @@
       resultEl.style.display = 'none';
       nextBtn.style.display = 'none';
 
-      if (isChallenge && correctCount === session.length) {
+      if (isChallenge) {
         setPreviewUnlocked(true);
       }
 
@@ -2293,9 +2293,9 @@
         perfectTimeValue.textContent = '';
       }
       renderPerfectScoreNote();
-      restartBtn.style.display = challengePerfect ? 'none' : '';
-      challengeBtn.style.display = canChallengeMore && ((!isChallenge && allCorrect) || (isChallenge && !allCorrect)) ? '' : 'none';
-      retryExtraModeBtn.style.display = challengePerfect ? '' : 'none';
+      restartBtn.style.display = isChallenge ? 'none' : '';
+      challengeBtn.style.display = canChallengeMore && !isChallenge && allCorrect ? '' : 'none';
+      retryExtraModeBtn.style.display = isChallenge ? '' : 'none';
       scoreHomeBtn.style.display = isChallenge ? '' : 'none';
       scoreCard.style.display = 'block';
       updateProgress(session.length);

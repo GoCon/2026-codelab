@@ -1106,6 +1106,62 @@ test('extra mode can submit a nickname even without a perfect score', () => {
   assert.equal(extraScorePayload.correct_count, 0);
 });
 
+test('extra mode completion unlocks quiz list even without a perfect score', () => {
+  const app = createHarness();
+
+  app.clickStart();
+  app.runCurrentSessionCorrectly();
+  app.clickChallenge();
+  app.runAllTimers();
+  app.clickExtraModeDownload();
+  app.runAllTimers();
+
+  app.answerCurrentQuestionIncorrectly();
+  app.elements.get('next-btn').trigger('click');
+
+  assert.equal(app.elements.get('score-card').style.display, 'block');
+  assert.equal(app.elements.get('score-preview-btn').style.display, '');
+
+  app.clickScoreHome();
+
+  assert.equal(app.elements.get('preview-entry').style.display, 'block');
+});
+
+test('extra mode score retry button re-enters extra mode after a non-perfect run', () => {
+  const app = createHarness();
+
+  app.clickStart();
+  app.runCurrentSessionCorrectly();
+  app.clickChallenge();
+  app.runAllTimers();
+  app.clickExtraModeDownload();
+  app.runAllTimers();
+
+  app.answerCurrentQuestionIncorrectly();
+  app.elements.get('next-btn').trigger('click');
+
+  assert.equal(app.elements.get('restart-btn').style.display, 'none');
+  assert.equal(app.elements.get('retry-extra-mode-btn').style.display, '');
+  assert.equal(app.elements.get('retry-extra-mode-btn').textContent, 'もう一度チャレンジ');
+
+  app.clickRetryExtraMode();
+
+  assert.equal(app.elements.get('extra-mode-overlay').attributes['aria-hidden'], 'false');
+  assert.ok(app.elements.get('extra-mode-overlay').classList.contains('glitching'));
+  assert.equal(app.elements.get('extra-mode-download-btn').disabled, true);
+
+  app.runAllTimers();
+
+  assert.ok(app.elements.get('extra-mode-overlay').classList.contains('booting'));
+  assert.equal(app.elements.get('extra-mode-download-btn').disabled, false);
+
+  app.clickExtraModeDownload();
+  app.runAllTimers();
+
+  assert.equal(app.elements.get('progress').textContent, '0 / 1');
+  assert.equal(app.currentQuiz().id, 'extra_q1');
+});
+
 test('extra mode score counts only extra-mode answers and not normal-mode answers', () => {
   const app = createHarness();
 
