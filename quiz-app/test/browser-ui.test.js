@@ -745,6 +745,12 @@ test('progress is rendered as a reward-style subheader below the header', () => 
     /<div class="progress-subheader" id="progress-subheader">[\s\S]*?<div class="progress-reward" aria-live="polite">[\s\S]*?Answered[\s\S]*?id="progress-fill"[\s\S]*?id="progress-mascot-anchor"[\s\S]*?id="progress-mascot" src="\.\/assets\/progress-gopher\.png"[\s\S]*?<\/div>/,
   );
   assert.doesNotMatch(appHTML, /id="progress-star-/);
+  assert.match(appHTML, /--progress-mascot-left-bound: calc\(var\(--progress-mascot-size\) \* 0\.22\);/);
+  assert.match(appHTML, /--progress-mascot-right-bound: calc\(var\(--progress-mascot-size\) \* 0\.78\);/);
+  assert.match(
+    appHTML,
+    /\.progress-mascot-anchor \{[\s\S]*?left: clamp\(var\(--progress-mascot-left-bound\), 0%, calc\(100% - var\(--progress-mascot-right-bound\)\)\);/,
+  );
 });
 
 test('progress reward UI tracks answered questions in the current session', () => {
@@ -754,21 +760,30 @@ test('progress reward UI tracks answered questions in the current session', () =
   assert.equal(app.elements.get('progress').textContent, '0 / 2');
   assert.equal(app.elements.get('progress-fill').style.width, '0%');
   assert.equal(app.elements.get('progress-meter').attributes['aria-valuenow'], '0');
-  assert.equal(app.elements.get('progress-mascot-anchor').style.left, '0%');
+  assert.equal(
+    app.elements.get('progress-mascot-anchor').style.left,
+    'clamp(var(--progress-mascot-left-bound), 0%, calc(100% - var(--progress-mascot-right-bound)))',
+  );
 
   app.answerCurrentQuestionCorrectly();
   assert.equal(app.elements.get('progress').textContent, '1 / 2');
   assert.equal(app.elements.get('progress-fill').style.width, '50%');
   assert.equal(app.elements.get('progress-meter').attributes['aria-valuenow'], '1');
   assert.equal(app.elements.get('progress-meter').attributes['aria-valuemax'], '2');
-  assert.equal(app.elements.get('progress-mascot-anchor').style.left, '50%');
+  assert.equal(
+    app.elements.get('progress-mascot-anchor').style.left,
+    'clamp(var(--progress-mascot-left-bound), 50%, calc(100% - var(--progress-mascot-right-bound)))',
+  );
 
   app.elements.get('next-btn').trigger('click');
   app.answerCurrentQuestionCorrectly();
   assert.equal(app.elements.get('progress').textContent, '2 / 2');
   assert.equal(app.elements.get('progress-fill').style.width, '100%');
   assert.equal(app.elements.get('progress-meter').attributes['aria-valuenow'], '2');
-  assert.equal(app.elements.get('progress-mascot-anchor').style.left, '100%');
+  assert.equal(
+    app.elements.get('progress-mascot-anchor').style.left,
+    'clamp(var(--progress-mascot-left-bound), 100%, calc(100% - var(--progress-mascot-right-bound)))',
+  );
 });
 
 test('next button scrolls to the top when navigating questions and score view', () => {

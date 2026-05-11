@@ -51,6 +51,9 @@
       --font-accent: "Barlow", sans-serif;
       --header-height: 81px;
       --progress-subheader-height: 84px;
+      --progress-mascot-size: 64px;
+      --progress-mascot-left-bound: calc(var(--progress-mascot-size) * 0.22);
+      --progress-mascot-right-bound: calc(var(--progress-mascot-size) * 0.78);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -290,7 +293,7 @@
     .progress-mascot-anchor {
       position: absolute;
       top: 30px;
-      left: 0;
+      left: clamp(var(--progress-mascot-left-bound), 0%, calc(100% - var(--progress-mascot-right-bound)));
       pointer-events: none;
       transform: translate(-22%, -78%);
       transition: left 220ms ease;
@@ -301,8 +304,8 @@
     }
     #progress-mascot {
       display: block;
-      width: 64px;
-      height: 64px;
+      width: var(--progress-mascot-size);
+      height: var(--progress-mascot-size);
       object-fit: contain;
       transform: scaleX(-1);
       filter: drop-shadow(0 8px 14px rgba(16, 57, 114, 0.18));
@@ -787,6 +790,9 @@
       :root {
         --header-height: 56px;
         --progress-subheader-height: 80px;
+        --progress-mascot-size: 56px;
+        --progress-mascot-left-bound: calc(var(--progress-mascot-size) * 0.18);
+        --progress-mascot-right-bound: calc(var(--progress-mascot-size) * 0.82);
       }
       .header { padding: 4px var(--space-s); }
       .header-conference-logo {
@@ -824,10 +830,6 @@
       .progress-mascot-anchor {
         top: 30px;
         transform: translate(-18%, -80%);
-      }
-      #progress-mascot {
-        width: 56px;
-        height: 56px;
       }
       main { padding: var(--space-s) var(--space-xs); }
       .home-title { font-size: 1.6rem; }
@@ -1699,12 +1701,13 @@
       const safeTotal = totalCount > 0 ? totalCount : totalPerSession;
       const safeAnswered = Math.max(0, Math.min(answeredCount, safeTotal));
       const ratio = safeTotal > 0 ? safeAnswered / safeTotal : 0;
+      const mascotLeft = `clamp(var(--progress-mascot-left-bound), ${ratio * 100}%, calc(100% - var(--progress-mascot-right-bound)))`;
 
       progressEl.textContent = `${safeAnswered} / ${safeTotal}`;
       progressMeter.setAttribute('aria-valuemax', String(safeTotal));
       progressMeter.setAttribute('aria-valuenow', String(safeAnswered));
       progressFill.style.width = `${ratio * 100}%`;
-      progressMascotAnchor.style.left = `${ratio * 100}%`;
+      progressMascotAnchor.style.left = mascotLeft;
     }
 
     function updateProgress(answeredCount = currentIndex) {
