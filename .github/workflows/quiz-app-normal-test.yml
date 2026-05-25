@@ -1,0 +1,54 @@
+name: quiz-app-normal / Test
+
+on:
+  pull_request:
+    paths:
+      - "quiz-app-normal/**/*.go"
+      - "quiz-app-normal/public/**"
+      - "quiz-app-normal/quizzes/**"
+      - "quiz-app-normal/cmd/generatequizdata/**"
+      - "quiz-app-normal/test/**"
+      - "quiz-app-normal/go.mod"
+      - "quiz-app-normal/go.sum"
+      - "quiz-app-normal/Makefile"
+      - ".github/workflows/quiz-app-normal-test.yml"
+      - ".github/workflows/quiz-app-normal-github-pages.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test-go:
+    name: Go Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c  # v6.4.0
+        with:
+          go-version-file: quiz-app-normal/go.mod
+          cache-dependency-path: quiz-app-normal/go.sum
+
+      - name: Run tests
+        working-directory: quiz-app-normal
+        run: go test ./...
+
+  static-site-checks:
+    name: Browser & Pages Checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: quiz-app-normal
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c  # v6.4.0
+        with:
+          go-version-file: quiz-app-normal/go.mod
+          cache-dependency-path: quiz-app-normal/go.sum
+
+      - name: Run browser tests
+        run: make test-browser
+
+      - name: Build GitHub Pages site
+        run: make build-pages
