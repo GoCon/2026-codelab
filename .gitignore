@@ -29,6 +29,7 @@ go.work.sum
 
 # Build binary
 /preview
+gh-pages-dist/
 
 # Editor/IDE
 .idea/
