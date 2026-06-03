@@ -1,0 +1,246 @@
+[[campaignTiers]]
+id = "stage-1"
+title = "Stage 1"
+difficultyLabel = "Tier 1"
+description = "Go Conference 2026 CodeLab"
+unlocksSpecial = true
+
+[[campaignTiers.stages]]
+id = "fill-fmt-pi-report"
+kind = "fill"
+label = "fmt"
+title = "fmt.Printf"
+prompt = "Name: \"pi\", Value: 3.14, Type: float64 を出す 3 か所。"
+outputLines = """
+Name: "pi", Value: 3.14, Type: float64
+"""
+playgroundUrl = "https://go.dev/play/p/ZtSoKQnvkam"
+why = "`%q` は引用符つき文字列、`%.2f` は小数第 2 位まで、`%T` は値の型名を出します。"
+takeaway = "`%q` / `%.2f` / `%T` を使い分けると、文字列・丸めた小数・型名を一度に確認できます。"
+templateLines = """
+pi := 3.14159
+name := "pi"
+fmt.Printf(
+  "Name: [1], ",
+  "Value: [2], ",
+  "Type: [3]",
+  name,
+  pi,
+  pi,
+)
+"""
+pool = [ "%s", "%q", "%.2f", "%2f", "%f", "%v", "%T", "%t" ]
+correctAnswers = [ "%q", "%.2f", "%T" ]
+
+[[campaignTiers.stages]]
+id = "fill-fmt-hex-output"
+kind = "fill"
+label = "fmt"
+title = "10進と16進"
+prompt = "Value: 255, Hex: ff を出す 2 か所。"
+outputLines = """
+Value: 255, Hex: ff
+"""
+playgroundUrl = "https://go.dev/play/p/gKHeYb66kh3"
+why = "`%d` は 10 進、`%x` は小文字の 16 進です。"
+takeaway = "同じ数値でも verb を変えるだけで表示形式を切り替えられます。"
+templateLines = """
+num := 255
+fmt.Printf(
+  "Value: [1], Hex: [2]",
+  num,
+  num,
+)
+"""
+pool = [ "%d", "%b", "%o", "%x", "%X" ]
+correctAnswers = [ "%d", "%x" ]
+
+[[campaignTiers.stages]]
+id = "fill-fmt-indexed-order"
+kind = "fill"
+label = "fmt"
+title = "引数番号で並べ替え"
+prompt = "Age: 20, Name: Alice を出す 2 か所。"
+outputLines = """
+Age: 20, Name: Alice
+"""
+playgroundUrl = "https://go.dev/play/p/qL2BSv7XrwK"
+why = "`%[n]` を使うと、引数の順番を変えずに参照先だけを入れ替えられます。"
+takeaway = "`%[2]d` は 2 番目の引数、`%[1]s` は 1 番目の引数を使う指定です。"
+templateLines = """
+name := "Alice"
+age := 20
+fmt.Printf(
+  "Age: [1], Name: [2]",
+  name,
+  age,
+)
+"""
+pool = [ "%s", "%d", "%[1]s", "%[2]d", "%[1]d", "%[2]s" ]
+correctAnswers = [ "%[2]d", "%[1]s" ]
+
+[[campaignTiers.stages]]
+id = "fill-channel-recv-only"
+kind = "fill"
+label = "channel"
+title = "受信専用チャネル"
+prompt = "受信専用チャネルから値を受け取って表示する 2 か所。"
+outputLines = """
+42
+"""
+playgroundUrl = "https://go.dev/play/p/ZrQFACUb0_1"
+why = "型の位置では `<-chan int`、値を読む式の位置では `<-ch` を使います。"
+takeaway = "`<-chan` は型、`<-ch` は受信式です。"
+templateLines = """
+func show_ch(ch [1] int) {
+  println([2]ch)
+}
+
+func main() {
+  ch := make(chan int, 1)
+  ch <- 42
+  show_ch(ch)
+}
+"""
+pool = [ "<-chan", "<-", "chan<-", "&" ]
+correctAnswers = [ "<-chan", "<-" ]
+
+[[campaignTiers.stages]]
+id = "select-struct-plusv"
+kind = "fill"
+label = "fmt"
+title = "構造体の field 名"
+prompt = "{Name:Gopher Age:10} を field 名つきで表示する 2 か所。"
+outputLines = """
+{Name:Gopher Age:10}
+"""
+playgroundUrl = "https://go.dev/play/p/bUZNxIr7BYy"
+why = "`fmt.Printf` と `%+v` を組み合わせると、struct の field 名も含めて表示できます。"
+takeaway = "`fmt.Print` や `fmt.Println` ではなく、`fmt.Printf(\"%+v\", gopher)` を使うと field 名つきで表示できます。"
+templateLines = """
+gopher := Gopher{Name: "Gopher", Age: 10}
+[1]([2], gopher)
+"""
+pool = [ "fmt.Printf", "fmt.Print", "fmt.Println", "\"%v\"", "\"%T\"", "\"%+v\"" ]
+correctAnswers = [ "fmt.Printf", "\"%+v\"" ]
+
+[[campaignTiers.stages]]
+id = "select-result-error-shortdecl"
+kind = "fill"
+label = "error"
+title = "result, err :="
+prompt = "calc(a, b) の結果と error を同時に受ける 3 か所。"
+outputLines = """
+"""
+playgroundUrl = "https://go.dev/play/p/bGgF19hsfbC"
+why = "複数戻り値は左辺を並べ、初回代入なら `:=` を使います。"
+takeaway = "Go は複数の戻り値を返すことが出来ます。 err を最後に返すのが一般的です。"
+templateLines = """
+[1] [2] [3] calc(a, b)
+if err != nil {
+  fmt.Println(err)
+}
+fmt.Println(result)
+"""
+pool = [ "result,", "err", ":=", "=", "panic(err)" ]
+correctAnswers = [ "result,", "err", ":=" ]
+
+[[campaignTiers.stages]]
+id = "select-blank-import-pprof"
+kind = "fill"
+label = "import"
+title = "pprof をブランク import"
+prompt = "pprof を blank import する 2 か所。"
+outputLines = """
+"""
+playgroundUrl = "https://go.dev/play/p/oIKQdxUcgjq"
+why = "blank import の `_` は名前を使わず、package の `init` だけを有効にします。"
+takeaway = "`import _ \"net/http/pprof\"` は副作用だけを欲しいときの定番です。"
+templateLines = """
+import [1] [2]
+"""
+pool = [ "_", "\"net/http/pprof\"", "\"runtime/pprof\"", "." ]
+correctAnswers = [ "_", "\"net/http/pprof\"" ]
+
+[[campaignTiers.stages]]
+id = "fill-unsafe-pointer-conversion"
+kind = "fill"
+label = "unsafe"
+title = "ポインタの型変換"
+prompt = "int型のポインタをfloat64型のポインタに変換する 2 か所。"
+outputLines = """
+"""
+playgroundUrl = "https://go.dev/play/p/oXl7EN0oW5T"
+why = "Goでは異なるポインタ型同士を直接キャストできませんが、`unsafe.Pointer` を経由することで任意のポインタ型に無理やり変換できます。"
+takeaway = "安全性を犠牲にして型を変換する際は、`unsafe.Pointer` と目的のポインタ型（`*float64` など）を組み合わせます。"
+templateLines = """
+x := 42
+int_ptr := &x
+float_ptr := ([1])(
+  [2](int_ptr),
+)
+"""
+pool = [ "*float64", "&float64", "float64", "unsafe.Pointer", "itof64" ]
+correctAnswers = [ "*float64", "unsafe.Pointer" ]
+
+[[campaignTiers.stages]]
+id = "fill-defer-output-order"
+kind = "fill"
+label = "defer"
+title = "defer の実行順序"
+prompt = "コードの実行結果（出力）の順番を上から完成させてください。"
+outputLines = """
+"""
+playgroundUrl = "https://go.dev/play/p/p9uTA5pzU1G"
+why = "`defer` に登録された関数は、関数が終了する際に「最後に追加されたものから順に（LIFO: Last-In, First-Out）」逆順で実行されます。"
+takeaway = "通常の文（C）が先に実行され、その後に `defer` が下から上の順（B -> A）で実行されるため、出力は C、B、A の順になります。"
+templateLines = """
+// ── 実行されるコード ──
+defer fmt.Println("A")
+defer fmt.Println("B")
+fmt.Println("C")
+
+// ── 出力結果 ──
+[1]
+[2]
+[3]
+"""
+pool = [ "A", "B", "C" ]
+correctAnswers = [ "C", "B", "A" ]
+
+[[campaignTiers.stages]]
+id = "fill-unsafe-sizeof-struct"
+kind = "fill"
+label = "unsafe"
+title = "0バイトの構造体"
+prompt = "配列全体の占めるバイト数（出力）が 0 になるように型を埋めてください。"
+outputLines = """
+0
+"""
+playgroundUrl = "https://go.dev/play/p/QZNiYpYMAMt"
+why = "`struct{}`（空の構造体）はサイズが 0 バイトの特殊な型です。そのため、要素数が1億個あっても配列全体のサイズは 0 バイトになります。"
+takeaway = "`unsafe.Sizeof` で確認すると、`struct{}` の配列はメモリを一切消費しないことが分かります。値を持たない「セット（集合）」を実装する際によく使われます。"
+templateLines = """
+var arr [100_000_000][1]
+fmt.Println(unsafe.Sizeof(arr))
+"""
+pool = [ "struct{}", "any", "bool", "byte", "0" ]
+correctAnswers = [ "struct{}" ]
+
+[[campaignTiers.stages]]
+id = "fill-builtin-infinite-loop"
+kind = "fill"
+label = "builtin"
+title = "無限ループの作成"
+prompt = "Go で無限ループを作るためのキーワードを埋めてください。"
+outputLines = """
+"""
+why = "Go には `while` や `loop` といったキーワードは存在せず、繰り返し構文はすべて `for` に統一されています。"
+takeaway = "`for` の条件式を省略して `for {}` と書くだけで、もっともシンプルでスッキリとした無限ループを作成できます。"
+templateLines = """
+[1] {
+    // 無限ループ
+}
+"""
+pool = [ "for", "while", "loop", "(true)", "True:" ]
+correctAnswers = [ "for" ]
