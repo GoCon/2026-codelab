@@ -93,7 +93,9 @@ const expectUniqueStrings = (values: string[], path: string) => {
 };
 
 const parseStageBase = <K extends StageKind>(record: TomlRecord, kind: K, path: string) => {
-  const outputLines = expectStringArray(record.outputLines, `${path}.outputLines`);
+  const outputLinesRaw = expectString(record.outputLines, `${path}.outputLines`);
+  const outputLines = outputLinesRaw === "" ? [] : outputLinesRaw.replace(/\r?\n$/, "").split(/\r?\n/);
+
   const playgroundUrl = expectOptionalPlaygroundUrl(record.playgroundUrl, `${path}.playgroundUrl`);
 
   return {
@@ -126,7 +128,6 @@ const validateFillTemplate = (stage: FillStage, path: string) => {
 };
 
 const parseFillStage = (record: TomlRecord, path: string): FillStage => {
-  // 文字列として取得し、末尾の改行を除去してから改行コードで分割
   const templateLinesRaw = expectString(record.templateLines, `${path}.templateLines`);
   const templateLines = templateLinesRaw.replace(/\r?\n$/, "").split(/\r?\n/);
 

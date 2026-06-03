@@ -146,14 +146,14 @@ const scoreLead = computed(() => {
     }
 
     if (nextTier.value) {
-        return `${nextTier.value.title} が解放されました。Go の勘を維持したまま、次の難度へ進めます。`;
+        return `${nextTier.value.title} が解放されました。次のStageへ進めます。`;
     }
 
     if (currentRunPerfect.value) {
-        return "7 問を全て解き切りました。ホームからすぐに再挑戦できます。";
+        return "問題を全て解き切りました。ホームからすぐに再挑戦できます。";
     }
 
-    return "今回の気づきを確認して、同じ 7 問でもう一度挑戦しましょう。";
+    return "今回の気づきを確認して、同じ問題でもう一度挑戦しましょう。";
 });
 const summaryRows = computed(
     () =>
