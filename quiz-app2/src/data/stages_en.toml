@@ -1,0 +1,246 @@
+[[campaignTiers]]
+id = "stage-1"
+title = "Stage 1"
+difficultyLabel = "Tier 1"
+description = "Go Conference 2026 CodeLab"
+unlocksSpecial = true
+
+[[campaignTiers.stages]]
+id = "fill-fmt-pi-report"
+kind = "fill"
+label = "fmt"
+title = "fmt.Printf"
+prompt = "Three places for printing Name: \"pi\", Value: 3.14, Type: float64."
+outputLines = """
+Name: "pi", Value: 3.14, Type: float64
+"""
+playgroundUrl = "https://go.dev/play/p/ZtSoKQnvkam"
+why = "`%q` prints a string with quotes, `%.2f` prints to two decimal places, and `%T` prints the type of the value."
+takeaway = "By using `%q`, `%.2f`, and `%T`, we can see a quoted string, a rounded decimal, and the type of a value all at once."
+templateLines = """
+pi := 3.14159
+name := "pi"
+fmt.Printf(
+  "Name: [1], ",
+  "Value: [2], ",
+  "Type: [3]",
+  name,
+  pi,
+  pi,
+)
+"""
+pool = [ "%s", "%q", "%.2f", "%2f", "%f", "%v", "%T", "%t" ]
+correctAnswers = [ "%q", "%.2f", "%T" ]
+
+[[campaignTiers.stages]]
+id = "fill-fmt-hex-output"
+kind = "fill"
+label = "fmt"
+title = "Decimal and hexadecimal"
+prompt = "Two places for printing Value: 255, Hex: ff."
+outputLines = """
+Value: 255, Hex: ff
+"""
+playgroundUrl = "https://go.dev/play/p/gKHeYb66kh3"
+why = "`%d` prints a value in decimal and `%x` prints it in hexadecimal."
+takeaway = "We can change the printing format for the same value by changing the verb."
+templateLines = """
+num := 255
+fmt.Printf(
+  "Value: [1], Hex: [2]",
+  num,
+  num,
+)
+"""
+pool = [ "%d", "%b", "%o", "%x", "%X" ]
+correctAnswers = [ "%d", "%x" ]
+
+[[campaignTiers.stages]]
+id = "fill-fmt-indexed-order"
+kind = "fill"
+label = "fmt"
+title = "Order by argument number"
+prompt = "Two places for printing Age: 20, Name: Alice."
+outputLines = """
+Age: 20, Name: Alice
+"""
+playgroundUrl = "https://go.dev/play/p/qL2BSv7XrwK"
+why = "`%[n]` refers to the n-th argument without changing the order of arguments."
+takeaway = "`%[2]d` refers to the second argument, and `%[1]s` refers to the first argument."
+templateLines = """
+name := "Alice"
+age := 20
+fmt.Printf(
+  "Age: [1], Name: [2]",
+  name,
+  age,
+)
+"""
+pool = [ "%s", "%d", "%[1]s", "%[2]d", "%[1]d", "%[2]s" ]
+correctAnswers = [ "%[2]d", "%[1]s" ]
+
+[[campaignTiers.stages]]
+id = "fill-channel-recv-only"
+kind = "fill"
+label = "channel"
+title = "Receive-only channel"
+prompt = "Two places for printing a value from a receive-only channel."
+outputLines = """
+42
+"""
+playgroundUrl = "https://go.dev/play/p/ZrQFACUb0_1"
+why = "`<-chan int` indicates a receive-only channel with type, and `<-ch` receives the value from the channel."
+takeaway = "`<-chan` is a type, while `<-ch` is an expression."
+templateLines = """
+func show_ch(ch [1] int) {
+  println([2]ch)
+}
+
+func main() {
+  ch := make(chan int, 1)
+  ch <- 42
+  show_ch(ch)
+}
+"""
+pool = [ "<-chan", "<-", "chan<-", "&" ]
+correctAnswers = [ "<-chan", "<-" ]
+
+[[campaignTiers.stages]]
+id = "select-struct-plusv"
+kind = "fill"
+label = "fmt"
+title = "The field name of a structure"
+prompt = "Two places for printing {Name:Gopher Age:10} with the names of its fields."
+outputLines = """
+{Name:Gopher Age:10}
+"""
+playgroundUrl = "https://go.dev/play/p/bUZNxIr7BYy"
+why = "By using `fmt.Printf` and `%+v`, we can print the value of a struct along with its field names."
+takeaway = "`fmt.Printf(\"%+v\", gopher)` prints the value of a struct including its field names, unlike `fmt.Print` or `fmt.Println`."
+templateLines = """
+gopher := Gopher{Name: "Gopher", Age: 10}
+[1]([2], gopher)
+"""
+pool = [ "fmt.Printf", "fmt.Print", "fmt.Println", "\"%v\"", "\"%T\"", "\"%+v\"" ]
+correctAnswers = [ "fmt.Printf", "\"%+v\"" ]
+
+[[campaignTiers.stages]]
+id = "select-result-error-shortdecl"
+kind = "fill"
+label = "error"
+title = "result, err :="
+prompt = "Three places for receiving the result and error from calc(a, b)."
+outputLines = """
+"""
+playgroundUrl = "https://go.dev/play/p/bGgF19hsfbC"
+why = "We can receive multiple return values by listing variables on the left side. We use `:=` for declaration and assignment at once."
+takeaway = "Functions in Go can return multiple values, and it is common practice to return `err` as the last value."
+templateLines = """
+[1] [2] [3] calc(a, b)
+if err != nil {
+  fmt.Println(err)
+}
+fmt.Println(result)
+"""
+pool = [ "result,", "err", ":=", "=", "panic(err)" ]
+correctAnswers = [ "result,", "err", ":=" ]
+
+[[campaignTiers.stages]]
+id = "select-blank-import-pprof"
+kind = "fill"
+label = "import"
+title = "pprof blank import"
+prompt = "Two places for pprof blank import."
+outputLines = """
+"""
+playgroundUrl = "https://go.dev/play/p/oIKQdxUcgjq"
+why = "A blank import `_` does not use the package name; it only enables the package's `init` function."
+takeaway = "`import _ \"net/http/pprof\"` is a standard way to include a package for its side effects only."
+templateLines = """
+import [1] [2]
+"""
+pool = [ "_", "\"net/http/pprof\"", "\"runtime/pprof\"", "." ]
+correctAnswers = [ "_", "\"net/http/pprof\"" ]
+
+[[campaignTiers.stages]]
+id = "fill-unsafe-pointer-conversion"
+kind = "fill"
+label = "unsafe"
+title = "Type conversion of a pointer"
+prompt = "Two places for converting an int pointer to a float64 pointer."
+outputLines = """
+"""
+playgroundUrl = "https://go.dev/play/p/oXl7EN0oW5T"
+why = "In Go, you cannot directly cast between different pointer types, but by going through `unsafe.Pointer`, you can convert to any pointer type."
+takeaway = "When converting types at the expense of safety, combine `unsafe.Pointer` with the target pointer type (e.g., `*float64`)."
+templateLines = """
+x := 42
+int_ptr := &x
+float_ptr := ([1])(
+  [2](int_ptr),
+)
+"""
+pool = [ "*float64", "&float64", "float64", "unsafe.Pointer", "itof64" ]
+correctAnswers = [ "*float64", "unsafe.Pointer" ]
+
+[[campaignTiers.stages]]
+id = "fill-defer-output-order"
+kind = "fill"
+label = "defer"
+title = "Execution order of defer"
+prompt = "Complete the execution order (output) from top to bottom."
+outputLines = """
+"""
+playgroundUrl = "https://go.dev/play/p/p9uTA5pzU1G"
+why = "`defer` statements are executed in reverse order (LIFO: Last-In, First-Out) when the function returns."
+takeaway = "Since regular statements (C) execute first, followed by `defer` statements in reverse order (B -> A), the output will be C, B, then A."
+templateLines = """
+// ── Execution code ──
+defer fmt.Println("A")
+defer fmt.Println("B")
+fmt.Println("C")
+
+// ── Output result ──
+[1]
+[2]
+[3]
+"""
+pool = [ "A", "B", "C" ]
+correctAnswers = [ "C", "B", "A" ]
+
+[[campaignTiers.stages]]
+id = "fill-unsafe-sizeof-struct"
+kind = "fill"
+label = "unsafe"
+title = "0-byte structure"
+prompt = "Fill in the type so that the total size of the array (output) becomes 0."
+outputLines = """
+0
+"""
+playgroundUrl = "https://go.dev/play/p/QZNiYpYMAMt"
+why = "`struct{}` (an empty struct) is a special type with a size of 0 bytes. Therefore, even an array with 100 million elements will have a total size of 0 bytes."
+takeaway = "Using `unsafe.Sizeof`, you can see that an array of `struct{}` consumes no memory at all. It is often used to implement a 'set' (collection) that holds no values."
+templateLines = """
+var arr [100_000_000][1]
+fmt.Println(unsafe.Sizeof(arr))
+"""
+pool = [ "struct{}", "any", "bool", "byte", "0" ]
+correctAnswers = [ "struct{}" ]
+
+[[campaignTiers.stages]]
+id = "fill-builtin-infinite-loop"
+kind = "fill"
+label = "builtin"
+title = "Build an infinite loop"
+prompt = "Fill in the keyword to create an infinite loop in Go."
+outputLines = """
+"""
+why = "Go does not have `while` or `loop` keywords; instead, it uses only `for` for all loops."
+takeaway = "By omitting the condition from a `for` statement and simply writing `for {}`, you can create an infinite loop more simply and clearly."
+templateLines = """
+[1] {
+    // Infinity loop
+}
+"""
+pool = [ "for", "while", "loop", "(true)", "True:" ]
+correctAnswers = [ "for" ]
