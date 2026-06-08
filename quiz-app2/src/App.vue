@@ -343,19 +343,19 @@ const scoreHeadline = computed(() => {
     if (currentRunPerfect.value) {
         return isEn
             ? isSingleTier
-                ? "Cleared!"
+                ? "Congratulations!"
                 : `Cleared ${t(currentTier.value.title)}`
             : isSingleTier
-              ? "クリア！"
+              ? "おめでとう！"
               : `${t(currentTier.value.title)} をクリア`;
     }
 
     return isEn
         ? isSingleTier
-            ? "Retry"
+            ? "It's over"
             : `Retry ${compactTierTitle(currentTier.value.title)}`
         : isSingleTier
-          ? "再挑戦"
+          ? "完了！"
           : `${compactTierTitle(currentTier.value.title)} を再挑戦`;
 });
 

@@ -20,6 +20,7 @@ const emit = defineEmits<{
     ): void;
 }>();
 
+// App.vue から選択された言語を取得
 const locale = inject<Ref<Locale>>("locale") ?? ref("ja");
 
 interface PoolItem {
@@ -30,6 +31,7 @@ interface PoolItem {
 const slots = ref<(PoolItem | null)[]>([]);
 const poolItems = ref<PoolItem[]>([]);
 
+// プールの選択肢をシャッフルするヘルパー
 const shuffle = <T,>(array: T[]): T[] => {
     const arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -39,6 +41,7 @@ const shuffle = <T,>(array: T[]): T[] => {
     return arr;
 };
 
+// [1], [2] などのプレースホルダーで文字列を分割
 const splitLine = (line: string) => line.split(/(\[\d+\])/).filter(Boolean);
 const isSlot = (part: string) => /^\[\d+\]$/.test(part);
 const slotIndex = (part: string) =>
@@ -91,14 +94,21 @@ watch(
     { immediate: true },
 );
 
+// リセットやSubmitができるかどうかの状態
 const isDirty = computed(() => slots.value.some((s) => s !== null));
 const isReady = computed(() => slots.value.every((s) => s !== null));
 
-watch([isDirty, isReady], ([dirty, ready]) => {
-    emit("dirty-change", dirty);
-    emit("ready-change", ready);
-});
+watch(
+    [isDirty, isReady],
+    ([dirty, ready]) => {
+        emit("dirty-change", dirty);
+        emit("ready-change", ready);
+    },
+    // ★ ここに { immediate: true } が無いと初期状態でテストが失敗します
+    { immediate: true },
+);
 
+// App側からのリセット要求を購読
 watch(
     () => props.resetSignal,
     () => {
@@ -106,6 +116,7 @@ watch(
     },
 );
 
+// App側からの判定(Submit)要求を購読
 watch(
     () => props.submitSignal,
     () => {
