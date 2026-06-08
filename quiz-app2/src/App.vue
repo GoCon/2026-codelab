@@ -48,7 +48,6 @@ const conferenceLogoUrl = new URL(
     import.meta.url,
 ).href;
 
-// ★ ステージ(Tier)が1つしかないかどうかを判定
 const isSingleTier = campaignTiers.length === 1;
 
 const pickRandomPhrase = (phrases: readonly I18nText[]): I18nText =>
@@ -166,7 +165,6 @@ const i18n = computed(() => {
             : "このセットを最後まで進めたため、スペシャルページへ進めます。",
         goToSpecial: isEn ? "Go to Special Page" : "スペシャルページへ",
         nextLevel: isEn ? "Next Level" : "次のレベルへ",
-        // ★ ステージが1つの場合は文言をシンプルにする
         retryLevel: isEn
             ? isSingleTier
                 ? "Try again"
@@ -191,6 +189,14 @@ const i18n = computed(() => {
         open: isEn ? "Open" : "開く",
         keywordIncorrect: isEn ? "Incorrect keyword." : "合言葉が違います。",
         timeUpSummary: isEn ? "Time's up" : "タイムアップ",
+
+        // ★ 追加項目 (SNSシェア / アンケート)
+        shareAndFeedbackTitle: isEn ? "Share & Feedback" : "シェアとアンケート",
+        shareOnX: isEn ? "Post score to X" : "Xにスコアを投稿する",
+        shareOnBluesky: isEn
+            ? "Post score to Bluesky"
+            : "Blueskyにスコアを投稿",
+        answerSurvey: isEn ? "Answer Survey" : "アンケートに回答",
     };
 });
 
@@ -337,19 +343,19 @@ const scoreHeadline = computed(() => {
     if (currentRunPerfect.value) {
         return isEn
             ? isSingleTier
-                ? "Congratulations!"
+                ? "Cleared!"
                 : `Cleared ${t(currentTier.value.title)}`
             : isSingleTier
-              ? "全問正解！"
+              ? "クリア！"
               : `${t(currentTier.value.title)} をクリア`;
     }
 
     return isEn
         ? isSingleTier
-            ? "That's all"
+            ? "Retry"
             : `Retry ${compactTierTitle(currentTier.value.title)}`
         : isSingleTier
-          ? "完了！"
+          ? "再挑戦"
           : `${compactTierTitle(currentTier.value.title)} を再挑戦`;
 });
 
@@ -377,6 +383,40 @@ const summaryRows = computed(
                 ) ?? null,
         })) ?? [],
 );
+
+const shareText = computed(() => {
+    if (!currentTier.value) return "";
+    const isEn = selectedLanguage.value === "en";
+    const tierName = t(currentTier.value.title);
+
+    const baseText = isEn
+        ? `Cleared ${isSingleTier ? "all stages" : tierName} on Go Conference 2026 CodeLab! Correct: ${runCorrectCount.value}/${tierSize.value} Score: ${runScore.value}`
+        : `Go Conference 2026 CodeLabで${isSingleTier ? "全問題を" : ` ${tierName} を`}クリアしました！ 正解数: ${runCorrectCount.value}/${tierSize.value} スコア: ${runScore.value}`;
+
+    // クエリパラメータ等を外したクリーンなURLを共有用にする
+    const url =
+        typeof window !== "undefined"
+            ? window.location.href.split("#")[0].split("?")[0]
+            : "https://gocon.jp/";
+    return `${baseText}\n#gocon26cl\n${url}`;
+});
+
+const xShareUrl = computed(
+    () =>
+        `https://x.com/intent/tweet?text=${encodeURIComponent(shareText.value)}`,
+);
+const bskyShareUrl = computed(
+    () =>
+        `https://bsky.app/intent/compose?text=${encodeURIComponent(shareText.value)}`,
+);
+const surveyUrl = "https://forms.gle/CPgTHHnQ7WcWzjBK9";
+
+const shareToX = () =>
+    window.open(xShareUrl.value, "_blank", "noopener,noreferrer");
+const shareToBluesky = () =>
+    window.open(bskyShareUrl.value, "_blank", "noopener,noreferrer");
+const openSurvey = () =>
+    window.open(surveyUrl, "_blank", "noopener,noreferrer");
 
 // --- Functions ---
 const stopTimer = () => {
@@ -1223,6 +1263,35 @@ onBeforeUnmount(() => {
                         </div>
                     </section>
 
+                    <section class="surface-card p-4 text-center">
+                        <p class="text-sm font-semibold text-quiz-strong mb-3">
+                            {{ i18n.shareAndFeedbackTitle }}
+                        </p>
+                        <div class="space-y-3">
+                            <PressButton
+                                block
+                                tone="secondary"
+                                @click="shareToX"
+                            >
+                                {{ i18n.shareOnX }}
+                            </PressButton>
+                            <PressButton
+                                block
+                                tone="secondary"
+                                @click="shareToBluesky"
+                            >
+                                {{ i18n.shareOnBluesky }}
+                            </PressButton>
+                            <PressButton
+                                block
+                                tone="primary"
+                                @click="openSurvey"
+                            >
+                                {{ i18n.answerSurvey }}
+                            </PressButton>
+                        </div>
+                    </section>
+
                     <section class="surface-card p-3">
                         <div class="space-y-3">
                             <PressButton
@@ -1236,7 +1305,7 @@ onBeforeUnmount(() => {
                             <PressButton
                                 v-else
                                 block
-                                tone="primary"
+                                tone="secondary"
                                 @click="restartCurrentTier"
                             >
                                 {{ i18n.retryLevel }}
