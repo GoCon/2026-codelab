@@ -48,7 +48,11 @@
 
     body {
         @apply m-0 min-h-[100svh];
-        background: linear-gradient(180deg, #f7feff 0%, var(--quiz-light-blue) 100%);
+        background: linear-gradient(
+            180deg,
+            #f7feff 0%,
+            var(--quiz-light-blue) 100%
+        );
         color: var(--quiz-text-body);
     }
 
@@ -259,7 +263,9 @@
         border-radius: 8px;
         padding: 12px 10px 12px 12px;
         color: var(--quiz-black);
-        font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        font-family:
+            ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco,
+            Consolas, "Liberation Mono", monospace;
         font-size: 13px;
         line-height: 1.7;
     }
@@ -300,7 +306,12 @@
     }
 
     .timeline-rail {
-        background: linear-gradient(180deg, rgba(0, 193, 229, 0.24), rgba(85, 211, 194, 0.7), transparent);
+        background: linear-gradient(
+            180deg,
+            rgba(0, 193, 229, 0.24),
+            rgba(85, 211, 194, 0.7),
+            transparent
+        );
     }
 
     .timeline-drag-handle {
@@ -556,7 +567,10 @@
     }
 
     .quiz-shell {
-        padding: calc(env(safe-area-inset-top) + var(--quiz-header-height) + 11px) 16px calc(env(safe-area-inset-bottom) + 20px);
+        padding: calc(
+                env(safe-area-inset-top) + var(--quiz-header-height) + 11px
+            )
+            16px calc(env(safe-area-inset-bottom) + 20px);
     }
 
     .quiz-shell-wide-panels {
@@ -736,7 +750,11 @@
     }
 
     .progress-panel {
-        background: linear-gradient(135deg, rgba(237, 252, 255, 0.98), rgba(238, 255, 253, 0.98));
+        background: linear-gradient(
+            135deg,
+            rgba(237, 252, 255, 0.98),
+            rgba(238, 255, 253, 0.98)
+        );
         border: 1px solid rgba(0, 193, 229, 0.16);
         border-radius: 20px;
         box-shadow: 0 10px 24px rgba(16, 57, 114, 0.08);
@@ -761,7 +779,9 @@
         border-radius: 8px;
         background: rgba(0, 193, 229, 0.12);
         color: var(--quiz-navy);
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+        font-family:
+            ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+            "Liberation Mono", monospace;
         font-size: 0.92em;
         font-weight: 700;
         white-space: break-spaces;
@@ -904,7 +924,9 @@
     }
 
     .quiz-shell {
-        padding-top: calc(env(safe-area-inset-top) + var(--quiz-header-height) + 12px);
+        padding-top: calc(
+            env(safe-area-inset-top) + var(--quiz-header-height) + 12px
+        );
     }
 
     .quiz-shell-wide-panels {

@@ -22,7 +22,9 @@ const emit = defineEmits<{
     (event: "submit", value: StageSubmission): void;
 }>();
 
-const slots = ref<(PoolItem | null)[]>(Array.from({ length: props.stage.correctAnswers.length }, () => null));
+const slots = ref<(PoolItem | null)[]>(
+    Array.from({ length: props.stage.correctAnswers.length }, () => null),
+);
 const poolItems = ref<PoolItem[]>([]);
 
 const splitLine = (line: string) => line.split(/(\[\d+\])/).filter(Boolean);
@@ -41,17 +43,24 @@ const shuffle = <T,>(values: T[]): T[] => {
 };
 
 const resetState = () => {
-    slots.value = Array.from({ length: props.stage.correctAnswers.length }, () => null);
+    slots.value = Array.from(
+        { length: props.stage.correctAnswers.length },
+        () => null,
+    );
     poolItems.value = shuffle(props.stage.pool).map((label, index) => ({
         id: `${props.stage.id}:${index}:${label}`,
         label,
     }));
 };
 
-const slotIsFilled = (item: PoolItem) => slots.value.some((slot) => slot?.id === item.id);
+const slotIsFilled = (item: PoolItem) =>
+    slots.value.some((slot) => slot?.id === item.id);
 
 const clearSelection = () => {
-    slots.value = Array.from({ length: props.stage.correctAnswers.length }, () => null);
+    slots.value = Array.from(
+        { length: props.stage.correctAnswers.length },
+        () => null,
+    );
 };
 
 const addToken = (item: PoolItem) => {
@@ -103,7 +112,9 @@ watch(
 
         const answer = slots.value.map((slot) => slot!.label);
         emit("submit", {
-            correct: answer.every((token, index) => token === props.stage.correctAnswers[index]),
+            correct: answer.every(
+                (token, index) => token === props.stage.correctAnswers[index],
+            ),
             selectionSummary: answer.join(" "),
         });
     },
@@ -123,17 +134,37 @@ watch(
 
 <template>
     <section class="surface-card space-y-4 px-3 py-4">
-        <StageOutputPanel v-if="stage.outputLines.length > 0" :lines="stage.outputLines" />
+        <StageOutputPanel
+            v-if="stage.outputLines.length > 0"
+            :lines="stage.outputLines"
+        />
 
         <div class="flex items-center justify-between text-quiz-muted text-xs">
             <span>コード表示エリア</span>
-            <span>{{ slots.filter(Boolean).length }}/{{ stage.correctAnswers.length }}</span>
+            <span
+                >{{ slots.filter(Boolean).length }}/{{
+                    stage.correctAnswers.length
+                }}</span
+            >
         </div>
 
         <div class="code-surface">
-            <div v-for="(line, lineIndex) in stage.templateLines" :key="lineIndex" class="flex flex-wrap items-center gap-2 whitespace-pre-wrap">
-                <template v-for="(part, partIndex) in splitLine(line)" :key="`${lineIndex}:${partIndex}`">
-                    <button v-if="isSlot(part)" type="button" class="code-slot" :class="{ 'is-filled': slots[slotIndex(part)] }" @click="removeToken(slotIndex(part))">
+            <div
+                v-for="(line, lineIndex) in stage.templateLines"
+                :key="lineIndex"
+                class="flex flex-wrap items-center gap-2 whitespace-pre-wrap"
+            >
+                <template
+                    v-for="(part, partIndex) in splitLine(line)"
+                    :key="`${lineIndex}:${partIndex}`"
+                >
+                    <button
+                        v-if="isSlot(part)"
+                        type="button"
+                        class="code-slot"
+                        :class="{ 'is-filled': slots[slotIndex(part)] }"
+                        @click="removeToken(slotIndex(part))"
+                    >
                         {{ slots[slotIndex(part)]?.label ?? part }}
                     </button>
                     <span v-else class="whitespace-pre-wrap">{{ part }}</span>
@@ -142,13 +173,22 @@ watch(
         </div>
 
         <div class="space-y-3">
-            <div class="flex items-center justify-between text-quiz-muted text-xs">
+            <div
+                class="flex items-center justify-between text-quiz-muted text-xs"
+            >
                 <span>選択肢プール</span>
                 <span>タップで左から挿入</span>
             </div>
 
             <div class="flex flex-wrap gap-3">
-                <PressButton v-for="item in poolItems" :key="item.id" tone="secondary" :disabled="slotIsFilled(item) || locked" class="px-4 py-3 font-mono text-[13px]" @click="addToken(item)">
+                <PressButton
+                    v-for="item in poolItems"
+                    :key="item.id"
+                    tone="secondary"
+                    :disabled="slotIsFilled(item) || locked"
+                    class="px-4 py-3 font-mono text-[13px]"
+                    @click="addToken(item)"
+                >
                     {{ item.label }}
                 </PressButton>
             </div>

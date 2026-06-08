@@ -51,7 +51,10 @@ const clearSelection = () => {
 
 const isSelected = (item: OptionItem) => selectedIds.value.includes(item.id);
 
-const selectedLabels = () => selectedIds.value.map((id) => optionItems.value.find((item) => item.id === id)?.label).filter((label): label is string => Boolean(label));
+const selectedLabels = () =>
+    selectedIds.value
+        .map((id) => optionItems.value.find((item) => item.id === id)?.label)
+        .filter((label): label is string => Boolean(label));
 
 const toggleOption = (item: OptionItem) => {
     if (props.locked) {
@@ -86,12 +89,17 @@ watchEffect(() => {
 watch(
     () => props.submitSignal,
     () => {
-        if (props.locked || selectedCount() !== props.stage.correctAnswers.length) {
+        if (
+            props.locked ||
+            selectedCount() !== props.stage.correctAnswers.length
+        ) {
             return;
         }
 
         const chosen = selectedLabels();
-        const correct = props.stage.correctAnswers.every((answer) => chosen.includes(answer));
+        const correct = props.stage.correctAnswers.every((answer) =>
+            chosen.includes(answer),
+        );
 
         emit("submit", {
             correct,
@@ -114,27 +122,49 @@ watch(
 
 <template>
     <section class="surface-card space-y-4 px-3 py-4">
-        <StageOutputPanel v-if="stage.outputLines.length > 0" :lines="stage.outputLines" />
+        <StageOutputPanel
+            v-if="stage.outputLines.length > 0"
+            :lines="stage.outputLines"
+        />
 
         <div class="flex items-center justify-between text-quiz-muted text-xs">
             <span> コード表示エリア</span>
-            <span>{{ selectedIds.length }}/{{ stage.correctAnswers.length }}</span>
+            <span
+                >{{ selectedIds.length }}/{{
+                    stage.correctAnswers.length
+                }}</span
+            >
         </div>
 
         <div class="code-surface space-y-2">
-            <div v-for="(line, lineIndex) in stage.snippetLines" :key="`${stage.id}:${lineIndex}`" class="whitespace-pre-wrap">
+            <div
+                v-for="(line, lineIndex) in stage.snippetLines"
+                :key="`${stage.id}:${lineIndex}`"
+                class="whitespace-pre-wrap"
+            >
                 {{ line }}
             </div>
         </div>
 
         <div class="space-y-3">
-            <div class="flex items-center justify-between text-quiz-muted text-xs">
+            <div
+                class="flex items-center justify-between text-quiz-muted text-xs"
+            >
                 <span>選択肢</span>
                 <span>{{ stage.correctAnswers.length }} 個選ぶ</span>
             </div>
 
             <div class="flex flex-wrap gap-3">
-                <PressButton v-for="item in optionItems" :key="item.id" tone="secondary" class="px-4 py-3 font-mono text-[13px]" :class="{ 'ring-2 ring-sky-400': isSelected(item) }" :disabled="locked" :aria-pressed="isSelected(item) ? 'true' : 'false'" @click="toggleOption(item)">
+                <PressButton
+                    v-for="item in optionItems"
+                    :key="item.id"
+                    tone="secondary"
+                    class="px-4 py-3 font-mono text-[13px]"
+                    :class="{ 'ring-2 ring-sky-400': isSelected(item) }"
+                    :disabled="locked"
+                    :aria-pressed="isSelected(item) ? 'true' : 'false'"
+                    @click="toggleOption(item)"
+                >
                     {{ item.label }}
                 </PressButton>
             </div>
