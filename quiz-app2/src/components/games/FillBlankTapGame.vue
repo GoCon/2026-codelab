@@ -104,7 +104,6 @@ watch(
         emit("dirty-change", dirty);
         emit("ready-change", ready);
     },
-    // ★ ここに { immediate: true } が無いと初期状態でテストが失敗します
     { immediate: true },
 );
 
