@@ -2,6 +2,7 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 import App from "../src/App.vue";
+import { PREVIEW_UNLOCK_KEYWORD } from "../src/data/stages";
 
 const settle = async () => {
   await nextTick();
@@ -18,8 +19,15 @@ const setViewport = (width: number) => {
   window.dispatchEvent(new Event("resize"));
 };
 
-const clickExactButton = async (wrapper: ReturnType<typeof mount>, label: string) => {
-  const button = wrapper.findAll("button").find((candidate) => candidate.text().replace(/\s+/g, " ").trim() === label);
+const clickExactButton = async (
+  wrapper: ReturnType<typeof mount>,
+  label: string,
+) => {
+  const button = wrapper
+    .findAll("button")
+    .find(
+      (candidate) => candidate.text().replace(/\s+/g, " ").trim() === label,
+    );
 
   expect(button, `missing button: ${label}`).toBeTruthy();
   await button!.trigger("click");
@@ -35,7 +43,8 @@ const unlockPreview = async (wrapper: ReturnType<typeof mount>) => {
 
   const keywordInput = wrapper.find('input[placeholder="合言葉を入力"]');
   expect(keywordInput.exists()).toBe(true);
-  await keywordInput.setValue("gofar,gotogether");
+  // ハードコードされていたキーワードをデータから参照
+  await keywordInput.setValue(PREVIEW_UNLOCK_KEYWORD);
   await settle();
   await clickExactButton(wrapper, "開く");
 };
@@ -63,7 +72,9 @@ describe("quiz-app2 layout shell", () => {
     expect(shell.classes()).toContain("max-w-[448px]");
     expect(shell.classes()).toContain("quiz-shell-wide-panels");
     expect(wrapper.find("header.header").text()).toContain("CodeLab");
-    expect(wrapper.find("#header-tagline").text()).toBe("Go の知識を試してみよう！");
+    expect(wrapper.find("#header-tagline").text()).toBe(
+      "Go の知識を試してみよう！",
+    );
     expect(wrapper.find("footer").text()).toContain("Go Conference 2026");
     expect(wrapper.find("footer").text()).toContain("Renée French");
   });
