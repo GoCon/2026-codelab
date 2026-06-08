@@ -20,8 +20,7 @@ const emit = defineEmits<{
     ): void;
 }>();
 
-// App.vue から選択された言語を取得
-const locale = inject<Ref<Locale>>("locale") ?? ref("ja");
+const locale = inject("locale", ref("ja")) as Ref<Locale>;
 
 interface PoolItem {
     id: string;
@@ -31,7 +30,6 @@ interface PoolItem {
 const slots = ref<(PoolItem | null)[]>([]);
 const poolItems = ref<PoolItem[]>([]);
 
-// プールの選択肢をシャッフルするヘルパー
 const shuffle = <T,>(array: T[]): T[] => {
     const arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -41,13 +39,11 @@ const shuffle = <T,>(array: T[]): T[] => {
     return arr;
 };
 
-// [1], [2] などのプレースホルダーで文字列を分割
 const splitLine = (line: string) => line.split(/(\[\d+\])/).filter(Boolean);
 const isSlot = (part: string) => /^\[\d+\]$/.test(part);
 const slotIndex = (part: string) =>
     parseInt(part.replace(/[\[\]]/g, ""), 10) - 1;
 
-// ステージの初期化処理
 const resetState = () => {
     slots.value = Array.from(
         { length: props.stage.correctAnswers.length },
@@ -59,7 +55,6 @@ const resetState = () => {
     }));
 };
 
-// 選択状態のリセット
 const clearSelection = () => {
     slots.value = Array.from(
         { length: props.stage.correctAnswers.length },
@@ -67,11 +62,9 @@ const clearSelection = () => {
     );
 };
 
-// ワードが既にスロットに入っているか判定
 const slotIsFilled = (item: PoolItem) =>
     slots.value.some((slot) => slot?.id === item.id);
 
-// プールからワードを選んでスロットに追加
 const addToken = (item: PoolItem) => {
     if (props.locked) return;
     const index = slots.value.findIndex((s) => s === null);
@@ -80,7 +73,6 @@ const addToken = (item: PoolItem) => {
     }
 };
 
-// スロットからワードを外す
 const removeToken = (index: number) => {
     if (props.locked) return;
     slots.value[index] = null;
@@ -94,7 +86,6 @@ watch(
     { immediate: true },
 );
 
-// リセットやSubmitができるかどうかの状態
 const isDirty = computed(() => slots.value.some((s) => s !== null));
 const isReady = computed(() => slots.value.every((s) => s !== null));
 
@@ -107,7 +98,6 @@ watch(
     { immediate: true },
 );
 
-// App側からのリセット要求を購読
 watch(
     () => props.resetSignal,
     () => {
@@ -115,7 +105,6 @@ watch(
     },
 );
 
-// App側からの判定(Submit)要求を購読
 watch(
     () => props.submitSignal,
     () => {

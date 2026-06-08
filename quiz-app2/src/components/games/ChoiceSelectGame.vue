@@ -22,7 +22,7 @@ const emit = defineEmits<{
     (event: "submit", value: StageSubmission): void;
 }>();
 
-const locale = inject<Ref<Locale>>("locale") ?? ref("ja");
+const locale = inject("locale", ref("ja")) as Ref<Locale>;
 
 const optionItems = ref<OptionItem[]>([]);
 const selectedIds = ref<string[]>([]);

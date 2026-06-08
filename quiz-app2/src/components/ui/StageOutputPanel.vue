@@ -6,8 +6,7 @@ defineProps<{
     lines: string[];
 }>();
 
-// App.vue から言語設定を受け取る
-const locale = inject<Ref<Locale>>("locale") ?? ref("ja");
+const locale = inject("locale", ref("ja")) as Ref<Locale>;
 </script>
 
 <template>
