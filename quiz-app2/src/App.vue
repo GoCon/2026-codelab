@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch, type Component } from "vue";
+import {
+    computed,
+    onBeforeUnmount,
+    ref,
+    watch,
+    provide,
+    type Component,
+} from "vue";
 import ChoiceSelectGame from "./components/games/ChoiceSelectGame.vue";
 import FillBlankTapGame from "./components/games/FillBlankTapGame.vue";
 import PressButton from "./components/ui/PressButton.vue";
@@ -10,7 +17,13 @@ import {
     STAGE_TIME_LIMIT_MS,
     campaignTiers,
 } from "./data/stages";
-import type { CampaignTier, Stage, StageSubmission } from "./types";
+import type {
+    CampaignTier,
+    Stage,
+    StageSubmission,
+    Locale,
+    I18nText,
+} from "./types";
 
 type Screen = "home" | "question" | "result" | "score" | "preview";
 
@@ -20,7 +33,7 @@ interface StageResult {
     score: number;
     timeBonus: number;
     timedOut: boolean;
-    feedbackText: string;
+    feedbackText: I18nText;
     selectionSummary?: string;
 }
 
@@ -34,43 +47,13 @@ const conferenceLogoUrl = new URL(
     "./assets/go-conference-2026-logo.svg",
     import.meta.url,
 ).href;
-const correctFeedbackPhrases = [
-    "その調子！",
-    "素晴らしい！",
-    "完璧！",
-    "へえ、やるじゃん",
-    "おみごと！",
-    "パーフェクト！",
-    "ナイスアンサー！",
-    "正解！",
-] as const;
-const timeoutFeedbackPhrases = [
-    "時間切れだよ！",
-    "チクタク、チクタク...あーあ、時間切れ！",
-    "はい、そこまで",
-    "ピーッ！試合終了！タイムアップだ！",
-    "惜しい！あと少し！",
-    "あれ、もう時間？",
-    "あー！タイムアップ！",
-] as const;
-const incorrectFeedbackPhrases = [
-    "おっと、違うよ！",
-    "ブッブー、残念",
-    "不正解！",
-    "ブー、ハズレ",
-    "ドンマイ！",
-    "オーノー！だが気にするな！",
-    "ナイストライ！",
-    "ん？違うみたい",
-    "ざんねーん！",
-    "ぶっぶー、違うよ",
-] as const;
 
-const pickRandomPhrase = (phrases: readonly string[]) =>
-    phrases[Math.floor(Math.random() * phrases.length)] ?? phrases[0] ?? "";
+// ★ ステージ(Tier)が1つしかないかどうかを判定
+const isSingleTier = campaignTiers.length === 1;
 
-const compactTierTitle = (title: string) =>
-    title.split(" / ")[0]?.trim() || title;
+const pickRandomPhrase = (phrases: readonly I18nText[]): I18nText =>
+    phrases[Math.floor(Math.random() * phrases.length)] ??
+    phrases[0] ?? { ja: "", en: "" };
 
 const splitInlineCode = (text: string): InlineTextPart[] =>
     text
@@ -100,7 +83,6 @@ const persistPreviewUnlocked = (value: boolean) => {
             window.localStorage.setItem(PREVIEW_STORAGE_KEY, "1");
             return;
         }
-
         window.localStorage.removeItem(PREVIEW_STORAGE_KEY);
     } catch {
         // Ignore storage failures and keep the current in-memory state.
@@ -124,12 +106,135 @@ const keywordModalOpen = ref(false);
 const keywordValue = ref("");
 const keywordMessage = ref("");
 const languageMenuOpen = ref(false);
-const selectedLanguage = ref<"ja" | "en">("ja");
 const footerTapCount = ref(0);
+
+// -- 🌍 多言語対応 (i18n) --
+const selectedLanguage = ref<Locale>("ja");
+provide("locale", selectedLanguage);
+
+// 翻訳ヘルパー
+const t = (text: I18nText | string | undefined): string => {
+    if (!text) return "";
+    if (typeof text === "string") return text;
+    return text[selectedLanguage.value] || text.ja || "";
+};
+
+const compactTierTitle = (titleText: I18nText | string) => {
+    const title = t(titleText);
+    return title.split(" / ")[0]?.trim() || title;
+};
 
 let timerId: number | null = null;
 let startedAt = 0;
 
+// --- i18n Dictionary ---
+const i18n = computed(() => {
+    const isEn = selectedLanguage.value === "en";
+    return {
+        homeLead: isEn
+            ? "Welcome to Go Conference 2026 CodeLab!<br />Let's start the lesson! Don't overthink it, just pick the answer that clicks!"
+            : "Go Conference 2026 CodeLabへようこそ！<br />さあ、レッスンを始めよう！難しく考えずに、ピンときた答えを選んでみてね！",
+        startQuiz: isEn ? "Start Quiz" : "クイズを始める",
+        viewProblemList: isEn ? "View Problem List" : "問題一覧を見る",
+        previewNote: isEn
+            ? "Problem list mode is unlocked in this browser."
+            : "このブラウザでは問題一覧モードが解放されています。",
+        problemListTitle: isEn ? "Problem List" : "問題一覧",
+        problemListDesc: isEn
+            ? "The problem list can only be opened with a hidden keyword."
+            : "問題一覧は hidden keyword でのみ開きます。",
+        close: isEn ? "Close" : "閉じる",
+        questions: isEn ? "Questions" : "問題数",
+        score: isEn ? "Score" : "スコア",
+        time: isEn ? "Time" : "タイム",
+        point: isEn ? "Takeaway" : "ポイント",
+        playgroundDesc: isEn
+            ? "You can open the correct code in Go Playground and run it as is."
+            : "正解コードを Go Playground で開いて、そのまま実行できます。",
+        runPlayground: isEn ? "Run correct code" : "正解コードを実行する",
+        reset: isEn ? "Reset" : "リセット",
+        correctText: isEn ? "Correct" : "正解",
+        missedText: isEn ? "Missed" : "未達",
+        nextText: isEn ? "Next" : "次",
+        completedText: isEn ? "Completed" : "完了",
+        specialUnlocked: isEn ? "Special Unlocked" : "スペシャル解放",
+        allCorrectTitle: isEn
+            ? "Special Page Unlocked!"
+            : "スペシャルページ解放！",
+        allCorrectDesc: isEn
+            ? "You have completed this set and unlocked the special page."
+            : "このセットを最後まで進めたため、スペシャルページへ進めます。",
+        goToSpecial: isEn ? "Go to Special Page" : "スペシャルページへ",
+        nextLevel: isEn ? "Next Level" : "次のレベルへ",
+        // ★ ステージが1つの場合は文言をシンプルにする
+        retryLevel: isEn
+            ? isSingleTier
+                ? "Try again"
+                : "Try this level again"
+            : isSingleTier
+              ? "もう一度挑戦する"
+              : "同じレベルでもう一度",
+        retryCurrentLevel: isEn
+            ? isSingleTier
+                ? "Retry"
+                : "Retry this level"
+            : isSingleTier
+              ? "再挑戦"
+              : "このレベルを再挑戦",
+        returnHome: isEn ? "Return to Home" : "ホームへ戻る",
+        keywordTitle: isEn ? "Secret Keyword" : "合言葉",
+        openProblemList: isEn ? "Open Problem List" : "問題一覧を開く",
+        keywordDesc: isEn
+            ? "The preview / problem list is unlocked only when the correct keyword is entered."
+            : "正しい合言葉を入力したときだけ preview / 問題一覧が解放されます。",
+        enterKeyword: isEn ? "Enter keyword" : "合言葉を入力",
+        open: isEn ? "Open" : "開く",
+        keywordIncorrect: isEn ? "Incorrect keyword." : "合言葉が違います。",
+        timeUpSummary: isEn ? "Time's up" : "タイムアップ",
+    };
+});
+
+const correctFeedbackPhrases: I18nText[] = [
+    { ja: "その調子！", en: "Keep it up!" },
+    { ja: "素晴らしい！", en: "Excellent!" },
+    { ja: "完璧！", en: "Perfect!" },
+    { ja: "へえ、やるじゃん", en: "Wow, not bad!" },
+    { ja: "おみごと！", en: "Great job!" },
+    { ja: "パーフェクト！", en: "Perfect!" },
+    { ja: "ナイスアンサー！", en: "Nice answer!" },
+    { ja: "正解！", en: "Correct!" },
+];
+
+const timeoutFeedbackPhrases: I18nText[] = [
+    { ja: "時間切れだよ！", en: "Time's up!" },
+    {
+        ja: "チクタク、チクタク...あーあ、時間切れ！",
+        en: "Tick-tock... Aw, time's up!",
+    },
+    { ja: "はい、そこまで", en: "Alright, stop right there" },
+    {
+        ja: "ピーッ！試合終了！タイムアップだ！",
+        en: "Beep! Game over! Time's up!",
+    },
+    { ja: "惜しい！あと少し！", en: "So close!" },
+    { ja: "あれ、もう時間？", en: "Wait, time's already up?" },
+    { ja: "あー！タイムアップ！", en: "Ah! Time's up!" },
+];
+
+const incorrectFeedbackPhrases: I18nText[] = [
+    { ja: "おっと、違うよ！", en: "Oops, that's not it!" },
+    { ja: "ブッブー、残念", en: "Buzzer! Too bad" },
+    { ja: "不正解！", en: "Incorrect!" },
+    { ja: "ブー、ハズレ", en: "Boo, wrong" },
+    { ja: "ドンマイ！", en: "Don't mind it!" },
+    { ja: "オーノー！だが気にするな！", en: "Oh no! But don't worry!" },
+    { ja: "ナイストライ！", en: "Nice try!" },
+    { ja: "ん？違うみたい", en: "Hmm? Seems incorrect" },
+    { ja: "ざんねーん！", en: "Too bad!" },
+    { ja: "ぶっぶー、違うよ", en: "Nope, that's wrong" },
+];
+
+// --- Computed Properties ---
 const currentTier = computed<CampaignTier | null>(
     () => campaignTiers[currentTierIndex.value] ?? null,
 );
@@ -137,10 +242,10 @@ const currentStage = computed<Stage | null>(
     () => currentTier.value?.stages[currentQuestionIndex.value] ?? null,
 );
 const stageWhyParts = computed(() =>
-    splitInlineCode(currentStage.value?.why ?? ""),
+    splitInlineCode(t(currentStage.value?.why)),
 );
 const stageTakeawayParts = computed(() =>
-    splitInlineCode(currentStage.value?.takeaway ?? ""),
+    splitInlineCode(t(currentStage.value?.takeaway)),
 );
 const stageComponent = computed(() =>
     currentStage.value ? componentMap[currentStage.value.kind] : null,
@@ -154,76 +259,114 @@ const runCorrectCount = computed(
     () => runResults.value.filter((result) => result.correct).length,
 );
 const timerLabel = computed(() => `${(remainingMs.value / 1000).toFixed(1)}s`);
+
 const currentRunPerfect = computed(
     () => tierSize.value > 0 && runCorrectCount.value === tierSize.value,
 );
+
 const nextTier = computed(() => {
     const nextIndex = currentTierIndex.value + 1;
     if (highestUnlockedTierIndex.value < nextIndex) {
         return null;
     }
-
     return campaignTiers[nextIndex] ?? null;
 });
-const actionHint = computed(() =>
-    currentStage.value?.kind === "select"
-        ? `必要な選択肢を ${currentStage.value.correctAnswers.length} 個選んでから確定します。`
-        : "単語を左から選んでコードを完成させてから確定します。",
-);
-const feedbackLabel = computed(() => {
-    if (!currentResult.value) {
-        return "";
+
+const actionHint = computed(() => {
+    const isEn = selectedLanguage.value === "en";
+    if (currentStage.value?.kind === "select") {
+        return isEn
+            ? `Select ${currentStage.value.correctAnswers.length} required options and confirm.`
+            : `必要な選択肢を ${currentStage.value.correctAnswers.length} 個選んでから確定します。`;
     }
+    return isEn
+        ? "Select words from the left to complete the code and confirm."
+        : "単語を左から選んでコードを完成させてから確定します。";
+});
+
+const feedbackLabel = computed(() => {
+    if (!currentResult.value) return "";
+    const isEn = selectedLanguage.value === "en";
 
     if (currentResult.value.correct) {
-        return "◯ 正解";
+        return isEn ? "◯ Correct" : "◯ 正解";
     }
-
-    return currentResult.value.timedOut ? "× タイムアップ" : "× 不正解";
+    return currentResult.value.timedOut
+        ? isEn
+            ? "× Time's up"
+            : "× タイムアップ"
+        : isEn
+          ? "× Incorrect"
+          : "× 不正解";
 });
+
 const feedbackTitle = computed(() => {
-    if (!currentResult.value) {
-        return "";
-    }
-
-    return currentResult.value.feedbackText;
+    if (!currentResult.value) return "";
+    return t(currentResult.value.feedbackText);
 });
-const resultButtonLabel = computed(() =>
-    currentQuestionIndex.value === tierSize.value - 1 ? "結果を見る" : "つぎへ",
+
+const resultButtonLabel = computed(() => {
+    const isEn = selectedLanguage.value === "en";
+    return currentQuestionIndex.value === tierSize.value - 1
+        ? isEn
+            ? "View Results"
+            : "結果を見る"
+        : isEn
+          ? "Next"
+          : "つぎへ";
+});
+
+const manualCtaLabel = computed(() =>
+    selectedLanguage.value === "en" ? "Submit" : "回答する",
 );
-const manualCtaLabel = computed(() => "回答する");
+
 const headerTagline = computed(() =>
     selectedLanguage.value === "en"
         ? "Test your Go knowledge!"
         : "Go の知識を試してみよう！",
 );
+
 const languageToggleLabel = computed(() =>
     selectedLanguage.value === "en" ? "Display language" : "表示言語",
 );
+
 const scoreHeadline = computed(() => {
-    if (!currentTier.value) {
-        return "";
-    }
-
-    return currentRunPerfect.value
-        ? `${currentTier.value.title} を突破`
-        : `${compactTierTitle(currentTier.value.title)} を再挑戦`;
-});
-const scoreLead = computed(() => {
-    if (!currentTier.value) {
-        return "";
-    }
-
-    if (nextTier.value) {
-        return `${nextTier.value.title} が解放されました。次のStageへ進めます。`;
-    }
+    if (!currentTier.value) return "";
+    const isEn = selectedLanguage.value === "en";
 
     if (currentRunPerfect.value) {
-        return "問題を全て解き切りました。ホームからすぐに再挑戦できます。";
+        return isEn
+            ? isSingleTier
+                ? "Congratulations!"
+                : `Cleared ${t(currentTier.value.title)}`
+            : isSingleTier
+              ? "全問正解！"
+              : `${t(currentTier.value.title)} をクリア`;
     }
 
-    return "今回の気づきを確認して、同じ問題でもう一度挑戦しましょう。";
+    return isEn
+        ? isSingleTier
+            ? "That's all"
+            : `Retry ${compactTierTitle(currentTier.value.title)}`
+        : isSingleTier
+          ? "完了！"
+          : `${compactTierTitle(currentTier.value.title)} を再挑戦`;
 });
+
+const scoreLead = computed(() => {
+    if (!currentTier.value) return "";
+    const isEn = selectedLanguage.value === "en";
+
+    if (nextTier.value) {
+        return isEn
+            ? `${t(nextTier.value.title)} is unlocked. You can proceed to the next Stage.`
+            : `${t(nextTier.value.title)} が解放されました。次のStageへ進めます。`;
+    }
+    return isEn
+        ? "You have solved all the problems. You can quickly retry from the home screen."
+        : "問題を全て解き切りました。ホームからすぐに再挑戦できます。";
+});
+
 const summaryRows = computed(
     () =>
         currentTier.value?.stages.map((stage) => ({
@@ -235,6 +378,7 @@ const summaryRows = computed(
         })) ?? [],
 );
 
+// --- Functions ---
 const stopTimer = () => {
     if (timerId !== null) {
         window.clearInterval(timerId);
@@ -272,9 +416,7 @@ const syncResult = (result: StageResult) => {
 const beginStageTimer = () => {
     stopTimer();
 
-    if (!currentStage.value) {
-        return;
-    }
+    if (!currentStage.value) return;
 
     canSubmit.value = false;
     remainingMs.value = STAGE_TIME_LIMIT_MS;
@@ -291,9 +433,7 @@ const beginStageTimer = () => {
 };
 
 const finalizeStage = (submission: StageSubmission, timedOut = false) => {
-    if (!currentStage.value || currentResult.value) {
-        return;
-    }
+    if (!currentStage.value || currentResult.value) return;
 
     stopTimer();
 
@@ -301,11 +441,13 @@ const finalizeStage = (submission: StageSubmission, timedOut = false) => {
         ? Math.round((remainingMs.value / STAGE_TIME_LIMIT_MS) * 600)
         : 0;
     const score = submission.correct ? 400 + timeBonus : 0;
+
     const feedbackText = submission.correct
         ? pickRandomPhrase(correctFeedbackPhrases)
         : timedOut
           ? pickRandomPhrase(timeoutFeedbackPhrases)
           : pickRandomPhrase(incorrectFeedbackPhrases);
+
     const result: StageResult = {
         stageId: currentStage.value.id,
         correct: submission.correct,
@@ -327,12 +469,12 @@ const handleStageSubmit = (submission: StageSubmission) => {
 };
 
 const handleTimeout = () => {
-    if (currentResult.value || !currentStage.value) {
-        return;
-    }
-
+    if (currentResult.value || !currentStage.value) return;
     remainingMs.value = 0;
-    finalizeStage({ correct: false, selectionSummary: "タイムアップ" }, true);
+    finalizeStage(
+        { correct: false, selectionSummary: i18n.value.timeUpSummary },
+        true,
+    );
 };
 
 const beginTierRun = (tierIndex: number) => {
@@ -368,34 +510,28 @@ const restartCurrentTier = () => {
 };
 
 const startNextTier = () => {
-    if (!nextTier.value) {
-        return;
-    }
-
+    if (!nextTier.value) return;
     beginTierRun(currentTierIndex.value + 1);
 };
 
 const finishTierRun = () => {
     stopTimer();
 
-    if (currentRunPerfect.value) {
-        specialUnlocked.value =
-            specialUnlocked.value || Boolean(currentTier.value?.unlocksSpecial);
-        if (currentTierIndex.value < campaignTiers.length - 1) {
-            highestUnlockedTierIndex.value = Math.max(
-                highestUnlockedTierIndex.value,
-                currentTierIndex.value + 1,
-            );
-        }
+    specialUnlocked.value =
+        specialUnlocked.value || Boolean(currentTier.value?.unlocksSpecial);
+
+    if (currentTierIndex.value < campaignTiers.length - 1) {
+        highestUnlockedTierIndex.value = Math.max(
+            highestUnlockedTierIndex.value,
+            currentTierIndex.value + 1,
+        );
     }
 
     screen.value = "score";
 };
 
 const goToNextStage = () => {
-    if (!currentResult.value) {
-        return;
-    }
+    if (!currentResult.value) return;
 
     if (currentQuestionIndex.value === tierSize.value - 1) {
         finishTierRun();
@@ -415,7 +551,6 @@ const requestStageSubmit = () => {
     ) {
         return;
     }
-
     submitSignal.value += 1;
 };
 
@@ -427,15 +562,11 @@ const requestStageReset = () => {
     ) {
         return;
     }
-
     resetSignal.value += 1;
 };
 
 const openPreviewScreen = () => {
-    if (!previewUnlocked.value) {
-        return;
-    }
-
+    if (!previewUnlocked.value) return;
     stopTimer();
     screen.value = "preview";
 };
@@ -455,7 +586,7 @@ const closeKeywordModal = () => {
 
 const submitKeyword = () => {
     if (keywordValue.value.trim() !== PREVIEW_UNLOCK_KEYWORD) {
-        keywordMessage.value = "合言葉が違います。";
+        keywordMessage.value = i18n.value.keywordIncorrect;
         return;
     }
 
@@ -601,10 +732,11 @@ onBeforeUnmount(() => {
                     <div class="card" id="home-card">
                         <div class="chip" id="home-chip">WELCOME</div>
                         <h1 class="home-title">Go Conference 2026 CodeLab</h1>
-                        <p class="home-lead" id="home-lead">
-                            Go Conference 2026 CodeLabへようこそ！<br />
-                            さあ、レッスンを始めよう！難しく考えずに、ピンときた答えを選んでみてね！
-                        </p>
+                        <p
+                            class="home-lead"
+                            id="home-lead"
+                            v-html="i18n.homeLead"
+                        ></p>
 
                         <div class="home-actions">
                             <button
@@ -613,7 +745,7 @@ onBeforeUnmount(() => {
                                 type="button"
                                 @click="startFromHome"
                             >
-                                クイズを始める
+                                {{ i18n.startQuiz }}
                             </button>
                         </div>
 
@@ -625,10 +757,10 @@ onBeforeUnmount(() => {
                                 type="button"
                                 @click="openPreviewScreen"
                             >
-                                問題一覧を見る
+                                {{ i18n.viewProblemList }}
                             </button>
                             <p class="unlock-note" id="unlock-note">
-                                このブラウザでは問題一覧モードが解放されています。
+                                {{ i18n.previewNote }}
                             </p>
                         </div>
                     </div>
@@ -640,18 +772,18 @@ onBeforeUnmount(() => {
                     <section class="surface-card p-5">
                         <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0">
-                                <span class="info-pill">問題一覧</span>
+                                <span class="info-pill">{{
+                                    i18n.problemListTitle
+                                }}</span>
                                 <h1
                                     class="display-title mt-4 text-[30px] leading-tight"
                                 >
-                                    問題一覧
+                                    {{ i18n.problemListTitle }}
                                 </h1>
                                 <p
                                     class="mt-3 text-quiz-body text-sm leading-6"
                                 >
-                                    問題一覧は hidden keyword
-                                    でのみ開きます。今回の 7 問と 2
-                                    種類の出題形式を 先に確認できます。
+                                    {{ i18n.problemListDesc }}
                                 </p>
                             </div>
                             <PressButton
@@ -659,7 +791,7 @@ onBeforeUnmount(() => {
                                 size="sm"
                                 @click="returnHome"
                             >
-                                閉じる
+                                {{ i18n.close }}
                             </PressButton>
                         </div>
                     </section>
@@ -671,25 +803,26 @@ onBeforeUnmount(() => {
                     >
                         <div class="flex items-start justify-between gap-3">
                             <div>
-                                <span class="info-pill">{{
-                                    tier.difficultyLabel
+                                <span v-if="!isSingleTier" class="info-pill">{{
+                                    t(tier.difficultyLabel)
                                 }}</span>
                                 <h2
-                                    class="mt-3 text-lg font-semibold text-quiz-strong"
+                                    class="text-lg font-semibold text-quiz-strong"
+                                    :class="{ 'mt-3': !isSingleTier }"
                                 >
-                                    {{ tier.title }}
+                                    {{ t(tier.title) }}
                                 </h2>
                                 <p
                                     class="mt-2 text-quiz-body text-sm leading-6"
                                 >
-                                    {{ tier.description }}
+                                    {{ t(tier.description) }}
                                 </p>
                             </div>
                             <div class="surface-subpanel px-3 py-3 text-center">
                                 <p
                                     class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]"
                                 >
-                                    問題数
+                                    {{ i18n.questions }}
                                 </p>
                                 <p
                                     class="mt-1 text-2xl font-semibold text-quiz-strong"
@@ -712,10 +845,10 @@ onBeforeUnmount(() => {
                                         <p
                                             class="text-quiz-strong text-sm font-semibold"
                                         >
-                                            {{ stage.title }}
+                                            {{ t(stage.title) }}
                                         </p>
                                         <p class="mt-1 text-quiz-muted text-xs">
-                                            {{ stage.label }}
+                                            {{ t(stage.label) }}
                                         </p>
                                     </div>
                                     <span
@@ -725,12 +858,12 @@ onBeforeUnmount(() => {
                                     </span>
                                 </div>
                                 <p class="problem-copy mt-3">
-                                    {{ stage.prompt }}
+                                    {{ t(stage.prompt) }}
                                 </p>
                                 <p
                                     class="mt-3 text-quiz-body text-xs leading-5"
                                 >
-                                    {{ stage.takeaway }}
+                                    {{ t(stage.takeaway) }}
                                 </p>
                             </article>
                         </div>
@@ -753,7 +886,7 @@ onBeforeUnmount(() => {
                                 <p
                                     class="text-quiz-muted text-[8px] uppercase tracking-[0.18em]"
                                 >
-                                    スコア
+                                    {{ i18n.score }}
                                 </p>
                                 <p
                                     class="mt-0 text-lg font-semibold leading-none text-quiz-strong"
@@ -766,7 +899,7 @@ onBeforeUnmount(() => {
                                 <p
                                     class="text-quiz-muted text-[8px] uppercase tracking-[0.18em]"
                                 >
-                                    タイム
+                                    {{ i18n.time }}
                                 </p>
                                 <p
                                     class="mt-0 text-lg font-semibold leading-none text-quiz-strong"
@@ -870,7 +1003,7 @@ onBeforeUnmount(() => {
                                 <p
                                     class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]"
                                 >
-                                    ポイント
+                                    {{ i18n.point }}
                                 </p>
                                 <p
                                     class="mt-2 text-quiz-body text-sm leading-6"
@@ -904,8 +1037,7 @@ onBeforeUnmount(() => {
                                 <p
                                     class="mt-2 text-quiz-body text-sm leading-6"
                                 >
-                                    正解コードを Go Playground
-                                    で開いて、そのまま実行できます。
+                                    {{ i18n.playgroundDesc }}
                                 </p>
                                 <a
                                     :href="currentStage.playgroundUrl"
@@ -913,7 +1045,7 @@ onBeforeUnmount(() => {
                                     rel="noreferrer noopener"
                                     class="primary-link-button playground-link-button mt-4"
                                 >
-                                    正解コードを実行する
+                                    {{ i18n.runPlayground }}
                                 </a>
                             </div>
                         </section>
@@ -938,7 +1070,7 @@ onBeforeUnmount(() => {
                                         :disabled="!canReset"
                                         @click="requestStageReset"
                                     >
-                                        リセット
+                                        {{ i18n.reset }}
                                     </PressButton>
                                     <PressButton
                                         block
@@ -970,11 +1102,15 @@ onBeforeUnmount(() => {
             <template v-else-if="screen === 'score' && currentTier">
                 <div class="flex flex-1 flex-col gap-4">
                     <section class="surface-card p-5">
-                        <span class="info-pill">{{
-                            currentTier.difficultyLabel
+                        <span v-if="!isSingleTier" class="info-pill">{{
+                            t(currentTier.difficultyLabel)
                         }}</span>
                         <h1
-                            class="display-title mt-4 text-[32px] leading-tight"
+                            class="display-title leading-tight"
+                            :class="{
+                                'mt-4': !isSingleTier,
+                                'text-[32px]': true,
+                            }"
                         >
                             {{ scoreHeadline }}
                         </h1>
@@ -987,7 +1123,7 @@ onBeforeUnmount(() => {
                                 <p
                                     class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]"
                                 >
-                                    スコア
+                                    {{ i18n.score }}
                                 </p>
                                 <p
                                     class="mt-2 text-2xl font-semibold text-quiz-strong"
@@ -999,7 +1135,7 @@ onBeforeUnmount(() => {
                                 <p
                                     class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]"
                                 >
-                                    正解
+                                    {{ i18n.correctText }}
                                 </p>
                                 <p
                                     class="mt-2 text-2xl font-semibold text-quiz-strong"
@@ -1011,15 +1147,15 @@ onBeforeUnmount(() => {
                                 <p
                                     class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]"
                                 >
-                                    次
+                                    {{ i18n.nextText }}
                                 </p>
                                 <p
                                     class="mt-2 text-quiz-strong text-sm font-semibold"
                                 >
                                     {{
                                         nextTier
-                                            ? nextTier.difficultyLabel
-                                            : "完了"
+                                            ? t(nextTier.difficultyLabel)
+                                            : i18n.completedText
                                     }}
                                 </p>
                             </div>
@@ -1027,12 +1163,14 @@ onBeforeUnmount(() => {
                     </section>
 
                     <section v-if="specialUnlocked" class="surface-card p-4">
-                        <span class="info-pill">スペシャル解放</span>
+                        <span class="info-pill">{{
+                            i18n.specialUnlocked
+                        }}</span>
                         <h2 class="mt-3 text-lg font-semibold text-quiz-strong">
-                            7 問を全問正解しました
+                            {{ i18n.allCorrectTitle }}
                         </h2>
                         <p class="mt-2 text-quiz-body text-sm leading-6">
-                            このセットを全問正解するとスペシャルページへ進めます。
+                            {{ i18n.allCorrectDesc }}
                         </p>
                         <a
                             :href="SPECIAL_PAGE_URL"
@@ -1040,7 +1178,7 @@ onBeforeUnmount(() => {
                             rel="noreferrer"
                             class="primary-link-button mt-4"
                         >
-                            スペシャルページへ
+                            {{ i18n.goToSpecial }}
                         </a>
                     </section>
 
@@ -1055,10 +1193,10 @@ onBeforeUnmount(() => {
                                     <p
                                         class="text-quiz-strong text-sm font-semibold"
                                     >
-                                        {{ stage.title }}
+                                        {{ t(stage.title) }}
                                     </p>
                                     <p class="mt-1 text-quiz-muted text-xs">
-                                        {{ stage.label }}
+                                        {{ t(stage.label) }}
                                     </p>
                                 </div>
 
@@ -1071,7 +1209,11 @@ onBeforeUnmount(() => {
                                                 : 'text-quiz-danger'
                                         "
                                     >
-                                        {{ result?.correct ? "正解" : "未達" }}
+                                        {{
+                                            result?.correct
+                                                ? i18n.correctText
+                                                : i18n.missedText
+                                        }}
                                     </p>
                                     <p class="mt-1 text-quiz-muted text-xs">
                                         {{ result?.score ?? 0 }} pt
@@ -1089,7 +1231,7 @@ onBeforeUnmount(() => {
                                 tone="primary"
                                 @click="startNextTier"
                             >
-                                次のレベルへ
+                                {{ i18n.nextLevel }}
                             </PressButton>
                             <PressButton
                                 v-else
@@ -1097,7 +1239,7 @@ onBeforeUnmount(() => {
                                 tone="primary"
                                 @click="restartCurrentTier"
                             >
-                                同じレベルでもう一度
+                                {{ i18n.retryLevel }}
                             </PressButton>
                             <PressButton
                                 v-if="nextTier"
@@ -1105,14 +1247,14 @@ onBeforeUnmount(() => {
                                 tone="secondary"
                                 @click="restartCurrentTier"
                             >
-                                このレベルを再挑戦
+                                {{ i18n.retryCurrentLevel }}
                             </PressButton>
                             <PressButton
                                 block
                                 tone="secondary"
                                 @click="returnHome"
                             >
-                                ホームへ戻る
+                                {{ i18n.returnHome }}
                             </PressButton>
                             <PressButton
                                 v-if="previewUnlocked"
@@ -1120,7 +1262,7 @@ onBeforeUnmount(() => {
                                 tone="secondary"
                                 @click="openPreviewScreen"
                             >
-                                問題一覧を見る
+                                {{ i18n.viewProblemList }}
                             </PressButton>
                         </div>
                     </section>
@@ -1156,26 +1298,25 @@ onBeforeUnmount(() => {
                 <div
                     class="app-modal-card w-full max-w-[430px] rounded-b-none p-5 sm:rounded-[16px]"
                 >
-                    <span class="info-pill">合言葉</span>
+                    <span class="info-pill">{{ i18n.keywordTitle }}</span>
                     <h2 class="mt-4 text-quiz-strong text-xl font-semibold">
-                        問題一覧を開く
+                        {{ i18n.openProblemList }}
                     </h2>
                     <p class="mt-2 text-quiz-body text-sm leading-6">
-                        正しい合言葉を入力したときだけ preview /
-                        問題一覧が解放されます。
+                        {{ i18n.keywordDesc }}
                     </p>
 
                     <label
                         class="mt-4 block text-quiz-muted text-xs uppercase tracking-[0.24em]"
                     >
-                        合言葉
+                        {{ i18n.keywordTitle }}
                     </label>
                     <input
                         v-model="keywordValue"
                         type="text"
                         autocomplete="off"
                         spellcheck="false"
-                        placeholder="合言葉を入力"
+                        :placeholder="i18n.enterKeyword"
                         class="quiz-input mt-2 text-sm"
                         @keydown.enter.prevent="submitKeyword"
                     />
@@ -1193,14 +1334,14 @@ onBeforeUnmount(() => {
                             tone="primary"
                             @click="submitKeyword"
                         >
-                            開く
+                            {{ i18n.open }}
                         </PressButton>
                         <PressButton
                             block
                             tone="secondary"
                             @click="closeKeywordModal"
                         >
-                            閉じる
+                            {{ i18n.close }}
                         </PressButton>
                     </div>
                 </div>

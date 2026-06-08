@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, watch, watchEffect } from "vue";
-import type { SelectStage, StageSubmission } from "../../types";
+import { ref, watch, watchEffect, inject, type Ref } from "vue";
+import type { SelectStage, StageSubmission, Locale } from "../../types";
 import PressButton from "../ui/PressButton.vue";
 import StageOutputPanel from "../ui/StageOutputPanel.vue";
 
@@ -21,6 +21,8 @@ const emit = defineEmits<{
     (event: "dirty-change", value: boolean): void;
     (event: "submit", value: StageSubmission): void;
 }>();
+
+const locale = inject<Ref<Locale>>("locale") ?? ref("ja");
 
 const optionItems = ref<OptionItem[]>([]);
 const selectedIds = ref<string[]>([]);
@@ -128,7 +130,9 @@ watch(
         />
 
         <div class="flex items-center justify-between text-quiz-muted text-xs">
-            <span> コード表示エリア</span>
+            <span>{{
+                locale === "en" ? "Code Display Area" : "コード表示エリア"
+            }}</span>
             <span
                 >{{ selectedIds.length }}/{{
                     stage.correctAnswers.length
@@ -150,8 +154,12 @@ watch(
             <div
                 class="flex items-center justify-between text-quiz-muted text-xs"
             >
-                <span>選択肢</span>
-                <span>{{ stage.correctAnswers.length }} 個選ぶ</span>
+                <span>{{ locale === "en" ? "Options" : "選択肢" }}</span>
+                <span>{{
+                    locale === "en"
+                        ? `Select ${stage.correctAnswers.length}`
+                        : `${stage.correctAnswers.length} 個選ぶ`
+                }}</span>
             </div>
 
             <div class="flex flex-wrap gap-3">

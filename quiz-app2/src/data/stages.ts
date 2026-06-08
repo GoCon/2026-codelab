@@ -4,6 +4,7 @@ import type {
   SelectStage,
   Stage,
   StageKind,
+  I18nText,
 } from "../types";
 import stagesDocument from "./stages.toml";
 
@@ -41,6 +42,14 @@ const expectString = (value: unknown, path: string): string => {
   }
 
   return value;
+};
+
+const expectI18nText = (value: unknown, path: string): I18nText => {
+  const record = expectRecord(value, path);
+  return {
+    ja: expectString(record.ja, `${path}.ja`),
+    en: expectString(record.en, `${path}.en`),
+  };
 };
 
 const expectStringArray = (value: unknown, path: string): string[] =>
@@ -140,13 +149,13 @@ const parseStageBase = <K extends StageKind>(
   return {
     id: expectString(record.id, `${path}.id`),
     kind,
-    label: expectString(record.label, `${path}.label`),
-    title: expectString(record.title, `${path}.title`),
-    prompt: expectString(record.prompt, `${path}.prompt`),
+    label: expectI18nText(record.label, `${path}.label`),
+    title: expectI18nText(record.title, `${path}.title`),
+    prompt: expectI18nText(record.prompt, `${path}.prompt`),
     outputLines,
     ...(playgroundUrl === undefined ? {} : { playgroundUrl }),
-    why: expectString(record.why, `${path}.why`),
-    takeaway: expectString(record.takeaway, `${path}.takeaway`),
+    why: expectI18nText(record.why, `${path}.why`),
+    takeaway: expectI18nText(record.takeaway, `${path}.takeaway`),
   };
 };
 
@@ -261,12 +270,12 @@ const parseCampaignTier = (value: unknown, path: string): CampaignTier => {
 
   return {
     id: expectString(record.id, `${path}.id`),
-    title: expectString(record.title, `${path}.title`),
-    difficultyLabel: expectString(
+    title: expectI18nText(record.title, `${path}.title`),
+    difficultyLabel: expectI18nText(
       record.difficultyLabel,
       `${path}.difficultyLabel`,
     ),
-    description: expectString(record.description, `${path}.description`),
+    description: expectI18nText(record.description, `${path}.description`),
     ...(unlocksSpecial === undefined ? {} : { unlocksSpecial }),
     stages,
   };

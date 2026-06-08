@@ -1,13 +1,8 @@
 <script setup lang="ts">
-import { ref, watch, watchEffect } from "vue";
-import type { FillStage, StageSubmission } from "../../types";
+import { ref, computed, watch, inject, type Ref } from "vue";
+import type { FillStage, Locale } from "../../types";
 import PressButton from "../ui/PressButton.vue";
 import StageOutputPanel from "../ui/StageOutputPanel.vue";
-
-interface PoolItem {
-    id: string;
-    label: string;
-}
 
 const props = defineProps<{
     stage: FillStage;
@@ -17,31 +12,39 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (event: "ready-change", value: boolean): void;
-    (event: "dirty-change", value: boolean): void;
-    (event: "submit", value: StageSubmission): void;
+    (e: "dirty-change", dirty: boolean): void;
+    (e: "ready-change", ready: boolean): void;
+    (
+        e: "submit",
+        payload: { correct: boolean; selectionSummary: string },
+    ): void;
 }>();
 
-const slots = ref<(PoolItem | null)[]>(
-    Array.from({ length: props.stage.correctAnswers.length }, () => null),
-);
+const locale = inject<Ref<Locale>>("locale") ?? ref("ja");
+
+interface PoolItem {
+    id: string;
+    label: string;
+}
+
+const slots = ref<(PoolItem | null)[]>([]);
 const poolItems = ref<PoolItem[]>([]);
+
+const shuffle = <T,>(array: T[]): T[] => {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+};
 
 const splitLine = (line: string) => line.split(/(\[\d+\])/).filter(Boolean);
 const isSlot = (part: string) => /^\[\d+\]$/.test(part);
-const slotIndex = (part: string) => Number(part.slice(1, -1)) - 1;
+const slotIndex = (part: string) =>
+    parseInt(part.replace(/[\[\]]/g, ""), 10) - 1;
 
-const shuffle = <T,>(values: T[]): T[] => {
-    const next = [...values];
-
-    for (let index = next.length - 1; index > 0; index -= 1) {
-        const swapIndex = Math.floor(Math.random() * (index + 1));
-        [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
-    }
-
-    return next;
-};
-
+// ステージの初期化処理
 const resetState = () => {
     slots.value = Array.from(
         { length: props.stage.correctAnswers.length },
@@ -53,9 +56,7 @@ const resetState = () => {
     }));
 };
 
-const slotIsFilled = (item: PoolItem) =>
-    slots.value.some((slot) => slot?.id === item.id);
-
+// 選択状態のリセット
 const clearSelection = () => {
     slots.value = Array.from(
         { length: props.stage.correctAnswers.length },
@@ -63,71 +64,58 @@ const clearSelection = () => {
     );
 };
 
+// ワードが既にスロットに入っているか判定
+const slotIsFilled = (item: PoolItem) =>
+    slots.value.some((slot) => slot?.id === item.id);
+
+// プールからワードを選んでスロットに追加
 const addToken = (item: PoolItem) => {
-    if (props.locked || slotIsFilled(item)) {
-        return;
+    if (props.locked) return;
+    const index = slots.value.findIndex((s) => s === null);
+    if (index !== -1) {
+        slots.value[index] = item;
     }
-
-    const firstEmpty = slots.value.findIndex((value) => value === null);
-    if (firstEmpty === -1) {
-        return;
-    }
-
-    slots.value[firstEmpty] = item;
 };
 
+// スロットからワードを外す
 const removeToken = (index: number) => {
-    if (props.locked) {
-        return;
-    }
-
+    if (props.locked) return;
     slots.value[index] = null;
 };
 
 watch(
-    () => props.stage.id,
+    () => props.stage,
     () => {
         resetState();
     },
     { immediate: true },
 );
 
-watchEffect(() => {
-    emit(
-        "ready-change",
-        slots.value.every((slot) => slot !== null),
-    );
-    emit(
-        "dirty-change",
-        slots.value.some((slot) => slot !== null),
-    );
+const isDirty = computed(() => slots.value.some((s) => s !== null));
+const isReady = computed(() => slots.value.every((s) => s !== null));
+
+watch([isDirty, isReady], ([dirty, ready]) => {
+    emit("dirty-change", dirty);
+    emit("ready-change", ready);
 });
+
+watch(
+    () => props.resetSignal,
+    () => {
+        clearSelection();
+    },
+);
 
 watch(
     () => props.submitSignal,
     () => {
-        if (props.locked || slots.value.some((slot) => slot === null)) {
-            return;
-        }
-
-        const answer = slots.value.map((slot) => slot!.label);
+        const answer = slots.value.map((slot) => slot?.label ?? "");
         emit("submit", {
             correct: answer.every(
                 (token, index) => token === props.stage.correctAnswers[index],
             ),
             selectionSummary: answer.join(" "),
         });
-    },
-);
-
-watch(
-    () => props.resetSignal,
-    () => {
-        if (props.locked) {
-            return;
-        }
-
-        clearSelection();
     },
 );
 </script>
@@ -140,7 +128,9 @@ watch(
         />
 
         <div class="flex items-center justify-between text-quiz-muted text-xs">
-            <span>コード表示エリア</span>
+            <span>{{
+                locale === "en" ? "Code Display Area" : "コード表示エリア"
+            }}</span>
             <span
                 >{{ slots.filter(Boolean).length }}/{{
                     stage.correctAnswers.length
@@ -163,6 +153,7 @@ watch(
                         type="button"
                         class="code-slot"
                         :class="{ 'is-filled': slots[slotIndex(part)] }"
+                        :disabled="locked || !slots[slotIndex(part)]"
                         @click="removeToken(slotIndex(part))"
                     >
                         {{ slots[slotIndex(part)]?.label ?? part }}
@@ -176,8 +167,14 @@ watch(
             <div
                 class="flex items-center justify-between text-quiz-muted text-xs"
             >
-                <span>選択肢プール</span>
-                <span>タップで左から挿入</span>
+                <span>{{
+                    locale === "en" ? "Word Pool" : "選択肢プール"
+                }}</span>
+                <span>{{
+                    locale === "en"
+                        ? "Tap to insert from left"
+                        : "タップで左から挿入"
+                }}</span>
             </div>
 
             <div class="flex flex-wrap gap-3">

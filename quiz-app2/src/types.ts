@@ -1,15 +1,22 @@
+export type Locale = "ja" | "en";
+
+export interface I18nText {
+  ja: string;
+  en: string;
+}
+
 export type StageKind = "fill" | "select";
 
 export interface StageBase {
   id: string;
   kind: StageKind;
-  label: string;
-  title: string;
-  prompt: string;
+  label: I18nText;
+  title: I18nText;
+  prompt: I18nText;
   outputLines: string[];
   playgroundUrl?: string;
-  why: string;
-  takeaway: string;
+  why: I18nText;
+  takeaway: I18nText;
 }
 
 export interface FillStage extends StageBase {
@@ -30,9 +37,9 @@ export type Stage = FillStage | SelectStage;
 
 export interface CampaignTier {
   id: string;
-  title: string;
-  difficultyLabel: string;
-  description: string;
+  title: I18nText;
+  difficultyLabel: I18nText;
+  description: I18nText;
   unlocksSpecial?: boolean;
   stages: Stage[];
 }
