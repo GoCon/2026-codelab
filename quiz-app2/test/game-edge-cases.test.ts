@@ -70,7 +70,7 @@ describe("quiz-app2 edge cases", () => {
 
     const nextStage = stages[1];
     if (nextStage) {
-      expect(wrapper.text()).toContain(nextStage.prompt.ja);
+      expect(wrapper.text()).toContain(nextStage.correctAnswers[0]);
     }
     wrapper.unmount();
   });
