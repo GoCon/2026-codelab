@@ -2,7 +2,12 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import App from "../src/App.vue";
-import { STAGE_TIME_LIMIT_MS, stages, campaignTiers } from "../src/data/stages";
+import {
+  STAGE_TIME_LIMIT_MS,
+  stages,
+  campaignTiers,
+  PREVIEW_UNLOCK_KEYWORD,
+} from "../src/data/stages";
 
 const settle = async () => {
   await nextTick();
@@ -12,24 +17,43 @@ const settle = async () => {
 
 const normalizeText = (value: string) => value.replace(/\s+/g, " ").trim();
 
-// 【修正】attributes("disabled") が存在しない（undefined である）ことを正しく判定
-const findEnabledButton = (wrapper: ReturnType<typeof mount>, label: string) => {
-  const button = wrapper.findAll("button").find((candidate) => candidate.attributes("disabled") === undefined && normalizeText(candidate.text()) === label);
+const findEnabledButton = (
+  wrapper: ReturnType<typeof mount>,
+  label: string,
+) => {
+  const button = wrapper
+    .findAll("button")
+    .find(
+      (candidate) =>
+        candidate.attributes("disabled") === undefined &&
+        normalizeText(candidate.text()) === label,
+    );
 
   expect(button, `missing button: ${label}`).toBeTruthy();
   return button!;
 };
 
-// 【修正】attributes("disabled") が存在しない（undefined である）ことを正しく判定
-const hasEnabledButton = (wrapper: ReturnType<typeof mount>, label: string) => wrapper.findAll("button").some((candidate) => candidate.attributes("disabled") === undefined && normalizeText(candidate.text()) === label);
+const hasEnabledButton = (wrapper: ReturnType<typeof mount>, label: string) =>
+  wrapper
+    .findAll("button")
+    .some(
+      (candidate) =>
+        candidate.attributes("disabled") === undefined &&
+        normalizeText(candidate.text()) === label,
+    );
 
-const clickButton = async (wrapper: ReturnType<typeof mount>, label: string) => {
+const clickButton = async (
+  wrapper: ReturnType<typeof mount>,
+  label: string,
+) => {
   await findEnabledButton(wrapper, label).trigger("click");
   await settle();
 };
 
 const findButton = (wrapper: ReturnType<typeof mount>, label: string) => {
-  const button = wrapper.findAll("button").find((candidate) => normalizeText(candidate.text()) === label);
+  const button = wrapper
+    .findAll("button")
+    .find((candidate) => normalizeText(candidate.text()) === label);
 
   expect(button, `missing button: ${label}`).toBeTruthy();
   return button!;
@@ -46,7 +70,8 @@ const unlockPreview = async (wrapper: ReturnType<typeof mount>) => {
 
   const keywordInput = wrapper.find('input[placeholder="合言葉を入力"]');
   expect(keywordInput.exists()).toBe(true);
-  await keywordInput.setValue("gofar,gotogether");
+  // ハードコードされていたキーワードをデータから参照
+  await keywordInput.setValue(PREVIEW_UNLOCK_KEYWORD);
   await settle();
   await clickButton(wrapper, "開く");
 };
@@ -71,7 +96,6 @@ describe("quiz-app2 campaign flow", () => {
     expect(shell().attributes("data-screen")).toBe("question");
     expect(findButton(wrapper, "リセット").classes()).toContain("bg-white");
 
-    // すべての登録問題を動的に全問正解していくループ
     for (let i = 0; i < stages.length; i++) {
       const stage = stages[i];
       if (!stage) continue;
@@ -99,7 +123,12 @@ describe("quiz-app2 campaign flow", () => {
     expect(wrapper.text()).toContain(`${stages.length}/${stages.length}`);
     expect(wrapper.text()).toContain("スペシャルページへ");
 
-    await clickButton(wrapper, "同じレベルでもう一度");
+    // Tierが1つだけの場合はボタン名が「もう一度挑戦する」に変化する対応
+    const isSingleTier = campaignTiers.length === 1;
+    const retryButtonLabel = isSingleTier
+      ? "もう一度挑戦する"
+      : "同じレベルでもう一度";
+    await clickButton(wrapper, retryButtonLabel);
     expect(shell().attributes("data-screen")).toBe("question");
   });
 
@@ -116,10 +145,13 @@ describe("quiz-app2 campaign flow", () => {
     expect(shell().attributes("data-screen")).toBe("preview");
 
     if (stages[0]) {
-      expect(wrapper.text()).toContain(stages[0].prompt);
+      // prompt が多言語オブジェクト化されたため .ja を参照する
+      expect(wrapper.text()).toContain(stages[0].prompt.ja);
     }
 
-    const closeBtn = wrapper.findAll("button").find((c) => c.text().includes("閉じる"));
+    const closeBtn = wrapper
+      .findAll("button")
+      .find((c) => c.text().includes("閉じる"));
     if (closeBtn) {
       await closeBtn.trigger("click");
       await settle();
@@ -134,10 +166,11 @@ describe("quiz-app2 campaign flow", () => {
 
     await clickButton(wrapper, "クイズを始める");
 
-    // 1問目はあえて間違った選択肢でスロットを全て埋めて有効化し、不合格にする
     const firstStage = stages[0];
     if (firstStage) {
-      const wrongTokens = firstStage.pool.filter((token) => !firstStage.correctAnswers.includes(token));
+      const wrongTokens = firstStage.pool.filter(
+        (token) => !firstStage.correctAnswers.includes(token),
+      );
       let tokensToClick = [...wrongTokens];
 
       while (tokensToClick.length < firstStage.correctAnswers.length) {
@@ -153,7 +186,6 @@ describe("quiz-app2 campaign flow", () => {
     await clickButton(wrapper, "回答する");
     expect(wrapper.text()).toContain("× 不正解");
 
-    // 2問目以降は最後まで正解を選んで進める
     for (let i = 0; i < stages.length; i++) {
       if (i === 0) {
         await clickButton(wrapper, "つぎへ");
@@ -177,13 +209,19 @@ describe("quiz-app2 campaign flow", () => {
 
     expect(shell().attributes("data-screen")).toBe("score");
 
-    const tierTitle = campaignTiers[0]?.title || "";
-    const compactTitle = tierTitle.split(" / ")[0]?.trim() || "";
+    const isSingleTier = campaignTiers.length === 1;
+    if (isSingleTier) {
+      expect(wrapper.text()).toContain("再挑戦");
+    } else {
+      // title が多言語オブジェクト化されたため .ja を参照する
+      const tierTitle = campaignTiers[0]?.title.ja || "";
+      const compactTitle = tierTitle.split(" / ")[0]?.trim() || "";
 
-    expect(wrapper.text()).toContain(`${compactTitle} を再挑戦`);
+      expect(wrapper.text()).toContain(`${compactTitle} を再挑戦`);
 
-    if (tierTitle.includes("/")) {
-      expect(wrapper.text()).not.toContain(`${tierTitle} を再挑戦`);
+      if (tierTitle.includes("/")) {
+        expect(wrapper.text()).not.toContain(`${tierTitle} を再挑戦`);
+      }
     }
   });
 });

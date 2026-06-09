@@ -1,10 +1,29 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch, type Component } from "vue";
+import {
+    computed,
+    onBeforeUnmount,
+    ref,
+    watch,
+    provide,
+    type Component,
+} from "vue";
 import ChoiceSelectGame from "./components/games/ChoiceSelectGame.vue";
 import FillBlankTapGame from "./components/games/FillBlankTapGame.vue";
 import PressButton from "./components/ui/PressButton.vue";
-import { FOOTER_TAP_THRESHOLD, PREVIEW_UNLOCK_KEYWORD, SPECIAL_PAGE_URL, STAGE_TIME_LIMIT_MS, campaignTiers } from "./data/stages";
-import type { CampaignTier, Stage, StageSubmission } from "./types";
+import {
+    FOOTER_TAP_THRESHOLD,
+    PREVIEW_UNLOCK_KEYWORD,
+    SPECIAL_PAGE_URL,
+    STAGE_TIME_LIMIT_MS,
+    campaignTiers,
+} from "./data/stages";
+import type {
+    CampaignTier,
+    Stage,
+    StageSubmission,
+    Locale,
+    I18nText,
+} from "./types";
 
 type Screen = "home" | "question" | "result" | "score" | "preview";
 
@@ -14,7 +33,7 @@ interface StageResult {
     score: number;
     timeBonus: number;
     timedOut: boolean;
-    feedbackText: string;
+    feedbackText: I18nText;
     selectionSummary?: string;
 }
 
@@ -24,14 +43,16 @@ interface InlineTextPart {
 }
 
 const PREVIEW_STORAGE_KEY = "quiz-app2-preview-unlocked";
-const conferenceLogoUrl = new URL("./assets/go-conference-2026-logo.svg", import.meta.url).href;
-const correctFeedbackPhrases = ["その調子！", "素晴らしい！", "完璧！", "へえ、やるじゃん", "おみごと！", "パーフェクト！", "ナイスアンサー！", "正解！"] as const;
-const timeoutFeedbackPhrases = ["時間切れだよ！", "チクタク、チクタク...あーあ、時間切れ！", "はい、そこまで", "ピーッ！試合終了！タイムアップだ！", "惜しい！あと少し！", "あれ、もう時間？", "あー！タイムアップ！"] as const;
-const incorrectFeedbackPhrases = ["おっと、違うよ！", "ブッブー、残念", "不正解！", "ブー、ハズレ", "ドンマイ！", "オーノー！だが気にするな！", "ナイストライ！", "ん？違うみたい", "ざんねーん！", "ぶっぶー、違うよ"] as const;
+const conferenceLogoUrl = new URL(
+    "./assets/go-conference-2026-logo.svg",
+    import.meta.url,
+).href;
 
-const pickRandomPhrase = (phrases: readonly string[]) => phrases[Math.floor(Math.random() * phrases.length)] ?? phrases[0] ?? "";
+const isSingleTier = campaignTiers.length === 1;
 
-const compactTierTitle = (title: string) => title.split(" / ")[0]?.trim() || title;
+const pickRandomPhrase = (phrases: readonly I18nText[]): I18nText =>
+    phrases[Math.floor(Math.random() * phrases.length)] ??
+    phrases[0] ?? { ja: "", en: "" };
 
 const splitInlineCode = (text: string): InlineTextPart[] =>
     text
@@ -61,7 +82,6 @@ const persistPreviewUnlocked = (value: boolean) => {
             window.localStorage.setItem(PREVIEW_STORAGE_KEY, "1");
             return;
         }
-
         window.localStorage.removeItem(PREVIEW_STORAGE_KEY);
     } catch {
         // Ignore storage failures and keep the current in-memory state.
@@ -85,84 +105,320 @@ const keywordModalOpen = ref(false);
 const keywordValue = ref("");
 const keywordMessage = ref("");
 const languageMenuOpen = ref(false);
-const selectedLanguage = ref<"ja" | "en">("ja");
 const footerTapCount = ref(0);
+
+// -- 🌍 多言語対応 (i18n) --
+const selectedLanguage = ref<Locale>("ja");
+provide("locale", selectedLanguage);
+
+// 翻訳ヘルパー
+const t = (text: I18nText | string | undefined): string => {
+    if (!text) return "";
+    if (typeof text === "string") return text;
+    return text[selectedLanguage.value] || text.ja || "";
+};
+
+const compactTierTitle = (titleText: I18nText | string) => {
+    const title = t(titleText);
+    return title.split(" / ")[0]?.trim() || title;
+};
 
 let timerId: number | null = null;
 let startedAt = 0;
 
-const currentTier = computed<CampaignTier | null>(() => campaignTiers[currentTierIndex.value] ?? null);
-const currentStage = computed<Stage | null>(() => currentTier.value?.stages[currentQuestionIndex.value] ?? null);
-const stageWhyParts = computed(() => splitInlineCode(currentStage.value?.why ?? ""));
-const stageTakeawayParts = computed(() => splitInlineCode(currentStage.value?.takeaway ?? ""));
-const stageComponent = computed(() => (currentStage.value ? componentMap[currentStage.value.kind] : null));
+// --- i18n Dictionary ---
+const i18n = computed(() => {
+    const isEn = selectedLanguage.value === "en";
+    return {
+        homeLead: isEn
+            ? "Welcome to Go Conference 2026 CodeLab!<br />Let's start the lesson! Don't overthink it, just pick the answer that clicks!"
+            : "Go Conference 2026 CodeLabへようこそ！<br />さあ、レッスンを始めよう！難しく考えずに、ピンときた答えを選んでみてね！",
+        startQuiz: isEn ? "Start Quiz" : "クイズを始める",
+        viewProblemList: isEn ? "View Problem List" : "問題一覧を見る",
+        previewNote: isEn
+            ? "Problem list mode is unlocked in this browser."
+            : "このブラウザでは問題一覧モードが解放されています。",
+        problemListTitle: isEn ? "Problem List" : "問題一覧",
+        problemListDesc: isEn
+            ? "The problem list can only be opened with a hidden keyword."
+            : "問題一覧は hidden keyword でのみ開きます。",
+        close: isEn ? "Close" : "閉じる",
+        questions: isEn ? "Questions" : "問題数",
+        score: isEn ? "Score" : "スコア",
+        time: isEn ? "Time" : "タイム",
+        point: isEn ? "Takeaway" : "ポイント",
+        playgroundDesc: isEn
+            ? "You can open the correct code in Go Playground and run it as is."
+            : "正解コードを Go Playground で開いて、そのまま実行できます。",
+        runPlayground: isEn ? "Run correct code" : "正解コードを実行する",
+        reset: isEn ? "Reset" : "リセット",
+        correctText: isEn ? "Correct" : "正解",
+        missedText: isEn ? "Missed" : "未達",
+        nextText: isEn ? "Next" : "次",
+        completedText: isEn ? "Completed" : "完了",
+        specialUnlocked: isEn ? "Special Unlocked" : "スペシャル解放",
+        allCorrectTitle: isEn
+            ? "Special Page Unlocked!"
+            : "スペシャルページ解放！",
+        allCorrectDesc: isEn
+            ? "You have completed this set and unlocked the special page."
+            : "このセットを最後まで進めたため、スペシャルページへ進めます。",
+        goToSpecial: isEn ? "Go to Special Page" : "スペシャルページへ",
+        nextLevel: isEn ? "Next Level" : "次のレベルへ",
+        retryLevel: isEn
+            ? isSingleTier
+                ? "Try again"
+                : "Try this level again"
+            : isSingleTier
+              ? "もう一度挑戦する"
+              : "同じレベルでもう一度",
+        retryCurrentLevel: isEn
+            ? isSingleTier
+                ? "Retry"
+                : "Retry this level"
+            : isSingleTier
+              ? "再挑戦"
+              : "このレベルを再挑戦",
+        returnHome: isEn ? "Return to Home" : "ホームへ戻る",
+        keywordTitle: isEn ? "Secret Keyword" : "合言葉",
+        openProblemList: isEn ? "Open Problem List" : "問題一覧を開く",
+        keywordDesc: isEn
+            ? "The preview / problem list is unlocked only when the correct keyword is entered."
+            : "正しい合言葉を入力したときだけ preview / 問題一覧が解放されます。",
+        enterKeyword: isEn ? "Enter keyword" : "合言葉を入力",
+        open: isEn ? "Open" : "開く",
+        keywordIncorrect: isEn ? "Incorrect keyword." : "合言葉が違います。",
+        timeUpSummary: isEn ? "Time's up" : "タイムアップ",
+
+        // ★ 追加項目 (SNSシェア / アンケート)
+        shareAndFeedbackTitle: isEn ? "Share & Feedback" : "シェアとアンケート",
+        shareOnX: isEn ? "Post score to X" : "Xにスコアを投稿する",
+        shareOnBluesky: isEn
+            ? "Post score to Bluesky"
+            : "Blueskyにスコアを投稿",
+        answerSurvey: isEn ? "Answer Survey" : "アンケートに回答",
+    };
+});
+
+const correctFeedbackPhrases: I18nText[] = [
+    { ja: "その調子！", en: "Keep it up!" },
+    { ja: "素晴らしい！", en: "Excellent!" },
+    { ja: "完璧！", en: "Perfect!" },
+    { ja: "へえ、やるじゃん", en: "Wow, not bad!" },
+    { ja: "おみごと！", en: "Great job!" },
+    { ja: "パーフェクト！", en: "Perfect!" },
+    { ja: "ナイスアンサー！", en: "Nice answer!" },
+    { ja: "正解！", en: "Correct!" },
+];
+
+const timeoutFeedbackPhrases: I18nText[] = [
+    { ja: "時間切れだよ！", en: "Time's up!" },
+    {
+        ja: "チクタク、チクタク...あーあ、時間切れ！",
+        en: "Tick-tock... Aw, time's up!",
+    },
+    { ja: "はい、そこまで", en: "Alright, stop right there" },
+    {
+        ja: "ピーッ！試合終了！タイムアップだ！",
+        en: "Beep! Game over! Time's up!",
+    },
+    { ja: "惜しい！あと少し！", en: "So close!" },
+    { ja: "あれ、もう時間？", en: "Wait, time's already up?" },
+    { ja: "あー！タイムアップ！", en: "Ah! Time's up!" },
+];
+
+const incorrectFeedbackPhrases: I18nText[] = [
+    { ja: "おっと、違うよ！", en: "Oops, that's not it!" },
+    { ja: "ブッブー、残念", en: "Buzzer! Too bad" },
+    { ja: "不正解！", en: "Incorrect!" },
+    { ja: "ブー、ハズレ", en: "Boo, wrong" },
+    { ja: "ドンマイ！", en: "Don't mind it!" },
+    { ja: "オーノー！だが気にするな！", en: "Oh no! But don't worry!" },
+    { ja: "ナイストライ！", en: "Nice try!" },
+    { ja: "ん？違うみたい", en: "Hmm? Seems incorrect" },
+    { ja: "ざんねーん！", en: "Too bad!" },
+    { ja: "ぶっぶー、違うよ", en: "Nope, that's wrong" },
+];
+
+// --- Computed Properties ---
+const currentTier = computed<CampaignTier | null>(
+    () => campaignTiers[currentTierIndex.value] ?? null,
+);
+const currentStage = computed<Stage | null>(
+    () => currentTier.value?.stages[currentQuestionIndex.value] ?? null,
+);
+const stageWhyParts = computed(() =>
+    splitInlineCode(t(currentStage.value?.why)),
+);
+const stageTakeawayParts = computed(() =>
+    splitInlineCode(t(currentStage.value?.takeaway)),
+);
+const stageComponent = computed(() =>
+    currentStage.value ? componentMap[currentStage.value.kind] : null,
+);
 const requiresManualSubmit = computed(() => Boolean(currentStage.value));
 const tierSize = computed(() => currentTier.value?.stages.length ?? 0);
-const runScore = computed(() => runResults.value.reduce((sum, result) => sum + result.score, 0));
-const runCorrectCount = computed(() => runResults.value.filter((result) => result.correct).length);
+const runScore = computed(() =>
+    runResults.value.reduce((sum, result) => sum + result.score, 0),
+);
+const runCorrectCount = computed(
+    () => runResults.value.filter((result) => result.correct).length,
+);
 const timerLabel = computed(() => `${(remainingMs.value / 1000).toFixed(1)}s`);
-const currentRunPerfect = computed(() => tierSize.value > 0 && runCorrectCount.value === tierSize.value);
+
+const currentRunPerfect = computed(
+    () => tierSize.value > 0 && runCorrectCount.value === tierSize.value,
+);
+
 const nextTier = computed(() => {
     const nextIndex = currentTierIndex.value + 1;
     if (highestUnlockedTierIndex.value < nextIndex) {
         return null;
     }
-
     return campaignTiers[nextIndex] ?? null;
 });
-const actionHint = computed(() => (currentStage.value?.kind === "select" ? `必要な選択肢を ${currentStage.value.correctAnswers.length} 個選んでから確定します。` : "単語を左から選んでコードを完成させてから確定します。"));
-const feedbackLabel = computed(() => {
-    if (!currentResult.value) {
-        return "";
+
+const actionHint = computed(() => {
+    const isEn = selectedLanguage.value === "en";
+    if (currentStage.value?.kind === "select") {
+        return isEn
+            ? `Select ${currentStage.value.correctAnswers.length} required options and confirm.`
+            : `必要な選択肢を ${currentStage.value.correctAnswers.length} 個選んでから確定します。`;
     }
+    return isEn
+        ? "Select words from the left to complete the code and confirm."
+        : "単語を左から選んでコードを完成させてから確定します。";
+});
+
+const feedbackLabel = computed(() => {
+    if (!currentResult.value) return "";
+    const isEn = selectedLanguage.value === "en";
 
     if (currentResult.value.correct) {
-        return "◯ 正解";
+        return isEn ? "◯ Correct" : "◯ 正解";
     }
-
-    return currentResult.value.timedOut ? "× タイムアップ" : "× 不正解";
+    return currentResult.value.timedOut
+        ? isEn
+            ? "× Time's up"
+            : "× タイムアップ"
+        : isEn
+          ? "× Incorrect"
+          : "× 不正解";
 });
+
 const feedbackTitle = computed(() => {
-    if (!currentResult.value) {
-        return "";
-    }
-
-    return currentResult.value.feedbackText;
+    if (!currentResult.value) return "";
+    return t(currentResult.value.feedbackText);
 });
-const resultButtonLabel = computed(() => (currentQuestionIndex.value === tierSize.value - 1 ? "結果を見る" : "つぎへ"));
-const manualCtaLabel = computed(() => "回答する");
-const headerTagline = computed(() => (selectedLanguage.value === "en" ? "Test your Go knowledge!" : "Go の知識を試してみよう！"));
-const languageToggleLabel = computed(() => (selectedLanguage.value === "en" ? "Display language" : "表示言語"));
+
+const resultButtonLabel = computed(() => {
+    const isEn = selectedLanguage.value === "en";
+    return currentQuestionIndex.value === tierSize.value - 1
+        ? isEn
+            ? "View Results"
+            : "結果を見る"
+        : isEn
+          ? "Next"
+          : "つぎへ";
+});
+
+const manualCtaLabel = computed(() =>
+    selectedLanguage.value === "en" ? "Submit" : "回答する",
+);
+
+const headerTagline = computed(() =>
+    selectedLanguage.value === "en"
+        ? "Test your Go knowledge!"
+        : "Go の知識を試してみよう！",
+);
+
+const languageToggleLabel = computed(() =>
+    selectedLanguage.value === "en" ? "Display language" : "表示言語",
+);
+
 const scoreHeadline = computed(() => {
-    if (!currentTier.value) {
-        return "";
-    }
-
-    return currentRunPerfect.value ? `${currentTier.value.title} を突破` : `${compactTierTitle(currentTier.value.title)} を再挑戦`;
-});
-const scoreLead = computed(() => {
-    if (!currentTier.value) {
-        return "";
-    }
-
-    if (nextTier.value) {
-        return `${nextTier.value.title} が解放されました。次のStageへ進めます。`;
-    }
+    if (!currentTier.value) return "";
+    const isEn = selectedLanguage.value === "en";
 
     if (currentRunPerfect.value) {
-        return "問題を全て解き切りました。ホームからすぐに再挑戦できます。";
+        return isEn
+            ? isSingleTier
+                ? "Congratulations!"
+                : `Cleared ${t(currentTier.value.title)}`
+            : isSingleTier
+              ? "おめでとう！"
+              : `${t(currentTier.value.title)} をクリア`;
     }
 
-    return "今回の気づきを確認して、同じ問題でもう一度挑戦しましょう。";
+    return isEn
+        ? isSingleTier
+            ? "It's over"
+            : `Retry ${compactTierTitle(currentTier.value.title)}`
+        : isSingleTier
+          ? "完了！"
+          : `${compactTierTitle(currentTier.value.title)} を再挑戦`;
 });
+
+const scoreLead = computed(() => {
+    if (!currentTier.value) return "";
+    const isEn = selectedLanguage.value === "en";
+
+    if (nextTier.value) {
+        return isEn
+            ? `${t(nextTier.value.title)} is unlocked. You can proceed to the next Stage.`
+            : `${t(nextTier.value.title)} が解放されました。次のStageへ進めます。`;
+    }
+    return isEn
+        ? "You have solved all the problems. You can quickly retry from the home screen."
+        : "問題を全て解き切りました。ホームからすぐに再挑戦できます。";
+});
+
 const summaryRows = computed(
     () =>
         currentTier.value?.stages.map((stage) => ({
             stage,
-            result: runResults.value.find((result) => result.stageId === stage.id) ?? null,
+            result:
+                runResults.value.find(
+                    (result) => result.stageId === stage.id,
+                ) ?? null,
         })) ?? [],
 );
 
+const shareText = computed(() => {
+    if (!currentTier.value) return "";
+    const isEn = selectedLanguage.value === "en";
+    const tierName = t(currentTier.value.title);
+
+    const baseText = isEn
+        ? `Cleared ${isSingleTier ? "all stages" : tierName} on Go Conference 2026 CodeLab! Correct: ${runCorrectCount.value}/${tierSize.value} Score: ${runScore.value}`
+        : `Go Conference 2026 CodeLabで${isSingleTier ? "全問題を" : ` ${tierName} を`}クリアしました！ 正解数: ${runCorrectCount.value}/${tierSize.value} スコア: ${runScore.value}`;
+
+    // クエリパラメータ等を外したクリーンなURLを共有用にする
+    const url =
+        typeof window !== "undefined"
+            ? window.location.href.split("#")[0].split("?")[0]
+            : "https://gocon.jp/";
+    return `${baseText}\n#gocon26cl\n${url}`;
+});
+
+const xShareUrl = computed(
+    () =>
+        `https://x.com/intent/tweet?text=${encodeURIComponent(shareText.value)}`,
+);
+const bskyShareUrl = computed(
+    () =>
+        `https://bsky.app/intent/compose?text=${encodeURIComponent(shareText.value)}`,
+);
+const surveyUrl = "https://forms.gle/CPgTHHnQ7WcWzjBK9";
+
+const shareToX = () =>
+    window.open(xShareUrl.value, "_blank", "noopener,noreferrer");
+const shareToBluesky = () =>
+    window.open(bskyShareUrl.value, "_blank", "noopener,noreferrer");
+const openSurvey = () =>
+    window.open(surveyUrl, "_blank", "noopener,noreferrer");
+
+// --- Functions ---
 const stopTimer = () => {
     if (timerId !== null) {
         window.clearInterval(timerId);
@@ -183,7 +439,9 @@ const resetRunState = () => {
 };
 
 const syncResult = (result: StageResult) => {
-    const existingIndex = runResults.value.findIndex((entry) => entry.stageId === result.stageId);
+    const existingIndex = runResults.value.findIndex(
+        (entry) => entry.stageId === result.stageId,
+    );
 
     if (existingIndex === -1) {
         runResults.value = [...runResults.value, result];
@@ -198,9 +456,7 @@ const syncResult = (result: StageResult) => {
 const beginStageTimer = () => {
     stopTimer();
 
-    if (!currentStage.value) {
-        return;
-    }
+    if (!currentStage.value) return;
 
     canSubmit.value = false;
     remainingMs.value = STAGE_TIME_LIMIT_MS;
@@ -217,15 +473,21 @@ const beginStageTimer = () => {
 };
 
 const finalizeStage = (submission: StageSubmission, timedOut = false) => {
-    if (!currentStage.value || currentResult.value) {
-        return;
-    }
+    if (!currentStage.value || currentResult.value) return;
 
     stopTimer();
 
-    const timeBonus = submission.correct ? Math.round((remainingMs.value / STAGE_TIME_LIMIT_MS) * 600) : 0;
+    const timeBonus = submission.correct
+        ? Math.round((remainingMs.value / STAGE_TIME_LIMIT_MS) * 600)
+        : 0;
     const score = submission.correct ? 400 + timeBonus : 0;
-    const feedbackText = submission.correct ? pickRandomPhrase(correctFeedbackPhrases) : timedOut ? pickRandomPhrase(timeoutFeedbackPhrases) : pickRandomPhrase(incorrectFeedbackPhrases);
+
+    const feedbackText = submission.correct
+        ? pickRandomPhrase(correctFeedbackPhrases)
+        : timedOut
+          ? pickRandomPhrase(timeoutFeedbackPhrases)
+          : pickRandomPhrase(incorrectFeedbackPhrases);
+
     const result: StageResult = {
         stageId: currentStage.value.id,
         correct: submission.correct,
@@ -247,16 +509,23 @@ const handleStageSubmit = (submission: StageSubmission) => {
 };
 
 const handleTimeout = () => {
-    if (currentResult.value || !currentStage.value) {
-        return;
-    }
-
+    if (currentResult.value || !currentStage.value) return;
     remainingMs.value = 0;
-    finalizeStage({ correct: false, selectionSummary: "タイムアップ" }, true);
+    finalizeStage(
+        { correct: false, selectionSummary: i18n.value.timeUpSummary },
+        true,
+    );
 };
 
 const beginTierRun = (tierIndex: number) => {
-    const boundedIndex = Math.max(0, Math.min(tierIndex, highestUnlockedTierIndex.value, campaignTiers.length - 1));
+    const boundedIndex = Math.max(
+        0,
+        Math.min(
+            tierIndex,
+            highestUnlockedTierIndex.value,
+            campaignTiers.length - 1,
+        ),
+    );
 
     currentTierIndex.value = boundedIndex;
     resetRunState();
@@ -281,30 +550,28 @@ const restartCurrentTier = () => {
 };
 
 const startNextTier = () => {
-    if (!nextTier.value) {
-        return;
-    }
-
+    if (!nextTier.value) return;
     beginTierRun(currentTierIndex.value + 1);
 };
 
 const finishTierRun = () => {
     stopTimer();
 
-    if (currentRunPerfect.value) {
-        specialUnlocked.value = specialUnlocked.value || Boolean(currentTier.value?.unlocksSpecial);
-        if (currentTierIndex.value < campaignTiers.length - 1) {
-            highestUnlockedTierIndex.value = Math.max(highestUnlockedTierIndex.value, currentTierIndex.value + 1);
-        }
+    specialUnlocked.value =
+        specialUnlocked.value || Boolean(currentTier.value?.unlocksSpecial);
+
+    if (currentTierIndex.value < campaignTiers.length - 1) {
+        highestUnlockedTierIndex.value = Math.max(
+            highestUnlockedTierIndex.value,
+            currentTierIndex.value + 1,
+        );
     }
 
     screen.value = "score";
 };
 
 const goToNextStage = () => {
-    if (!currentResult.value) {
-        return;
-    }
+    if (!currentResult.value) return;
 
     if (currentQuestionIndex.value === tierSize.value - 1) {
         finishTierRun();
@@ -317,26 +584,29 @@ const goToNextStage = () => {
 };
 
 const requestStageSubmit = () => {
-    if (!requiresManualSubmit.value || !canSubmit.value || screen.value !== "question") {
+    if (
+        !requiresManualSubmit.value ||
+        !canSubmit.value ||
+        screen.value !== "question"
+    ) {
         return;
     }
-
     submitSignal.value += 1;
 };
 
 const requestStageReset = () => {
-    if (!requiresManualSubmit.value || !canReset.value || screen.value !== "question") {
+    if (
+        !requiresManualSubmit.value ||
+        !canReset.value ||
+        screen.value !== "question"
+    ) {
         return;
     }
-
     resetSignal.value += 1;
 };
 
 const openPreviewScreen = () => {
-    if (!previewUnlocked.value) {
-        return;
-    }
-
+    if (!previewUnlocked.value) return;
     stopTimer();
     screen.value = "preview";
 };
@@ -356,7 +626,7 @@ const closeKeywordModal = () => {
 
 const submitKeyword = () => {
     if (keywordValue.value.trim() !== PREVIEW_UNLOCK_KEYWORD) {
-        keywordMessage.value = "合言葉が違います。";
+        keywordMessage.value = i18n.value.keywordIncorrect;
         return;
     }
 
@@ -411,45 +681,127 @@ onBeforeUnmount(() => {
         <header class="header">
             <div class="header-logo">
                 <div class="header-brand">
-                    <img class="header-conference-logo" :src="conferenceLogoUrl" alt="Go Conference 2026" />
+                    <img
+                        class="header-conference-logo"
+                        :src="conferenceLogoUrl"
+                        alt="Go Conference 2026"
+                    />
                     <span class="header-product-mark">CodeLab</span>
                 </div>
-                <span class="header-tagline" id="header-tagline">{{ headerTagline }}</span>
+                <span class="header-tagline" id="header-tagline">{{
+                    headerTagline
+                }}</span>
             </div>
             <div class="header-actions">
-                <div class="language-switch" :class="{ open: languageMenuOpen }" id="language-switch">
-                    <button class="language-toggle" id="language-toggle-btn" type="button" :aria-label="languageToggleLabel" aria-haspopup="true" aria-controls="language-menu" :aria-expanded="languageMenuOpen ? 'true' : 'false'" :title="languageToggleLabel" @click="toggleLanguageMenu">
-                        <svg class="language-toggle-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                            <path d="M12 2.75c5.108 0 9.25 4.142 9.25 9.25S17.108 21.25 12 21.25 2.75 17.108 2.75 12 6.892 2.75 12 2.75Zm0 0c1.98 0 3.75 4.142 3.75 9.25S13.98 21.25 12 21.25 8.25 17.108 8.25 12 10.02 2.75 12 2.75Zm-8.9 6.5h17.8M3.1 14.75h17.8M12 2.75V21.25" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                <div
+                    class="language-switch"
+                    :class="{ open: languageMenuOpen }"
+                    id="language-switch"
+                >
+                    <button
+                        class="language-toggle"
+                        id="language-toggle-btn"
+                        type="button"
+                        :aria-label="languageToggleLabel"
+                        aria-haspopup="true"
+                        aria-controls="language-menu"
+                        :aria-expanded="languageMenuOpen ? 'true' : 'false'"
+                        :title="languageToggleLabel"
+                        @click="toggleLanguageMenu"
+                    >
+                        <svg
+                            class="language-toggle-icon"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                            focusable="false"
+                        >
+                            <path
+                                d="M12 2.75c5.108 0 9.25 4.142 9.25 9.25S17.108 21.25 12 21.25 2.75 17.108 2.75 12 6.892 2.75 12 2.75Zm0 0c1.98 0 3.75 4.142 3.75 9.25S13.98 21.25 12 21.25 8.25 17.108 8.25 12 10.02 2.75 12 2.75Zm-8.9 6.5h17.8M3.1 14.75h17.8M12 2.75V21.25"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
                         </svg>
-                        <span class="sr-only" id="language-toggle-label">{{ languageToggleLabel }}</span>
+                        <span class="sr-only" id="language-toggle-label">{{
+                            languageToggleLabel
+                        }}</span>
                     </button>
-                    <div class="language-menu" :class="{ open: languageMenuOpen }" id="language-menu">
-                        <button class="language-menu-item" :class="{ active: selectedLanguage === 'ja' }" id="lang-ja-btn" type="button" @click="selectLanguage('ja')">日本語</button>
-                        <button class="language-menu-item" :class="{ active: selectedLanguage === 'en' }" id="lang-en-btn" type="button" @click="selectLanguage('en')">English</button>
+                    <div
+                        class="language-menu"
+                        :class="{ open: languageMenuOpen }"
+                        id="language-menu"
+                    >
+                        <button
+                            class="language-menu-item"
+                            :class="{ active: selectedLanguage === 'ja' }"
+                            id="lang-ja-btn"
+                            type="button"
+                            @click="selectLanguage('ja')"
+                        >
+                            日本語
+                        </button>
+                        <button
+                            class="language-menu-item"
+                            :class="{ active: selectedLanguage === 'en' }"
+                            id="lang-en-btn"
+                            type="button"
+                            @click="selectLanguage('en')"
+                        >
+                            English
+                        </button>
                     </div>
                 </div>
             </div>
         </header>
 
-        <div class="quiz-shell mx-auto flex min-h-[100svh] w-full flex-col" :class="screen === 'home' ? 'max-w-[760px]' : screen === 'question' || screen === 'result' ? 'max-w-[448px] quiz-shell-wide-panels' : 'max-w-[430px]'" :data-screen="screen">
+        <div
+            class="quiz-shell mx-auto flex min-h-[100svh] w-full flex-col"
+            :class="
+                screen === 'home'
+                    ? 'max-w-[760px]'
+                    : screen === 'question' || screen === 'result'
+                      ? 'max-w-[448px] quiz-shell-wide-panels'
+                      : 'max-w-[430px]'
+            "
+            :data-screen="screen"
+        >
             <template v-if="screen === 'home'">
                 <main class="top-page-main">
                     <div class="card" id="home-card">
                         <div class="chip" id="home-chip">WELCOME</div>
                         <h1 class="home-title">Go Conference 2026 CodeLab</h1>
-                        <p class="home-lead" id="home-lead">
-                            Go Conference 2026 CodeLabへようこそ！<br />
-                            さあ、レッスンを始めよう！難しく考えずに、ピンときた答えを選んでみてね！
-                        </p>
+                        <p
+                            class="home-lead"
+                            id="home-lead"
+                            v-html="i18n.homeLead"
+                        ></p>
 
                         <div class="home-actions">
-                            <button class="c-button" id="start-btn" type="button" @click="startFromHome">クイズを始める</button>
+                            <button
+                                class="c-button"
+                                id="start-btn"
+                                type="button"
+                                @click="startFromHome"
+                            >
+                                {{ i18n.startQuiz }}
+                            </button>
                         </div>
 
                         <div v-if="previewUnlocked" id="preview-entry">
-                            <button class="c-button" data-variant="tertiary" id="preview-btn" type="button" @click="openPreviewScreen">問題一覧を見る</button>
-                            <p class="unlock-note" id="unlock-note">このブラウザでは問題一覧モードが解放されています。</p>
+                            <button
+                                class="c-button"
+                                data-variant="tertiary"
+                                id="preview-btn"
+                                type="button"
+                                @click="openPreviewScreen"
+                            >
+                                {{ i18n.viewProblemList }}
+                            </button>
+                            <p class="unlock-note" id="unlock-note">
+                                {{ i18n.previewNote }}
+                            </p>
                         </div>
                     </div>
                 </main>
@@ -460,87 +812,210 @@ onBeforeUnmount(() => {
                     <section class="surface-card p-5">
                         <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0">
-                                <span class="info-pill">問題一覧</span>
-                                <h1 class="display-title mt-4 text-[30px] leading-tight">問題一覧</h1>
-                                <p class="mt-3 text-quiz-body text-sm leading-6">問題一覧は hidden keyword でのみ開きます。今回の 7 問と 2 種類の出題形式を 先に確認できます。</p>
+                                <span class="info-pill">{{
+                                    i18n.problemListTitle
+                                }}</span>
+                                <h1
+                                    class="display-title mt-4 text-[30px] leading-tight"
+                                >
+                                    {{ i18n.problemListTitle }}
+                                </h1>
+                                <p
+                                    class="mt-3 text-quiz-body text-sm leading-6"
+                                >
+                                    {{ i18n.problemListDesc }}
+                                </p>
                             </div>
-                            <PressButton tone="secondary" size="sm" @click="returnHome"> 閉じる </PressButton>
+                            <PressButton
+                                tone="secondary"
+                                size="sm"
+                                @click="returnHome"
+                            >
+                                {{ i18n.close }}
+                            </PressButton>
                         </div>
                     </section>
 
-                    <section v-for="tier in campaignTiers" :key="tier.id" class="surface-card p-4">
+                    <section
+                        v-for="tier in campaignTiers"
+                        :key="tier.id"
+                        class="surface-card p-4"
+                    >
                         <div class="flex items-start justify-between gap-3">
                             <div>
-                                <span class="info-pill">{{ tier.difficultyLabel }}</span>
-                                <h2 class="mt-3 text-lg font-semibold text-quiz-strong">{{ tier.title }}</h2>
-                                <p class="mt-2 text-quiz-body text-sm leading-6">{{ tier.description }}</p>
+                                <span v-if="!isSingleTier" class="info-pill">{{
+                                    t(tier.difficultyLabel)
+                                }}</span>
+                                <h2
+                                    class="text-lg font-semibold text-quiz-strong"
+                                    :class="{ 'mt-3': !isSingleTier }"
+                                >
+                                    {{ t(tier.title) }}
+                                </h2>
+                                <p
+                                    class="mt-2 text-quiz-body text-sm leading-6"
+                                >
+                                    {{ t(tier.description) }}
+                                </p>
                             </div>
                             <div class="surface-subpanel px-3 py-3 text-center">
-                                <p class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]">問題数</p>
-                                <p class="mt-1 text-2xl font-semibold text-quiz-strong">
+                                <p
+                                    class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]"
+                                >
+                                    {{ i18n.questions }}
+                                </p>
+                                <p
+                                    class="mt-1 text-2xl font-semibold text-quiz-strong"
+                                >
                                     {{ tier.stages.length }}
                                 </p>
                             </div>
                         </div>
 
                         <div class="mt-4 space-y-3">
-                            <article v-for="stage in tier.stages" :key="stage.id" class="surface-subpanel px-4 py-4">
-                                <div class="flex items-start justify-between gap-3">
+                            <article
+                                v-for="stage in tier.stages"
+                                :key="stage.id"
+                                class="surface-subpanel px-4 py-4"
+                            >
+                                <div
+                                    class="flex items-start justify-between gap-3"
+                                >
                                     <div class="min-w-0">
-                                        <p class="text-quiz-strong text-sm font-semibold">{{ stage.title }}</p>
-                                        <p class="mt-1 text-quiz-muted text-xs">{{ stage.label }}</p>
+                                        <p
+                                            class="text-quiz-strong text-sm font-semibold"
+                                        >
+                                            {{ t(stage.title) }}
+                                        </p>
+                                        <p class="mt-1 text-quiz-muted text-xs">
+                                            {{ t(stage.label) }}
+                                        </p>
                                     </div>
-                                    <span class="text-quiz-muted text-xs uppercase tracking-[0.2em]">
+                                    <span
+                                        class="text-quiz-muted text-xs uppercase tracking-[0.2em]"
+                                    >
                                         {{ stage.kind }}
                                     </span>
                                 </div>
-                                <p class="problem-copy mt-3">{{ stage.prompt }}</p>
-                                <p class="mt-3 text-quiz-body text-xs leading-5">{{ stage.takeaway }}</p>
+                                <p class="problem-copy mt-3">
+                                    {{ t(stage.prompt) }}
+                                </p>
+                                <p
+                                    class="mt-3 text-quiz-body text-xs leading-5"
+                                >
+                                    {{ t(stage.takeaway) }}
+                                </p>
                             </article>
                         </div>
                     </section>
                 </div>
             </template>
 
-            <template v-else-if="(screen === 'question' || screen === 'result') && currentTier && currentStage && stageComponent">
+            <template
+                v-else-if="
+                    (screen === 'question' || screen === 'result') &&
+                    currentTier &&
+                    currentStage &&
+                    stageComponent
+                "
+            >
                 <header>
                     <section class="progress-panel px-3 py-1.5">
                         <div class="grid grid-cols-2 gap-1">
                             <div class="progress-metric px-2 py-1 text-left">
-                                <p class="text-quiz-muted text-[8px] uppercase tracking-[0.18em]">スコア</p>
-                                <p class="mt-0 text-lg font-semibold leading-none text-quiz-strong">{{ runScore }}</p>
+                                <p
+                                    class="text-quiz-muted text-[8px] uppercase tracking-[0.18em]"
+                                >
+                                    {{ i18n.score }}
+                                </p>
+                                <p
+                                    class="mt-0 text-lg font-semibold leading-none text-quiz-strong"
+                                >
+                                    {{ runScore }}
+                                </p>
                             </div>
 
                             <div class="progress-metric px-2 py-1 text-right">
-                                <p class="text-quiz-muted text-[8px] uppercase tracking-[0.18em]">タイム</p>
-                                <p class="mt-0 text-lg font-semibold leading-none text-quiz-strong">{{ timerLabel }}</p>
+                                <p
+                                    class="text-quiz-muted text-[8px] uppercase tracking-[0.18em]"
+                                >
+                                    {{ i18n.time }}
+                                </p>
+                                <p
+                                    class="mt-0 text-lg font-semibold leading-none text-quiz-strong"
+                                >
+                                    {{ timerLabel }}
+                                </p>
                             </div>
                         </div>
 
                         <div class="mt-1 flex gap-1">
-                            <span v-for="(stage, index) in currentTier.stages" :key="stage.id" class="h-1 flex-1 rounded-full transition-all duration-200" :class="index < runResults.length ? 'bg-sky-400 shadow-[0_0_18px_rgba(56,189,248,0.35)]' : index === currentQuestionIndex ? 'bg-white/60' : 'bg-white/10'" />
+                            <span
+                                v-for="(stage, index) in currentTier.stages"
+                                :key="stage.id"
+                                class="h-1 flex-1 rounded-full transition-all duration-200"
+                                :class="
+                                    index < runResults.length
+                                        ? 'bg-sky-400 shadow-[0_0_18px_rgba(56,189,248,0.35)]'
+                                        : index === currentQuestionIndex
+                                          ? 'bg-white/60'
+                                          : 'bg-white/10'
+                                "
+                            />
                         </div>
                     </section>
                 </header>
 
                 <main class="mt-4 flex flex-1 flex-col gap-4">
                     <Transition name="stage" mode="out-in">
-                        <component :is="stageComponent" :key="currentStage.id" :stage="currentStage" :locked="screen === 'result'" :reset-signal="resetSignal" :submit-signal="submitSignal" @dirty-change="canReset = $event" @ready-change="canSubmit = $event" @submit="handleStageSubmit" />
+                        <component
+                            :is="stageComponent"
+                            :key="currentStage.id"
+                            :stage="currentStage"
+                            :locked="screen === 'result'"
+                            :reset-signal="resetSignal"
+                            :submit-signal="submitSignal"
+                            @dirty-change="canReset = $event"
+                            @ready-change="canSubmit = $event"
+                            @submit="handleStageSubmit"
+                        />
                     </Transition>
 
                     <Transition name="drawer">
-                        <section v-if="screen === 'result' && currentResult" class="surface-card p-4">
+                        <section
+                            v-if="screen === 'result' && currentResult"
+                            class="surface-card p-4"
+                        >
                             <div class="flex items-start justify-between gap-3">
                                 <div class="min-w-0">
-                                    <span class="feedback-chip" :class="currentResult.correct ? 'feedback-chip-success' : 'feedback-chip-danger'">
+                                    <span
+                                        class="feedback-chip"
+                                        :class="
+                                            currentResult.correct
+                                                ? 'feedback-chip-success'
+                                                : 'feedback-chip-danger'
+                                        "
+                                    >
                                         {{ feedbackLabel }}
                                     </span>
-                                    <h2 class="mt-3 text-lg font-semibold text-quiz-strong">
+                                    <h2
+                                        class="mt-3 text-lg font-semibold text-quiz-strong"
+                                    >
                                         {{ feedbackTitle }}
                                     </h2>
-                                    <p class="mt-2 text-quiz-body text-sm leading-6">
-                                        <template v-for="(part, index) in stageWhyParts" :key="`why:${currentStage.id}:${index}`">
-                                            <code v-if="part.isCode" class="explanation-inline-code">
+                                    <p
+                                        class="mt-2 text-quiz-body text-sm leading-6"
+                                    >
+                                        <template
+                                            v-for="(
+                                                part, index
+                                            ) in stageWhyParts"
+                                            :key="`why:${currentStage.id}:${index}`"
+                                        >
+                                            <code
+                                                v-if="part.isCode"
+                                                class="explanation-inline-code"
+                                            >
                                                 {{ part.value }}
                                             </code>
                                             <span v-else>{{ part.value }}</span>
@@ -548,19 +1023,41 @@ onBeforeUnmount(() => {
                                     </p>
                                 </div>
 
-                                <div class="surface-subpanel min-w-[88px] px-3 py-3 text-center">
-                                    <p class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]">Gain</p>
-                                    <p class="mt-1 text-2xl font-semibold text-quiz-strong">
+                                <div
+                                    class="surface-subpanel min-w-[88px] px-3 py-3 text-center"
+                                >
+                                    <p
+                                        class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]"
+                                    >
+                                        Gain
+                                    </p>
+                                    <p
+                                        class="mt-1 text-2xl font-semibold text-quiz-strong"
+                                    >
                                         {{ currentResult.score }}
                                     </p>
                                 </div>
                             </div>
 
                             <div class="surface-subpanel mt-4 p-4">
-                                <p class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]">ポイント</p>
-                                <p class="mt-2 text-quiz-body text-sm leading-6">
-                                    <template v-for="(part, index) in stageTakeawayParts" :key="`takeaway:${currentStage.id}:${index}`">
-                                        <code v-if="part.isCode" class="explanation-inline-code">
+                                <p
+                                    class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]"
+                                >
+                                    {{ i18n.point }}
+                                </p>
+                                <p
+                                    class="mt-2 text-quiz-body text-sm leading-6"
+                                >
+                                    <template
+                                        v-for="(
+                                            part, index
+                                        ) in stageTakeawayParts"
+                                        :key="`takeaway:${currentStage.id}:${index}`"
+                                    >
+                                        <code
+                                            v-if="part.isCode"
+                                            class="explanation-inline-code"
+                                        >
                                             {{ part.value }}
                                         </code>
                                         <span v-else>{{ part.value }}</span>
@@ -568,33 +1065,73 @@ onBeforeUnmount(() => {
                                 </p>
                             </div>
 
-                            <div v-if="currentStage.playgroundUrl" class="surface-subpanel mt-4 p-4">
-                                <p class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]">Go Playground</p>
-                                <p class="mt-2 text-quiz-body text-sm leading-6">正解コードを Go Playground で開いて、そのまま実行できます。</p>
-                                <a :href="currentStage.playgroundUrl" target="_blank" rel="noreferrer noopener" class="primary-link-button playground-link-button mt-4"> 正解コードを実行する </a>
+                            <div
+                                v-if="currentStage.playgroundUrl"
+                                class="surface-subpanel mt-4 p-4"
+                            >
+                                <p
+                                    class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]"
+                                >
+                                    Go Playground
+                                </p>
+                                <p
+                                    class="mt-2 text-quiz-body text-sm leading-6"
+                                >
+                                    {{ i18n.playgroundDesc }}
+                                </p>
+                                <a
+                                    :href="currentStage.playgroundUrl"
+                                    target="_blank"
+                                    rel="noreferrer noopener"
+                                    class="primary-link-button playground-link-button mt-4"
+                                >
+                                    {{ i18n.runPlayground }}
+                                </a>
                             </div>
                         </section>
                     </Transition>
 
                     <div class="mt-auto">
                         <section class="surface-card p-3">
-                            <PressButton v-if="screen === 'result' && currentResult" block tone="primary" @click="goToNextStage">
+                            <PressButton
+                                v-if="screen === 'result' && currentResult"
+                                block
+                                tone="primary"
+                                @click="goToNextStage"
+                            >
                                 {{ resultButtonLabel }}
                             </PressButton>
 
                             <template v-else-if="requiresManualSubmit">
                                 <div class="grid grid-cols-2 gap-3">
-                                    <PressButton block tone="secondary" :disabled="!canReset" @click="requestStageReset"> リセット </PressButton>
-                                    <PressButton block tone="primary" :disabled="!canSubmit" @click="requestStageSubmit">
+                                    <PressButton
+                                        block
+                                        tone="secondary"
+                                        :disabled="!canReset"
+                                        @click="requestStageReset"
+                                    >
+                                        {{ i18n.reset }}
+                                    </PressButton>
+                                    <PressButton
+                                        block
+                                        tone="primary"
+                                        :disabled="!canSubmit"
+                                        @click="requestStageSubmit"
+                                    >
                                         {{ manualCtaLabel }}
                                     </PressButton>
                                 </div>
-                                <p class="mt-3 px-2 text-center text-quiz-body text-xs leading-5">
+                                <p
+                                    class="mt-3 px-2 text-center text-quiz-body text-xs leading-5"
+                                >
                                     {{ actionHint }}
                                 </p>
                             </template>
 
-                            <div v-else class="surface-subpanel px-4 py-3 text-center text-quiz-body text-sm leading-6">
+                            <div
+                                v-else
+                                class="surface-subpanel px-4 py-3 text-center text-quiz-body text-sm leading-6"
+                            >
                                 {{ actionHint }}
                             </div>
                         </section>
@@ -605,8 +1142,16 @@ onBeforeUnmount(() => {
             <template v-else-if="screen === 'score' && currentTier">
                 <div class="flex flex-1 flex-col gap-4">
                     <section class="surface-card p-5">
-                        <span class="info-pill">{{ currentTier.difficultyLabel }}</span>
-                        <h1 class="display-title mt-4 text-[32px] leading-tight">
+                        <span v-if="!isSingleTier" class="info-pill">{{
+                            t(currentTier.difficultyLabel)
+                        }}</span>
+                        <h1
+                            class="display-title leading-tight"
+                            :class="{
+                                'mt-4': !isSingleTier,
+                                'text-[32px]': true,
+                            }"
+                        >
                             {{ scoreHeadline }}
                         </h1>
                         <p class="mt-3 text-quiz-body text-sm leading-6">
@@ -615,54 +1160,179 @@ onBeforeUnmount(() => {
 
                         <div class="mt-5 grid grid-cols-3 gap-3">
                             <div class="surface-subpanel px-3 py-4 text-center">
-                                <p class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]">スコア</p>
-                                <p class="mt-2 text-2xl font-semibold text-quiz-strong">{{ runScore }}</p>
+                                <p
+                                    class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]"
+                                >
+                                    {{ i18n.score }}
+                                </p>
+                                <p
+                                    class="mt-2 text-2xl font-semibold text-quiz-strong"
+                                >
+                                    {{ runScore }}
+                                </p>
                             </div>
                             <div class="surface-subpanel px-3 py-4 text-center">
-                                <p class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]">正解</p>
-                                <p class="mt-2 text-2xl font-semibold text-quiz-strong">{{ runCorrectCount }}/{{ tierSize }}</p>
+                                <p
+                                    class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]"
+                                >
+                                    {{ i18n.correctText }}
+                                </p>
+                                <p
+                                    class="mt-2 text-2xl font-semibold text-quiz-strong"
+                                >
+                                    {{ runCorrectCount }}/{{ tierSize }}
+                                </p>
                             </div>
                             <div class="surface-subpanel px-3 py-4 text-center">
-                                <p class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]">次</p>
-                                <p class="mt-2 text-quiz-strong text-sm font-semibold">
-                                    {{ nextTier ? nextTier.difficultyLabel : "完了" }}
+                                <p
+                                    class="text-quiz-muted text-[10px] uppercase tracking-[0.24em]"
+                                >
+                                    {{ i18n.nextText }}
+                                </p>
+                                <p
+                                    class="mt-2 text-quiz-strong text-sm font-semibold"
+                                >
+                                    {{
+                                        nextTier
+                                            ? t(nextTier.difficultyLabel)
+                                            : i18n.completedText
+                                    }}
                                 </p>
                             </div>
                         </div>
                     </section>
 
                     <section v-if="specialUnlocked" class="surface-card p-4">
-                        <span class="info-pill">スペシャル解放</span>
-                        <h2 class="mt-3 text-lg font-semibold text-quiz-strong">7 問を全問正解しました</h2>
-                        <p class="mt-2 text-quiz-body text-sm leading-6">このセットを全問正解するとスペシャルページへ進めます。</p>
-                        <a :href="SPECIAL_PAGE_URL" target="_blank" rel="noreferrer" class="primary-link-button mt-4"> スペシャルページへ </a>
+                        <span class="info-pill">{{
+                            i18n.specialUnlocked
+                        }}</span>
+                        <h2 class="mt-3 text-lg font-semibold text-quiz-strong">
+                            {{ i18n.allCorrectTitle }}
+                        </h2>
+                        <p class="mt-2 text-quiz-body text-sm leading-6">
+                            {{ i18n.allCorrectDesc }}
+                        </p>
+                        <a
+                            :href="SPECIAL_PAGE_URL"
+                            target="_blank"
+                            rel="noreferrer"
+                            class="primary-link-button mt-4"
+                        >
+                            {{ i18n.goToSpecial }}
+                        </a>
                     </section>
 
                     <section class="surface-card p-4">
                         <div class="space-y-3">
-                            <article v-for="{ stage, result } in summaryRows" :key="stage.id" class="surface-subpanel flex items-center justify-between gap-3 px-4 py-3">
+                            <article
+                                v-for="{ stage, result } in summaryRows"
+                                :key="stage.id"
+                                class="surface-subpanel flex items-center justify-between gap-3 px-4 py-3"
+                            >
                                 <div class="min-w-0">
-                                    <p class="text-quiz-strong text-sm font-semibold">{{ stage.title }}</p>
-                                    <p class="mt-1 text-quiz-muted text-xs">{{ stage.label }}</p>
+                                    <p
+                                        class="text-quiz-strong text-sm font-semibold"
+                                    >
+                                        {{ t(stage.title) }}
+                                    </p>
+                                    <p class="mt-1 text-quiz-muted text-xs">
+                                        {{ t(stage.label) }}
+                                    </p>
                                 </div>
 
                                 <div class="text-right">
-                                    <p class="text-sm font-semibold" :class="result?.correct ? 'text-quiz-success' : 'text-quiz-danger'">
-                                        {{ result?.correct ? "正解" : "未達" }}
+                                    <p
+                                        class="text-sm font-semibold"
+                                        :class="
+                                            result?.correct
+                                                ? 'text-quiz-success'
+                                                : 'text-quiz-danger'
+                                        "
+                                    >
+                                        {{
+                                            result?.correct
+                                                ? i18n.correctText
+                                                : i18n.missedText
+                                        }}
                                     </p>
-                                    <p class="mt-1 text-quiz-muted text-xs">{{ result?.score ?? 0 }} pt</p>
+                                    <p class="mt-1 text-quiz-muted text-xs">
+                                        {{ result?.score ?? 0 }} pt
+                                    </p>
                                 </div>
                             </article>
                         </div>
                     </section>
 
+                    <section class="surface-card p-4 text-center">
+                        <p class="text-sm font-semibold text-quiz-strong mb-3">
+                            {{ i18n.shareAndFeedbackTitle }}
+                        </p>
+                        <div class="space-y-3">
+                            <PressButton
+                                block
+                                tone="secondary"
+                                @click="shareToX"
+                            >
+                                {{ i18n.shareOnX }}
+                            </PressButton>
+                            <PressButton
+                                block
+                                tone="secondary"
+                                @click="shareToBluesky"
+                            >
+                                {{ i18n.shareOnBluesky }}
+                            </PressButton>
+                            <PressButton
+                                block
+                                tone="primary"
+                                @click="openSurvey"
+                            >
+                                {{ i18n.answerSurvey }}
+                            </PressButton>
+                        </div>
+                    </section>
+
                     <section class="surface-card p-3">
                         <div class="space-y-3">
-                            <PressButton v-if="nextTier" block tone="primary" @click="startNextTier"> 次のレベルへ </PressButton>
-                            <PressButton v-else block tone="primary" @click="restartCurrentTier"> 同じレベルでもう一度 </PressButton>
-                            <PressButton v-if="nextTier" block tone="secondary" @click="restartCurrentTier"> このレベルを再挑戦 </PressButton>
-                            <PressButton block tone="secondary" @click="returnHome"> ホームへ戻る </PressButton>
-                            <PressButton v-if="previewUnlocked" block tone="secondary" @click="openPreviewScreen"> 問題一覧を見る </PressButton>
+                            <PressButton
+                                v-if="nextTier"
+                                block
+                                tone="primary"
+                                @click="startNextTier"
+                            >
+                                {{ i18n.nextLevel }}
+                            </PressButton>
+                            <PressButton
+                                v-else
+                                block
+                                tone="secondary"
+                                @click="restartCurrentTier"
+                            >
+                                {{ i18n.retryLevel }}
+                            </PressButton>
+                            <PressButton
+                                v-if="nextTier"
+                                block
+                                tone="secondary"
+                                @click="restartCurrentTier"
+                            >
+                                {{ i18n.retryCurrentLevel }}
+                            </PressButton>
+                            <PressButton
+                                block
+                                tone="secondary"
+                                @click="returnHome"
+                            >
+                                {{ i18n.returnHome }}
+                            </PressButton>
+                            <PressButton
+                                v-if="previewUnlocked"
+                                block
+                                tone="secondary"
+                                @click="openPreviewScreen"
+                            >
+                                {{ i18n.viewProblemList }}
+                            </PressButton>
                         </div>
                     </section>
                 </div>
@@ -673,30 +1343,75 @@ onBeforeUnmount(() => {
         <footer id="footer-copyright" @click="registerFooterTap">
             <div class="footer-info">
                 <div class="logo-container">
-                    <img class="footer-logo" :src="conferenceLogoUrl" alt="Go Conference 2026" />
+                    <img
+                        class="footer-logo"
+                        :src="conferenceLogoUrl"
+                        alt="Go Conference 2026"
+                    />
                     <span>Go Conference 2026</span>
                 </div>
-                <p class="copyright" id="footer-attribution">The Go gopher was designed by <a href="https://reneefrench.blogspot.com/">Renée French</a>. Illustrations by <a href="https://x.com/avocadoneko">avocadoneko</a>.</p>
+                <p class="copyright" id="footer-attribution">
+                    The Go gopher was designed by
+                    <a href="https://reneefrench.blogspot.com/">Renée French</a
+                    >. Illustrations by
+                    <a href="https://x.com/avocadoneko">avocadoneko</a>.
+                </p>
             </div>
         </footer>
 
         <Transition name="drawer">
-            <div v-if="keywordModalOpen" class="fixed inset-0 z-50 flex items-end bg-slate-950/80 backdrop-blur-sm sm:items-center sm:justify-center">
-                <div class="app-modal-card w-full max-w-[430px] rounded-b-none p-5 sm:rounded-[16px]">
-                    <span class="info-pill">合言葉</span>
-                    <h2 class="mt-4 text-quiz-strong text-xl font-semibold">問題一覧を開く</h2>
-                    <p class="mt-2 text-quiz-body text-sm leading-6">正しい合言葉を入力したときだけ preview / 問題一覧が解放されます。</p>
+            <div
+                v-if="keywordModalOpen"
+                class="fixed inset-0 z-50 flex items-end bg-slate-950/80 backdrop-blur-sm sm:items-center sm:justify-center"
+            >
+                <div
+                    class="app-modal-card w-full max-w-[430px] rounded-b-none p-5 sm:rounded-[16px]"
+                >
+                    <span class="info-pill">{{ i18n.keywordTitle }}</span>
+                    <h2 class="mt-4 text-quiz-strong text-xl font-semibold">
+                        {{ i18n.openProblemList }}
+                    </h2>
+                    <p class="mt-2 text-quiz-body text-sm leading-6">
+                        {{ i18n.keywordDesc }}
+                    </p>
 
-                    <label class="mt-4 block text-quiz-muted text-xs uppercase tracking-[0.24em]"> 合言葉 </label>
-                    <input v-model="keywordValue" type="text" autocomplete="off" spellcheck="false" placeholder="合言葉を入力" class="quiz-input mt-2 text-sm" @keydown.enter.prevent="submitKeyword" />
+                    <label
+                        class="mt-4 block text-quiz-muted text-xs uppercase tracking-[0.24em]"
+                    >
+                        {{ i18n.keywordTitle }}
+                    </label>
+                    <input
+                        v-model="keywordValue"
+                        type="text"
+                        autocomplete="off"
+                        spellcheck="false"
+                        :placeholder="i18n.enterKeyword"
+                        class="quiz-input mt-2 text-sm"
+                        @keydown.enter.prevent="submitKeyword"
+                    />
 
-                    <p v-if="keywordMessage" class="mt-3 text-quiz-danger text-sm">
+                    <p
+                        v-if="keywordMessage"
+                        class="mt-3 text-quiz-danger text-sm"
+                    >
                         {{ keywordMessage }}
                     </p>
 
                     <div class="mt-4 grid gap-3">
-                        <PressButton block tone="primary" @click="submitKeyword"> 開く </PressButton>
-                        <PressButton block tone="secondary" @click="closeKeywordModal"> 閉じる </PressButton>
+                        <PressButton
+                            block
+                            tone="primary"
+                            @click="submitKeyword"
+                        >
+                            {{ i18n.open }}
+                        </PressButton>
+                        <PressButton
+                            block
+                            tone="secondary"
+                            @click="closeKeywordModal"
+                        >
+                            {{ i18n.close }}
+                        </PressButton>
                     </div>
                 </div>
             </div>
