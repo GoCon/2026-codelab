@@ -1,7 +1,7 @@
 [[campaignTiers]]
-id = "stage-1"
-title = { ja = "Stage 1", en = "Stage 1" }
-difficultyLabel = { ja = "Tier 1", en = "Tier 1" }
+id = ""
+title = { ja = "", en = "" }
+difficultyLabel = { ja = "", en = "" }
 description = { ja = "Go Conference 2026 CodeLab", en = "Go Conference 2026 CodeLab" }
 unlocksSpecial = true
 
