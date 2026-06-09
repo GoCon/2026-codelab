@@ -9,12 +9,12 @@ unlocksSpecial = true
 id = "fill-builtin-infinite-loop"
 kind = "fill"
 label = { ja = "builtin", en = "builtin" }
-title = { ja = "無限ループの作成", en = "Creating an Infinite Loop" }
-prompt = { ja = "Go で無限ループを作るためのキーワードを埋めてください。", en = "Fill in the keyword used to create an infinite loop in Go." }
+title = { ja = "無限ループの作成", en = "Build an infinite loop" }
+prompt = { ja = "Go で無限ループを作るためのキーワードを埋めてください。", en = "Fill in the keyword to create an infinite loop in Go." }
 outputLines = """
 """
-why = { ja = "Go には `while` や `loop` といったキーワードは存在せず、繰り返し構文はすべて `for` に統一されています。", en = "Go does not have `while` or `loop` keywords; all iteration syntax is unified strictly under `for`." }
-takeaway = { ja = "`for` の条件式を省略して `for {}` と書くだけで、もっともシンプルでスッキリとした無限ループを作成できます。", en = "Simply omitting the condition by writing `for {}` is the cleanest and idiomatic way to create an infinite loop." }
+why = { ja = "Go には `while` や `loop` といったキーワードは存在せず、繰り返し構文はすべて `for` に統一されています。", en = "Go does not have `while` or `loop` keywords; instead, it uses only `for` for all loops." }
+takeaway = { ja = "`for` の条件式を省略して `for {}` と書くだけで、もっともシンプルでスッキリとした無限ループを作成できます。", en = "By omitting the condition from a `for` statement and simply writing `for {}`, you can create an infinite loop more simply and clearly." }
 templateLines = """
 [1] {
   // 無限ループ
@@ -28,12 +28,12 @@ id = "select-result-error-shortdecl"
 kind = "fill"
 label = { ja = "error", en = "error" }
 title = { ja = "result, err :=", en = "result, err :=" }
-prompt = { ja = "calc(a, b) の結果と error を同時に受ける 3 か所。", en = "Fill in the 3 blanks to simultaneously receive the result and the error from calc(a, b)." }
+prompt = { ja = "calc(a, b) の結果と error を同時に受ける 3 か所。", en = "Three places for receiving the result and error from calc(a, b)." }
 outputLines = """
 """
 playgroundUrl = "https://go.dev/play/p/bGgF19hsfbC"
-why = { ja = "複数戻り値は左辺を並べ、初回代入なら `:=` を使います。", en = "For multiple return values, list the variables on the left side and use `:=` for the initial assignment." }
-takeaway = { ja = "Go は複数の戻り値を返すことが出来ます。 err を最後に返すのが一般的です。", en = "Go functions can return multiple values. It is standard practice to return the error as the last value." }
+why = { ja = "複数戻り値は左辺を並べ、初回代入なら `:=` を使います。", en = "We can receive multiple return values by listing variables on the left side. We use `:=` for declaration and assignment at once." }
+takeaway = { ja = "Go は複数の戻り値を返すことが出来ます。 err を最後に返すのが一般的です。", en = "Functions in Go can return multiple values, and it is common practice to return `err` as the last value." }
 templateLines = """
 [1][2][3]calc(a, b)
 if err != nil {
@@ -48,13 +48,13 @@ correctAnswers = [ "result,", "err", ":=" ]
 id = "select-blank-import-pprof"
 kind = "fill"
 label = { ja = "import", en = "import" }
-title = { ja = "pprof をブランク import", en = "Blank import pprof" }
-prompt = { ja = "pprof を blank import する 2 か所。", en = "Fill in the 2 blanks to execute a blank import of pprof." }
+title = { ja = "pprof をブランク import", en = "pprof blank import" }
+prompt = { ja = "pprof を blank import する 2 か所。", en = "Two places for pprof blank import." }
 outputLines = """
 """
 playgroundUrl = "https://go.dev/play/p/oIKQdxUcgjq"
-why = { ja = "blank import の `_` は名前を使わず、package の `init` だけを有効にします。", en = "The blank import `_` does not introduce a package name into the scope; it only invokes the package's `init` function." }
-takeaway = { ja = "`import _ \"net/http/pprof\"` は副作用だけを欲しいときの定番です。", en = "`import _ \"net/http/pprof\"` is a classic idiom used when you only need the side effects of an import." }
+why = { ja = "blank import の `_` は名前を使わず、package の `init` だけを有効にします。", en = "A blank import `_` does not use the package name; it only enables the package's `init` function." }
+takeaway = { ja = "`import _ \"net/http/pprof\"` は副作用だけを欲しいときの定番です。", en = "`import _ \"net/http/pprof\"` is a standard way to include a package for its side effects only." }
 templateLines = """
 import [1] [2]
 """
@@ -65,14 +65,14 @@ correctAnswers = [ "_", "\"net/http/pprof\"" ]
 id = "select-struct-plusv"
 kind = "fill"
 label = { ja = "fmt", en = "fmt" }
-title = { ja = "構造体の field 名", en = "Struct Field Names" }
-prompt = { ja = "{Name:Gopher Age:10} を field 名つきで表示する 2 か所。", en = "Fill in the 2 blanks to output {Name:Gopher Age:10} with its field names." }
+title = { ja = "構造体の field 名", en = "The field name of a structure" }
+prompt = { ja = "{Name:Gopher Age:10} を field 名つきで表示する 2 か所。", en = "Two places for printing {Name:Gopher Age:10} with the names of its fields." }
 outputLines = """
 {Name:Gopher Age:10}
 """
 playgroundUrl = "https://go.dev/play/p/bUZNxIr7BYy"
-why = { ja = "`fmt.Printf` と `%+v` を組み合わせると、struct の field 名も含めて表示できます。", en = "Combining `fmt.Printf` with `%+v` allows you to print a struct including its field names." }
-takeaway = { ja = "`fmt.Print` や `fmt.Println` ではなく、`fmt.Printf(\"%+v\", gopher)` を使うと field 名つきで表示できます。", en = "Instead of `fmt.Print` or `fmt.Println`, use `fmt.Printf(\"%+v\", gopher)` to print structs with field names." }
+why = { ja = "`fmt.Printf` と `%+v` を組み合わせると、struct の field 名も含めて表示できます。", en = "By using `fmt.Printf` and `%+v`, we can print the value of a struct along with its field names." }
+takeaway = { ja = "`fmt.Print` や `fmt.Println` ではなく、`fmt.Printf(\"%+v\", gopher)` を使うと field 名つきで表示できます。", en = "`fmt.Printf(\"%+v\", gopher)` prints the value of a struct including its field names, unlike `fmt.Print` or `fmt.Println`." }
 templateLines = """
 gopher := Gopher{Name: "Gopher", Age: 10}
 [1]([2], gopher)
@@ -84,14 +84,14 @@ correctAnswers = [ "fmt.Printf", "\"%+v\"" ]
 id = "fill-fmt-hex-output"
 kind = "fill"
 label = { ja = "fmt", en = "fmt" }
-title = { ja = "10進と16進", en = "Decimal and Hexadecimal" }
-prompt = { ja = "Value: 255, Hex: ff を出す 2 か所。", en = "Fill in the 2 blanks to output Value: 255, Hex: ff." }
+title = { ja = "10進と16進", en = "Decimal and hexadecimal" }
+prompt = { ja = "Value: 255, Hex: ff を出す 2 か所。", en = "Two places for printing Value: 255, Hex: ff." }
 outputLines = """
 Value: 255, Hex: ff
 """
 playgroundUrl = "https://go.dev/play/p/gKHeYb66kh3"
-why = { ja = "`%d` は 10 進、`%x` は小文字の 16 進です。", en = "`%d` is for base 10 (decimal), and `%x` is for lowercase base 16 (hexadecimal)." }
-takeaway = { ja = "同じ数値でも verb を変えるだけで表示形式を切り替えられます。", en = "You can change the display format of the exact same number just by changing the verb." }
+why = { ja = "`%d` は 10 進、`%x` は小文字の 16 進です。", en = "`%d` prints a value in decimal and `%x` prints it in hexadecimal." }
+takeaway = { ja = "同じ数値でも verb を変えるだけで表示形式を切り替えられます。", en = "We can change the printing format for the same value by changing the verb." }
 templateLines = """
 num := 255
 fmt.Printf(
@@ -107,14 +107,14 @@ correctAnswers = [ "%d", "%x" ]
 id = "fill-fmt-indexed-order"
 kind = "fill"
 label = { ja = "fmt", en = "fmt" }
-title = { ja = "引数番号で並べ替え", en = "Reorder by Argument Index" }
-prompt = { ja = "Age: 20, Name: Alice を出す 2 か所。", en = "Fill in the 2 blanks to output Age: 20, Name: Alice." }
+title = { ja = "引数番号で並べ替え", en = "Order by argument number" }
+prompt = { ja = "Age: 20, Name: Alice を出す 2 か所。", en = "Two places for printing Age: 20, Name: Alice." }
 outputLines = """
 Age: 20, Name: Alice
 """
 playgroundUrl = "https://go.dev/play/p/qL2BSv7XrwK"
-why = { ja = "`%[n]` を使うと、引数の順番を変えずに参照先だけを入れ替えられます。", en = "By using `%[n]`, you can reference a specific argument index without changing the order of the provided arguments." }
-takeaway = { ja = "`%[2]d` は 2 番目の引数、`%[1]s` は 1 番目の引数を使う指定です。", en = "`%[2]d` specifies the 2nd argument, and `%[1]s` specifies the 1st argument." }
+why = { ja = "`%[n]` を使うと、引数の順番を変えずに参照先だけを入れ替えられます。", en = "`%[n]` refers to the n-th argument without changing the order of arguments." }
+takeaway = { ja = "`%[2]d` は 2 番目の引数、`%[1]s` は 1 番目の引数を使う指定です。", en = "`%[2]d` refers to the second argument, and `%[1]s` refers to the first argument." }
 templateLines = """
 name := "Alice"
 age := 20
@@ -132,13 +132,13 @@ id = "fill-fmt-pi-report"
 kind = "fill"
 label = { ja = "fmt", en = "fmt" }
 title = { ja = "fmt.Printf", en = "fmt.Printf" }
-prompt = { ja = "Name: \"pi\", Value: 3.14, Type: float64 を出す 3 か所。", en = "Fill in the 3 blanks to output Name: \"pi\", Value: 3.14, Type: float64." }
+prompt = { ja = "Name: \"pi\", Value: 3.14, Type: float64 を出す 3 か所。", en = "Three places for printing Name: \"pi\", Value: 3.14, Type: float64." }
 outputLines = """
 Name: "pi", Value: 3.14, Type: float64
 """
 playgroundUrl = "https://go.dev/play/p/ZtSoKQnvkam"
-why = { ja = "`%q` は引用符つき文字列、`%.2f` は小数第 2 位まで、`%T` は値の型名を出します。", en = "`%q` prints a double-quoted string, `%.2f` rounds to 2 decimal places, and `%T` prints the type name." }
-takeaway = { ja = "`%q` / `%.2f` / `%T` を使い分けると、文字列・丸めた小数・型名を一度に確認できます。", en = "By utilizing `%q`, `%.2f`, and `%T`, you can check the string, rounded decimal, and type name all at once." }
+why = { ja = "`%q` は引用符つき文字列、`%.2f` は小数第 2 位まで、`%T` は値の型名を出します。", en = "`%q` prints a string with quotes, `%.2f` prints to two decimal places, and `%T` prints the type of the value." }
+takeaway = { ja = "`%q` / `%.2f` / `%T` を使い分けると、文字列・丸めた小数・型名を一度に確認できます。", en = "By using `%q`, `%.2f`, and `%T`, we can see a quoted string, a rounded decimal, and the type of a value all at once." }
 templateLines = """
 pi := 3.14159
 name := "pi"
@@ -158,13 +158,13 @@ correctAnswers = [ "%q", "%.2f", "%T" ]
 id = "fill-defer-output-order"
 kind = "fill"
 label = { ja = "defer", en = "defer" }
-title = { ja = "defer の実行順序", en = "Execution Order of defer" }
-prompt = { ja = "コードの実行結果（出力）の順番を上から完成させてください。", en = "Complete the output order from top to bottom based on the execution result." }
+title = { ja = "defer の実行順序", en = "Execution order of defer" }
+prompt = { ja = "コードの実行結果（出力）の順番を上から完成させてください。", en = "Complete the execution order (output) from top to bottom." }
 outputLines = """
 """
 playgroundUrl = "https://go.dev/play/p/p9uTA5pzU1G"
-why = { ja = "`defer` に登録された関数は、関数が終了する際に「最後に追加されたものから順に（LIFO: Last-In, First-Out）」逆順で実行されます。", en = "Functions registered with `defer` are executed in reverse order (LIFO: Last-In, First-Out) just before the surrounding function returns." }
-takeaway = { ja = "通常の文（C）が先に実行され、その後に `defer` が下から上の順（B -> A）で実行されるため、出力は C、B、A の順になります。", en = "The normal statement (C) executes first, followed by the deferred statements from bottom to top (B -> A), resulting in C, B, A." }
+why = { ja = "`defer` に登録された関数は、関数が終了する際に「最後に追加されたものから順に（LIFO: Last-In, First-Out）」逆順で実行されます。", en = "`defer` statements are executed in reverse order (LIFO: Last-In, First-Out) when the function returns." }
+takeaway = { ja = "通常の文（C）が先に実行され、その後に `defer` が下から上の順（B -> A）で実行されるため、出力は C、B、A の順になります。", en = "Since regular statements (C) execute first, followed by `defer` statements in reverse order (B -> A), the output will be C, B, then A." }
 templateLines = """
 // ── 実行されるコード ──
 defer fmt.Println("A")
@@ -183,14 +183,14 @@ correctAnswers = [ "C", "B", "A" ]
 id = "fill-channel-recv-only"
 kind = "fill"
 label = { ja = "channel", en = "channel" }
-title = { ja = "受信専用チャネル", en = "Receive-only Channel" }
-prompt = { ja = "受信専用チャネルから値を受け取って表示する 2 か所。", en = "Fill in the 2 blanks to receive and print a value from a receive-only channel." }
+title = { ja = "受信専用チャネル", en = "Receive-only channel" }
+prompt = { ja = "受信専用チャネルから値を受け取って表示する 2 か所。", en = "Two places for printing a value from a receive-only channel." }
 outputLines = """
 42
 """
 playgroundUrl = "https://go.dev/play/p/ZrQFACUb0_1"
-why = { ja = "型の位置では `<-chan int`、値を読む式の位置では `<-ch` を使います。", en = "Use `<-chan int` for the type declaration, and `<-ch` as the expression to receive the value." }
-takeaway = { ja = "`<-chan` は型、`<-ch` は受信式です。", en = "`<-chan` is the type, whereas `<-ch` is the receive expression." }
+why = { ja = "型の位置では `<-chan int`、値を読む式の位置では `<-ch` を使います。", en = "`<-chan int` indicates a receive-only channel with type, and `<-ch` receives the value from the channel." }
+takeaway = { ja = "`<-chan` は型、`<-ch` は受信式です。", en = "`<-chan` is a type, while `<-ch` is an expression." }
 templateLines = """
 func show_ch(ch [1] int) {
   println([2]ch)
@@ -209,14 +209,14 @@ correctAnswers = [ "<-chan", "<-" ]
 id = "fill-unsafe-sizeof-struct"
 kind = "fill"
 label = { ja = "unsafe", en = "unsafe" }
-title = { ja = "0バイトの構造体", en = "0-byte Struct" }
-prompt = { ja = "配列全体の占めるバイト数（出力）が 0 になるように型を埋めてください。", en = "Fill in the type so that the total byte size of the array output evaluates to 0." }
+title = { ja = "0バイトの構造体", en = "0-byte structure" }
+prompt = { ja = "配列全体の占めるバイト数（出力）が 0 になるように型を埋めてください。", en = "Fill in the type so that the total size of the array (output) becomes 0." }
 outputLines = """
 0
 """
 playgroundUrl = "https://go.dev/play/p/QZNiYpYMAMt"
-why = { ja = "`struct{}`（空の構造体）はサイズが 0 バイトの特殊な型です。そのため、要素数が1億個あっても配列全体のサイズは 0 バイトになります。", en = "`struct{}` (an empty struct) is a special type with a size of exactly 0 bytes. Thus, even an array of 100 million elements consumes 0 bytes." }
-takeaway = { ja = "`unsafe.Sizeof` で確認すると、`struct{}` の配列はメモリを一切消費しないことが分かります。値を持たない「セット（集合）」を実装する際によく使われます。", en = "Using `unsafe.Sizeof` reveals that a `struct{}` array consumes no memory. It's often used to implement 'sets' that only denote presence without values." }
+why = { ja = "`struct{}`（空の構造体）はサイズが 0 バイトの特殊な型です。そのため、要素数が1億個あっても配列全体のサイズは 0 バイトになります。", en = "`struct{}` (an empty struct) is a special type with a size of 0 bytes. Therefore, even an array with 100 million elements will have a total size of 0 bytes." }
+takeaway = { ja = "`unsafe.Sizeof` で確認すると、`struct{}` の配列はメモリを一切消費しないことが分かります。値を持たない「セット（集合）」を実装する際によく使われます。", en = "Using `unsafe.Sizeof`, you can see that an array of `struct{}` consumes no memory at all. It is often used to implement a 'set' (collection) that holds no values." }
 templateLines = """
 var arr [100_000_000][1]
 fmt.Println(unsafe.Sizeof(arr))
@@ -228,13 +228,13 @@ correctAnswers = [ "struct{}" ]
 id = "fill-unsafe-pointer-conversion"
 kind = "fill"
 label = { ja = "unsafe", en = "unsafe" }
-title = { ja = "ポインタの型変換", en = "Pointer Type Conversion" }
-prompt = { ja = "int型のポインタをfloat64型のポインタに変換する 2 か所。", en = "Fill in the 2 blanks to convert an int pointer to a float64 pointer." }
+title = { ja = "ポインタの型変換", en = "Type conversion of a pointer" }
+prompt = { ja = "int型のポインタをfloat64型のポインタに変換する 2 か所。", en = "Two places for converting an int pointer to a float64 pointer." }
 outputLines = """
 """
 playgroundUrl = "https://go.dev/play/p/oXl7EN0oW5T"
-why = { ja = "Goでは異なるポインタ型同士を直接キャストできませんが、`unsafe.Pointer` を経由することで任意のポインタ型に無理やり変換できます。", en = "In Go, you cannot cast directly between different pointer types, but you can force the conversion by routing it through `unsafe.Pointer`." }
-takeaway = { ja = "安全性を犠牲にして型を変換する際は、`unsafe.Pointer` と目的のポインタ型（`*float64` など）を組み合わせます。", en = "When bypassing type safety to convert types, combine `unsafe.Pointer` with your target pointer type (such as `*float64`)." }
+why = { ja = "Goでは異なるポインタ型同士を直接キャストできませんが、`unsafe.Pointer` を経由することで任意のポインタ型に無理やり変換できます。", en = "In Go, you cannot directly cast between different pointer types, but by going through `unsafe.Pointer`, you can convert to any pointer type." }
+takeaway = { ja = "安全性を犠牲にして型を変換する際は、`unsafe.Pointer` と目的のポインタ型（`*float64` など）を組み合わせます。", en = "When converting types at the expense of safety, combine `unsafe.Pointer` with the target pointer type (e.g., `*float64`)." }
 templateLines = """
 x := 42
 int_ptr := &x
