@@ -1,21 +1,18 @@
-.PHONY: build-pages clean local test-browser
+.PHONY: clean local test
 
-GO := go
+NPM ?= npm
+HOST ?= localhost
+PORT ?= 8788
 
-CODE_FILES  := $(wildcard quizzes/code/*.go)
-PAGES_DIST  = gh-pages-dist
+node_modules: package.json package-lock.json
+	$(NPM) ci
 
-build-pages:
-	rm -rf $(PAGES_DIST)
-	mkdir -p $(PAGES_DIST)
-	cp -r public/* $(PAGES_DIST)/
-	$(GO) run ./cmd/generatequizdata -out $(PAGES_DIST)/quiz-data.js
+local: node_modules
+	$(NPM) run dev -- --host $(HOST) --port $(PORT)
+
+test: node_modules
+	$(NPM) run test
+	$(NPM) run test:build
 
 clean:
-	rm -rf $(PAGES_DIST)
-
-local:
-	$(GO) run ./cmd/local/
-
-test-browser:
-	node --test test/browser-ui.test.js
+	rm -rf dist dist-pages dist-pages-check
