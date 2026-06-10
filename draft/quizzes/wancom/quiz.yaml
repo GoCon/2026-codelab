@@ -1,0 +1,59 @@
+# クイズのタイトル
+title: "Quiz Title"
+# 作成者の GitHub ユーザーネーム (setup.sh で自動設定されます)
+author: wancom
+
+questions:
+  - # 問題文
+    text: "このコードの出力は何？"
+    # 問題文に表示するコードファイル (quiz.yaml からの相対パス、省略可)
+    question_code_ref: "code/q1_question.go"
+    # 選択肢 (4 つ)
+    choices:
+      - "Message from chA: msgA"
+      - "Message from chB: msgB-1"
+      - "Message from chC: msgC"
+      - "上記のどれか（どれが出るかはわからない）"
+    # 正解の index (0-indexed)
+    answer: 3
+    # 解説
+    explanation: |
+      selectはどのChannelから処理するかの順序を保証されません。
+      必要に応じて二重selectなどを使用します。
+    # 正解時に表示するコードファイル (省略可)
+    answer_code_ref: "code/q1_answer.go"
+
+  - # 問題文
+    text: "標準パッケージでサポートされていないデータフォーマットは？"
+    # 選択肢 (4 つ)
+    choices:
+      - "gzip"
+      - "png"
+      - "mp3"
+      - "pem"
+    # 正解の index (0-indexed)
+    answer: 2
+    # 解説
+    explanation: |
+      それぞれ、compress/gzip、image/png、encoding/pemが存在します。
+      mp3だけ標準パッケージでは提供されていません。
+      ・ compress/gzip: https://pkg.go.dev/compress/gzip@go1.26.2
+      ・ image/png: https://pkg.go.dev/image/png@go1.26.2
+      ・ encoding/pem: https://pkg.go.dev/encoding/pem@go1.26.2
+
+  - # 問題文
+    text: "net/http/pprofとruntime/pprof両方で提供しているプロファイリングデータは？"
+    # 選択肢 (4 つ)
+    choices:
+      - "cmdline"
+      - "goroutine"
+      - "profile"
+      - "symbol"
+    # 正解の index (0-indexed)
+    answer: 1
+    # 解説
+    explanation: |
+      goroutineはruntime/pprofから提供されるデータです。
+      cmdline、profile、symbolはnet/http/pprofで独自に提供しているデータです。
+    # 正解時に表示するコードファイル (省略可)
+    answer_code_ref: "code/q3_answer.go"
