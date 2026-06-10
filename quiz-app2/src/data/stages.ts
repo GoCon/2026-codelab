@@ -11,7 +11,7 @@ import stagesDocument from "./stages.toml";
 export const STAGE_TIME_LIMIT_MS = 30_000;
 export const PREVIEW_UNLOCK_KEYWORD = "gofar,gotogether";
 export const FOOTER_TAP_THRESHOLD = 10;
-export const SPECIAL_PAGE_URL = "https://example.com";
+export const SPECIAL_PAGE_URL = "https://gocon.jp/2026/";
 
 type TomlRecord = Record<string, unknown>;
 
@@ -160,13 +160,15 @@ const parseStageBase = <K extends StageKind>(
 };
 
 const validateFillTemplate = (stage: FillStage, path: string) => {
-  const placeholderIndexes = stage.templateLines.flatMap((line) =>
+  const allLines = [...stage.templateLines, ...stage.outputLines];
+
+  const placeholderIndexes = allLines.flatMap((line) =>
     Array.from(line.matchAll(/\[(\d+)\]/g), (match) => Number(match[1])),
   );
 
   if (placeholderIndexes.length !== stage.correctAnswers.length) {
     throw new Error(
-      `${path}.templateLines must contain ${stage.correctAnswers.length} placeholders.`,
+      `${path} must contain exactly ${stage.correctAnswers.length} placeholders across templateLines and outputLines.`,
     );
   }
 
@@ -178,7 +180,7 @@ const validateFillTemplate = (stage: FillStage, path: string) => {
   for (const [index, value] of placeholderIndexes.entries()) {
     if (value !== expectedIndexes[index]) {
       throw new Error(
-        `${path}.templateLines placeholders must be numbered [1]...[${stage.correctAnswers.length}] in order.`,
+        `${path} placeholders must be numbered [1]...[${stage.correctAnswers.length}] in order across templateLines and outputLines.`,
       );
     }
   }

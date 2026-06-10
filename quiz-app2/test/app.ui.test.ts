@@ -121,7 +121,7 @@ describe("quiz-app2 campaign flow", () => {
 
     expect(shell().attributes("data-screen")).toBe("score");
     expect(wrapper.text()).toContain(`${stages.length}/${stages.length}`);
-    expect(wrapper.text()).toContain("スペシャルページへ");
+    expect(wrapper.text()).toContain("おみやげをプレゼント");
 
     // Tierが1つだけの場合はボタン名が「もう一度挑戦する」に変化する対応
     const isSingleTier = campaignTiers.length === 1;

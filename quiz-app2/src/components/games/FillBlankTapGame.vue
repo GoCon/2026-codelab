@@ -65,8 +65,15 @@ const clearSelection = () => {
 const slotIsFilled = (item: PoolItem) =>
     slots.value.some((slot) => slot?.id === item.id);
 
-const addToken = (item: PoolItem) => {
+const toggleToken = (item: PoolItem) => {
     if (props.locked) return;
+
+    const existingIndex = slots.value.findIndex((s) => s?.id === item.id);
+    if (existingIndex !== -1) {
+        slots.value[existingIndex] = null;
+        return;
+    }
+
     const index = slots.value.findIndex((s) => s === null);
     if (index !== -1) {
         slots.value[index] = item;
@@ -124,6 +131,10 @@ watch(
         <StageOutputPanel
             v-if="stage.outputLines.length > 0"
             :lines="stage.outputLines"
+            is-fill
+            :slots="slots"
+            :locked="locked"
+            @remove-token="removeToken"
         />
 
         <div class="flex items-center justify-between text-quiz-muted text-xs">
@@ -171,8 +182,8 @@ watch(
                 }}</span>
                 <span>{{
                     locale === "en"
-                        ? "Tap to insert from left"
-                        : "タップで左から挿入"
+                        ? "Tap to insert/remove"
+                        : "タップで追加 / 解除"
                 }}</span>
             </div>
 
@@ -181,9 +192,10 @@ watch(
                     v-for="item in poolItems"
                     :key="item.id"
                     tone="secondary"
-                    :disabled="slotIsFilled(item) || locked"
-                    class="px-4 py-3 font-mono text-[13px]"
-                    @click="addToken(item)"
+                    :disabled="locked"
+                    class="px-4 py-3 font-mono text-[13px] transition-all"
+                    :class="{ 'opacity-30': slotIsFilled(item) }"
+                    @click="toggleToken(item)"
                 >
                     {{ item.label }}
                 </PressButton>
