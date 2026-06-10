@@ -48,6 +48,10 @@ const conferenceLogoUrl = new URL(
     import.meta.url,
 ).href;
 
+const xLogoUrl = new URL("./assets/x-logo.svg", import.meta.url).href;
+const blueskyLogoUrl = new URL("./assets/bluesky-logo.svg", import.meta.url)
+    .href;
+
 const isSingleTier = campaignTiers.length === 1;
 
 const pickRandomPhrase = (phrases: readonly I18nText[]): I18nText =>
@@ -107,7 +111,6 @@ const keywordMessage = ref("");
 const languageMenuOpen = ref(false);
 const footerTapCount = ref(0);
 
-// -- 🌍 多言語対応 (i18n) --
 const selectedLanguage = ref<Locale>("ja");
 provide("locale", selectedLanguage);
 
@@ -189,13 +192,9 @@ const i18n = computed(() => {
         open: isEn ? "Open" : "開く",
         keywordIncorrect: isEn ? "Incorrect keyword." : "合言葉が違います。",
         timeUpSummary: isEn ? "Time's up" : "タイムアップ",
-
-        // ★ 追加項目 (SNSシェア / アンケート)
         shareAndFeedbackTitle: isEn ? "Share & Feedback" : "シェアとアンケート",
-        shareOnX: isEn ? "Post score to X" : "Xにスコアを投稿する",
-        shareOnBluesky: isEn
-            ? "Post score to Bluesky"
-            : "Blueskyにスコアを投稿",
+        shareOnX: isEn ? "Post to X" : "Xに投稿",
+        shareOnBluesky: isEn ? "Post to Bluesky" : "Blueskyに投稿",
         answerSurvey: isEn ? "Answer Survey" : "アンケートに回答",
     };
 });
@@ -393,7 +392,6 @@ const shareText = computed(() => {
         ? `Cleared ${isSingleTier ? "all stages" : tierName} on Go Conference 2026 CodeLab! Correct: ${runCorrectCount.value}/${tierSize.value} Score: ${runScore.value}`
         : `Go Conference 2026 CodeLabで${isSingleTier ? "全問題を" : ` ${tierName} を`}クリアしました！ 正解数: ${runCorrectCount.value}/${tierSize.value} スコア: ${runScore.value}`;
 
-    // クエリパラメータ等を外したクリーンなURLを共有用にする
     const url =
         typeof window !== "undefined"
             ? window.location.href.split("#")[0].split("?")[0]
@@ -1268,20 +1266,27 @@ onBeforeUnmount(() => {
                             {{ i18n.shareAndFeedbackTitle }}
                         </p>
                         <div class="space-y-3">
-                            <PressButton
-                                block
-                                tone="secondary"
-                                @click="shareToX"
-                            >
-                                {{ i18n.shareOnX }}
-                            </PressButton>
-                            <PressButton
-                                block
-                                tone="secondary"
-                                @click="shareToBluesky"
-                            >
-                                {{ i18n.shareOnBluesky }}
-                            </PressButton>
+                            <div class="grid grid-cols-2 gap-3">
+                                <PressButton tone="secondary" @click="shareToX">
+                                    <img
+                                        :src="xLogoUrl"
+                                        alt="X"
+                                        class="w-4 h-4"
+                                    />
+                                    {{ i18n.shareOnX }}
+                                </PressButton>
+                                <PressButton
+                                    tone="secondary"
+                                    @click="shareToBluesky"
+                                >
+                                    <img
+                                        :src="blueskyLogoUrl"
+                                        alt="Bluesky"
+                                        class="w-4 h-4"
+                                    />
+                                    {{ i18n.shareOnBluesky }}
+                                </PressButton>
+                            </div>
                             <PressButton
                                 block
                                 tone="primary"
