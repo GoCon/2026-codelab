@@ -129,7 +129,6 @@ const compactTierTitle = (titleText: I18nText | string) => {
 let timerId: number | null = null;
 let startedAt = 0;
 
-// --- i18n Dictionary ---
 const i18n = computed(() => {
     const isEn = selectedLanguage.value === "en";
     return {
@@ -161,12 +160,12 @@ const i18n = computed(() => {
         completedText: isEn ? "Completed" : "完了",
         specialUnlocked: isEn ? "Special Unlocked" : "スペシャル解放",
         allCorrectTitle: isEn
-            ? "Special Page Unlocked!"
-            : "スペシャルページ解放！",
+            ? "Present a souvenir!"
+            : "おみやげをプレゼント！",
         allCorrectDesc: isEn
-            ? "You have completed this set and unlocked the special page."
-            : "このセットを最後まで進めたため、スペシャルページへ進めます。",
-        goToSpecial: isEn ? "Go to Special Page" : "スペシャルページへ",
+            ? "Prepared some souvenirs for everyone played."
+            : "プレイしてくれたみんなのために記念品を用意したよ。",
+        goToSpecial: isEn ? "Go to Souvenirs Page" : "おみやげページ",
         nextLevel: isEn ? "Next Level" : "次のレベルへ",
         retryLevel: isEn
             ? isSingleTier
@@ -197,6 +196,18 @@ const i18n = computed(() => {
         shareOnBluesky: isEn ? "Post to Bluesky" : "Blueskyに投稿",
         answerSurvey: isEn ? "Answer Survey" : "アンケートに回答",
     };
+});
+
+watch(selectedLanguage, () => {
+    if (
+        keywordMessage.value === "合言葉が違います。" ||
+        keywordMessage.value === "Incorrect keyword."
+    ) {
+        keywordMessage.value =
+            selectedLanguage.value === "en"
+                ? "Incorrect keyword."
+                : "合言葉が違います。";
+    }
 });
 
 const correctFeedbackPhrases: I18nText[] = [
@@ -389,14 +400,14 @@ const shareText = computed(() => {
     const tierName = t(currentTier.value.title);
 
     const baseText = isEn
-        ? `Cleared ${isSingleTier ? "all stages" : tierName} on Go Conference 2026 CodeLab! Correct: ${runCorrectCount.value}/${tierSize.value} Score: ${runScore.value}`
-        : `Go Conference 2026 CodeLabで${isSingleTier ? "全問題を" : ` ${tierName} を`}クリアしました！ 正解数: ${runCorrectCount.value}/${tierSize.value} スコア: ${runScore.value}`;
+        ? `Cleared ${isSingleTier ? "all stages" : tierName} on Go Conference 2026 CodeLab!\nCorrect: ${runCorrectCount.value}/${tierSize.value} Score: ${runScore.value}`
+        : `Go Conference 2026 CodeLabで${isSingleTier ? "全問題を" : ` ${tierName} を`}クリアしました！\n正解数: ${runCorrectCount.value}/${tierSize.value} スコア: ${runScore.value}`;
 
     const url =
         typeof window !== "undefined"
             ? window.location.href.split("#")[0].split("?")[0]
             : "https://gocon.jp/";
-    return `${baseText}\n#gocon26cl\n${url}`;
+    return `${baseText}\n${url}\n#gocon26 #gocon26cl`;
 });
 
 const xShareUrl = computed(
@@ -571,6 +582,10 @@ const finishTierRun = () => {
 const goToNextStage = () => {
     if (!currentResult.value) return;
 
+    if (typeof window !== "undefined") {
+        window.scrollTo(0, 0);
+    }
+
     if (currentQuestionIndex.value === tierSize.value - 1) {
         finishTierRun();
         return;
@@ -624,7 +639,10 @@ const closeKeywordModal = () => {
 
 const submitKeyword = () => {
     if (keywordValue.value.trim() !== PREVIEW_UNLOCK_KEYWORD) {
-        keywordMessage.value = i18n.value.keywordIncorrect;
+        keywordMessage.value =
+            selectedLanguage.value === "en"
+                ? "Incorrect keyword."
+                : "合言葉が違います。";
         return;
     }
 

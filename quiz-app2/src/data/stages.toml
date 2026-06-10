@@ -17,7 +17,7 @@ why = { ja = "Go には `while` や `loop` といったキーワードは存在�
 takeaway = { ja = "`for` の条件式を省略して `for {}` と書くだけで、もっともシンプルでスッキリとした無限ループを作成できます。", en = "By omitting the condition from a `for` statement and simply writing `for {}`, you can create an infinite loop more simply and clearly." }
 templateLines = """
 [1] {
-  // 無限ループ
+
 }
 """
 pool = [ "for", "while", "loop", "(true)", "True:" ]
@@ -161,20 +161,17 @@ label = { ja = "defer", en = "defer" }
 title = { ja = "defer の実行順序", en = "Execution order of defer" }
 prompt = { ja = "コードの実行結果（出力）の順番を上から完成させてください。", en = "Complete the execution order (output) from top to bottom." }
 outputLines = """
+[1]
+[2]
+[3]
 """
 playgroundUrl = "https://go.dev/play/p/p9uTA5pzU1G"
 why = { ja = "`defer` に登録された関数は、関数が終了する際に「最後に追加されたものから順に（LIFO: Last-In, First-Out）」逆順で実行されます。", en = "`defer` statements are executed in reverse order (LIFO: Last-In, First-Out) when the function returns." }
 takeaway = { ja = "通常の文（C）が先に実行され、その後に `defer` が下から上の順（B -> A）で実行されるため、出力は C、B、A の順になります。", en = "Since regular statements (C) execute first, followed by `defer` statements in reverse order (B -> A), the output will be C, B, then A." }
 templateLines = """
-// ── 実行されるコード ──
 defer fmt.Println("A")
 defer fmt.Println("B")
 fmt.Println("C")
-
-// ── 出力結果 ──
-[1]
-[2]
-[3]
 """
 pool = [ "A", "B", "C" ]
 correctAnswers = [ "C", "B", "A" ]
