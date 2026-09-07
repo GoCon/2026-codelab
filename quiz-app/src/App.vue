@@ -13,7 +13,6 @@ import PressButton from "./components/ui/PressButton.vue";
 import {
     FOOTER_TAP_THRESHOLD,
     PREVIEW_UNLOCK_KEYWORD,
-    SPECIAL_PAGE_URL,
     STAGE_TIME_LIMIT_MS,
     campaignTiers,
 } from "./data/stages";
@@ -51,6 +50,11 @@ const conferenceLogoUrl = new URL(
 const xLogoUrl = new URL("./assets/x-logo.svg", import.meta.url).href;
 const blueskyLogoUrl = new URL("./assets/bluesky-logo.svg", import.meta.url)
     .href;
+const wallpaperUrl = new URL(
+    "./assets/gocon26-codelab-wallpaper.png",
+    import.meta.url,
+).href;
+const WALLPAPER_FILE_NAME = "gocon26-codelab-wallpaper.png";
 
 const isSingleTier = campaignTiers.length === 1;
 
@@ -163,9 +167,9 @@ const i18n = computed(() => {
             ? "Present a souvenir!"
             : "おみやげをプレゼント！",
         allCorrectDesc: isEn
-            ? "Prepared some souvenirs for everyone played."
-            : "プレイしてくれたみんなのために記念品を用意したよ。",
-        goToSpecial: isEn ? "Go to Souvenirs Page" : "おみやげページ",
+            ? "We prepared a commemorative wallpaper for everyone who played. Save it and use it on your phone!"
+            : "プレイしてくれたみんなのために記念壁紙を用意したよ。保存してスマホの壁紙にしてね！",
+        downloadWallpaper: isEn ? "Download Wallpaper" : "壁紙をダウンロード",
         nextLevel: isEn ? "Next Level" : "次のレベルへ",
         retryLevel: isEn
             ? isSingleTier
@@ -1228,13 +1232,17 @@ onBeforeUnmount(() => {
                         <p class="mt-2 text-quiz-body text-sm leading-6">
                             {{ i18n.allCorrectDesc }}
                         </p>
+                        <img
+                            :src="wallpaperUrl"
+                            alt="Go Conference 2026 CodeLab wallpaper"
+                            class="mx-auto mt-4 max-h-[320px] rounded-[12px]"
+                        />
                         <a
-                            :href="SPECIAL_PAGE_URL"
-                            target="_blank"
-                            rel="noreferrer"
+                            :href="wallpaperUrl"
+                            :download="WALLPAPER_FILE_NAME"
                             class="primary-link-button mt-4"
                         >
-                            {{ i18n.goToSpecial }}
+                            {{ i18n.downloadWallpaper }}
                         </a>
                     </section>
 
