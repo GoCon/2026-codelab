@@ -11,7 +11,6 @@ import stagesDocument from "./stages.toml";
 export const STAGE_TIME_LIMIT_MS = 30_000;
 export const PREVIEW_UNLOCK_KEYWORD = "gofar,gotogether";
 export const FOOTER_TAP_THRESHOLD = 10;
-export const SPECIAL_PAGE_URL = "https://gocon.jp/2026/";
 
 type TomlRecord = Record<string, unknown>;
 

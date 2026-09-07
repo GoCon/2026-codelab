@@ -123,6 +123,13 @@ describe("quiz-app campaign flow", () => {
     expect(wrapper.text()).toContain(`${stages.length}/${stages.length}`);
     expect(wrapper.text()).toContain("おみやげをプレゼント");
 
+    const wallpaperLink = wrapper.find("a[download]");
+    expect(wallpaperLink.exists()).toBe(true);
+    expect(wallpaperLink.attributes("download")).toBe(
+      "gocon26-codelab-wallpaper.png",
+    );
+    expect(wallpaperLink.text()).toContain("壁紙をダウンロード");
+
     // Tierが1つだけの場合はボタン名が「もう一度挑戦する」に変化する対応
     const isSingleTier = campaignTiers.length === 1;
     const retryButtonLabel = isSingleTier
