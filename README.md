@@ -1,5 +1,7 @@
 # 2026-codelab
 
+https://gocon.jp/2026-codelab/
+
 GoCon 2026 CodeLab用のクイズリポジトリです。
 
 ```
